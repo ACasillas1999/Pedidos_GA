@@ -1,0 +1,548 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f1f1f1;
+    margin: 0;
+    padding: 20px; /* Ajusta el espacio alrededor del cuerpo */
+   /* display: flex;*/
+    flex-direction: column;
+    justify-content: center; /* Centra verticalmente los elementos */
+    align-items: center; /* Centra horizontalmente los elementos */
+    min-height: 10vh; /* Establece la altura mínima del cuerpo para ocupar toda la altura de la ventana */
+    text-align: center;
+    max-width: none;
+
+}
+
+h1 {
+    margin-top: 0;
+    color: #005aa3;
+    text-align: center;
+}
+
+
+h2 {
+    margin-top: 0;
+    color: #005aa3;
+    text-align: center;
+}
+
+.pedido {
+    display: flex;
+    justify-content: center; /* Centra horizontalmente el contenido */
+}
+
+
+.pedido-ubi {
+    display: flex;
+    justify-content: center; /* Centra horizontalmente el contenido */
+}
+
+.pedido-ubi table {
+    width: 80%; /* Ancho del 90% del contenedor padre */
+    border-collapse: collapse;
+    border: 2px solid #005aa3;
+}
+
+.pedido-ubi th,
+.pedido-ubi td {
+    padding: 1px;
+    border: 1px solid #005aa3;
+    text-align: left;
+    width: 200px;
+}
+
+.pedido-ubi th {
+    background-color: #005aa3;
+    color: #ffffff;
+}
+
+.pedido-ubi td span {
+    display: block;
+    color: black;
+    padding: 5px;
+}
+
+
+
+.pedido-info {
+    display: flex;
+    justify-content: center; /* Centra horizontalmente el contenido */
+}
+
+.pedido-info table {
+    width: 90%; /* Ancho del 90% del contenedor padre */
+    border-collapse: collapse;
+    border: 2px solid #005aa3;
+}
+
+.pedido-info th,
+.pedido-info td {
+    padding: 10px;
+    border: 1px solid #005aa3;
+    text-align: left;
+    width: 200px;
+}
+
+.pedido-info th {
+    background-color: #005aa3;
+    color: #ffffff;
+}
+
+.pedido-info td span {
+    display: block;
+    color: black;
+    padding: 5px;
+}
+
+
+
+.container {
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Centra verticalmente los elementos */
+    align-items: center; /* Centra horizontalmente los elementos */
+    min-height: 20vh; /* Establece la altura mínima del contenedor para ocupar toda la altura de la ventana */
+    background-color: #ffffff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+
+.container2 {
+    
+    max-width: 90%; /* Ancho del 90% del contenedor padre */
+   margin: 0.5cm auto;
+   justify-content: center;
+   
+    padding: 20px;
+    background-color: #ffffff;
+    
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+
+.container3 {
+      max-width: 90%; /* Ancho del 90% del contenedor padre */
+    margin: 20px auto 0; /* Margen superior ajustado para dejar espacio entre container y container2 */
+    padding: 20px;
+    background-color: #ffffff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+
+
+.footer {
+  background-color: #005aa3;
+  color: #fff;
+  padding: 10px;
+  text-align: center;
+  width: 100%;
+  
+  bottom: 0;
+  left: 0;
+}
+
+
+
+
+
+.menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.menu__item {
+  display: inline-block;
+  margin: 0 15px;
+}
+
+.menu__link {
+  color: #fff;
+  text-decoration: none;
+  font-size: 18px;
+}
+
+.menu__link:hover {
+  color: #ffcc00;
+}
+
+
+
+.header {
+  background-color: #005aa3;
+  color: #fff;
+  padding: 20px 0;
+  text-align: center;
+    width: 100%;
+}
+
+.logo {
+  font-size: 28px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.navbar ul {
+    display: flex;
+  list-style: none;
+    justify-content: center;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-item {
+  display: inline-block;
+  margin: 0 15px;
+}
+
+.nav-link {
+  color: #fff;
+  text-decoration: none;
+  font-size: 18px;
+}
+
+.nav-link:hover {
+  color: #ffcc00;
+}
+
+.social-icons {
+  margin-top: 20px;
+}
+
+.social-icon {
+  color: #fff;
+  font-size: 24px;
+  text-decoration: none;
+  margin: 0 10px;
+}
+
+.social-icon:hover {
+  color: #ffcc00;
+}
+
+
+/* En tu archivo CSS */
+.accion-container {
+    
+    justify-content: center;
+    
+    
+    margin-top: 20px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    flex-grow: 1; /* Agregar esta línea */
+}
+
+.accion-container h2 {
+    margin-bottom: 10px;
+}
+
+.accion-container form {
+    display: flex;
+    flex-direction: column;
+}
+
+.accion-container input[type="file"] {
+    margin-bottom: 10px;
+}
+
+.accion-container button {
+    padding: 10px;
+    background-color: #005aa3;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.accion-container button:hover {
+    background-color: #0056b3;
+    
+}
+
+.accion-container.horizontal {
+    
+    display: inline-flex;
+    max-width: 60%;
+   
+}
+
+
+.sidenav {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            background-color: #111;
+            overflow-x: hidden;
+            transition: 0.5s;
+            padding-top: 60px;
+        }
+
+        .sidenav a {
+            padding: 10px 15px;
+            text-decoration: none;
+            font-size: 20px;
+            color: #818181;
+            display: block;
+            transition: 0.3s;
+        }
+
+        .sidenav a:hover {
+            color: #f1f1f1;
+        }
+
+        .sidenav .closebtn {
+            position: absolute;
+            top: 0;
+            right: 25px;
+            font-size: 36px;
+            margin-left: 50px;
+        }
+
+.modal {
+            display: none; /* Ocultar el modal por defecto */
+            position: fixed; /* Posición fija */
+            z-index: 1; /* Posición del modal sobre otros elementos */
+            left: 0;
+            top: 0;
+            width: 100%; /* Ancho completo */
+            height: 100%; /* Alto completo */
+            overflow: auto; /* Habilitar desplazamiento si el contenido es demasiado grande */
+            background-color: rgba(0,0,0,0.4); /* Fondo oscuro */
+        }
+
+        .modal-content {
+            background-color: #fefefe; /* Fondo blanco */
+            margin: 15% auto; /* 15% desde la parte superior y centralizado horizontalmente */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Ancho del modal */
+        }
+
+        /* Botón para cerrar el modal */
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .button {
+            background-color: #005aa3; /* Color de fondo azul oscuro */
+            color: white; /* Texto en blanco */
+            padding: 10px 20px; /* Espaciado interno */
+            border: none; /* Sin borde */
+            border-radius: 5px; /* Bordes redondeados */
+            cursor: pointer; /* Cursor al pasar sobre el botón */
+            transition: background-color 0.3s; /* Transición suave para el cambio de color de fondo */
+        }
+
+        .button:hover {
+            background-color: #ed6b1f; /* Color de fondo azul más claro al pasar el cursor */
+        }
+
+@media print {
+    .page-break {
+        page-break-after: always; /* Salto de página después del elemento */
+    }
+}
+
+
+/* Estilos para los campos de entrada de coordenadas */
+#start-coordinates,
+#end-coordinates {
+    width: 20%;
+    padding: 12px; /* Aumentamos ligeramente el padding para un aspecto más elegante */
+    margin-top: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc; /* Borde gris claro */
+    border-radius: 6px; /* Bordes redondeados */
+    box-sizing: border-box; /* Incluir el relleno y el borde en el tamaño total */
+    font-size: 16px; /* Tamaño de fuente ligeramente más grande */
+    background-color: #f9f9f9; /* Color de fondo */
+    color: #333; /* Color de texto */
+    text-align: center; /* Centramos el texto horizontalmente */
+}
+
+/* Estilos para el texto de marcador de posición (placeholder) */
+#start-coordinates::placeholder,
+#end-coordinates::placeholder {
+    color: #999; /* Color de texto gris */
+}
+
+/* Estilos cuando el campo está deshabilitado */
+#start-coordinates[disabled],
+#end-coordinates[disabled] {
+    background-color: #ddd; /* Color de fondo gris claro cuando está deshabilitado */
+    cursor: not-allowed; /* Cursor no disponible */
+}
+
+button {
+    background-color: #ed6b1f; /* Color de fondo */
+    border: none; /* Quita el borde */
+    color: white; /* Color del texto */
+    padding: 15px 32px; /* Espaciado interior */
+    text-align: center; /* Alineación del texto */
+    text-decoration: none; /* Quita subrayado del texto */
+    display: inline-block; /* Muestra como bloque en línea */
+    font-size: 16px; /* Tamaño de la fuente */
+    margin: 4px 2px; /* Margen */
+    cursor: pointer; /* Cambia el cursor al pasar sobre el botón */
+    border-radius: 4px; /* Bordes redondeados */
+}
+
+button:hover {
+    background-color: #005aa3; /* Cambio de color al pasar el ratón */
+}
+
+ #imagen-container {
+    max-width: 200px; /* Establece el ancho máximo del contenedor de la miniatura */
+    margin: 0 auto; /* Centra horizontalmente el contenedor */
+}
+
+#miniatura {
+    width: 100%; /* Ajusta el ancho de la miniatura al 100% del contenedor */
+    height: auto; /* Altura automática para mantener la proporción de aspecto */
+}
+  .google-maps-button {
+            font-size: 16px; /* Cambia el tamaño de la fuente */
+            padding: 10px 20px; /* Ajusta el relleno del botón */
+            background-color: #ed6b1f; /* Color de fondo */
+            color: white; /* Color del texto */
+            border: none; /* Sin borde */
+            border-radius: 5px; /* Bordes redondeados */
+            cursor: pointer; /* Cambia el cursor al pasar por encima */
+        }
+
+        .google-maps-button:hover {
+            background-color: #005aa3; /* Color de fondo al pasar el ratón */
+        }
+
+.linea-horizontal {
+  width: 100%;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  position: relative; /* Hace que el texto se posicione relativo a este div */
+}
+
+.texto-linea {
+  position: absolute; /* Posiciona el texto encima de la línea */
+  top: 50%; /* Lo sitúa en el centro vertical */
+  left: 50%; /* Lo sitúa en el centro horizontal */
+  transform: translate(-50%, -50%); /* Lo centra exactamente */
+  color: white; /* Color del texto */
+  font-size: 18px; /* Tamaño del texto */
+  font-weight: bold; /* Texto en negrita */
+  background-color: #005aa3; /* Fondo azul oscuro */
+  padding: 5px 20px; /* Espaciado horizontal y vertical */
+  border-radius: 5px; /* Bordes redondeados */
+}
+
+.linea-horizontal::after {
+  content: ''; /* Crea la línea */
+  display: block;
+  border-bottom: 4px solid #005aa3; /* Línea azul oscuro y gruesa */
+}
+
+
+/* Estilos generales para la tabla */
+.table-custom {
+    width: 40%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 16px;
+    text-align: left;
+}
+
+/* Estilo para las filas de la tabla */
+.table-custom tr {
+    border-bottom: 1px solid #dddddd;
+}
+
+/* Estilo para las celdas de la tabla */
+.table-custom td, .table-custom th {
+    padding: 12px 15px;
+}
+
+/* Estilo para los encabezados de la tabla */
+.table-custom th {
+    background-color: #ed6b1f;
+    color: #ffffff;
+    font-weight: bold;
+}
+
+/* Estilo para las filas de la tabla */
+.table-custom tr:nth-of-type(even) {
+    background-color: #f3f3f3;
+}
+
+/* Estilo para las filas al pasar el mouse */
+.table-custom tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Estilo para los botones dentro de la tabla */
+.table-custom button {
+    background-color: #ed6b1f;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition-duration: 0.4s;
+}
+
+/* Estilo para los botones al pasar el mouse */
+.table-custom button:hover {
+    background-color: #005aa3;
+    color: white;
+}
+
+
+/* Styles for printing */
+@media print {
+    /* Ocultar el div con la clase accion-container */
+    .accion-container {
+        display: none;
+    }
+
+    /* Ocultar las URLs (enlaces) */
+    a {
+        display: none;
+    }
+
+    /* Ajustar los márgenes y el padding para impresión */
+    body, main {
+        margin: 0;
+        padding: 1cm;
+    }
+
+    /* Opcional: ajustar otros estilos para impresión */
+    .printable-content {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        box-sizing: border-box;
+    }
+}
+
+

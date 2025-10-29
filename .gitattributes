@@ -1,0 +1,33 @@
+* text=auto
+
+# Normalize text files to LF in repo
+*.php   text eol=lf
+*.html  text eol=lf
+*.css   text eol=lf
+*.js    text eol=lf
+*.sql   text eol=lf
+*.md    text eol=lf
+*.json  text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.sh    text eol=lf
+
+# Windows scripts keep CRLF
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+*.ps1   text eol=crlf
+
+# Binary files (no EOL conversion)
+*.jpg  -text
+*.jpeg -text
+*.png  -text
+*.gif  -text
+*.webp -text
+*.pdf  -text
+*.doc  -text
+*.docx -text
+*.xls  -text
+*.xlsx -text
+*.zip  -text
+*.7z   -text
+*.rar  -text

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Usuario</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+     <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+    
+</head>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+     
+     var iconoVolver = document.querySelector(".icono-Volver");
+     var iconoFAP = document.querySelector(".icono-FAP-img");
+ 
+     
+ 
+     var imgNormalVolver = "/Pedidos_GA/Img/Botones%20entregas/RegistrarChofer/VOLVAZ.png";
+     var imgHoverVolver = "/Pedidos_GA/Img/Botones%20entregas/RegistrarChofer/VOLVNA.png";
+ 
+     // Cambiar la imagen al pasar el mouse para Volver
+     if (iconoVolver) {
+         iconoVolver.addEventListener("mouseover", function() {
+             iconoVolver.src = imgHoverVolver;
+         });
+ 
+         iconoVolver.addEventListener("mouseout", function() {
+             iconoVolver.src = imgNormalVolver;
+         });
+     }
+
+
+     var imgNormalFAP = "/Pedidos_GA/Img/Botones%20entregas/RegistrarChofer/REGNA.png";
+    var imgHoverFAP = "/Pedidos_GA/Img/Botones%20entregas/RegistrarChofer/REGNAF.png";
+
+    // Cambiar la imagen al pasar el mouse para FAP
+    if (iconoFAP) {
+        iconoFAP.addEventListener("mouseover", function() {
+            iconoFAP.src = imgHoverFAP;
+        });
+
+        iconoFAP.addEventListener("mouseout", function() {
+            iconoFAP.src = imgNormalFAP;
+        });
+    }
+
+ });
+ 
+ 
+     </script>
+
+<body>
+   
+    <header class="header">
+        <div class="logo">
+        
+            <img src="/Pedidos_GA/Img/Botones%20entregas/Usuario/USUABL.png" alt="Estaditicas " class = "icono-AddChofer"style="max-width: 70%; height: auto;">
+        </div>
+        <nav class="navbar">
+            <ul>
+                <li class="nav-item"><a href='../Usuarios.php' class="nav-link">
+                    
+                    <img src="\Pedidos_GA\Img\Botones entregas\RegistrarChofer\VOLVAZ.png" alt="Choferes"class = "icono-Volver"style="max-width: 5%; height: auto; position:absolute; top: 70px; left: 25px;">
+                
+                </a></li>
+              </ul>
+        </nav>
+    </header>
+
+<div class="container">
+    <h2>Registro de Usuario</h2>
+    <form action="Registrar_usuario.php" method="post">
+        <label for="username">User Name:</label>
+        <input type="text" id="username" name="username" required>
+        
+         <label for="Nombre">Nombre:</label>
+        <input type="text" id="Nombre" name="Nombre" required>
+        
+        
+        
+         <label for="Rol">Rol:</label>
+       <select id="Rol" name="Rol" required>
+            <option value="">Selecciona una sucursal</option>
+            <option value="Admin">Administrador</option>
+            <option value="JC">Jefe Choferes</option>
+            <option value="VR">Vendedor</option>
+          
+        </select><br><br>
+        
+        <label for="Numero">Numero:</label>
+        <input type="text" id="Numero" name="Numero" required>
+        
+         <label for="Sucursal">Sucursal:</label>
+          <select id="Sucursal" name="Sucursal" required>
+            <option value="">Selecciona una sucursal</option>
+            <option value="TODAS">TODAS</option>
+            <option value="DIMEGSA">DIMEGSA</option>
+            <option value="DEASA">DEASA</option>
+            <option value="AIESA">AIESA</option>
+            <option value="SEGSA">SEGSA</option>
+            <option value="FESA">FESA</option>
+            <option value="TAPATIA">TAPATIA</option>
+            <option value="GABSA">GABSA</option>
+            <option value="ILUMINACION">ILUMINACION</option>
+            <option value="VALLARTA">VALLARTA</option>
+            <option value="CODI">CODI</option>
+            <option value="QUERETARO">QUERETARO</option>
+              
+        </select><br><br>
+        
+        <label for="password">Contraseña:</label>
+        <input type="password" id="password" name="password" required>
+        
+        <label for="confirm_password">Confirmar Contraseña:</label>
+        <input type="password" id="confirm_password" name="confirm_password" required>
+        
+       
+        
+        <!--<input type="submit" value="Registrar">-->
+
+        <button type="submit" class="icono-FAP" style="background: none; border: none; padding: 0;">
+            <img src="/Pedidos_GA/Img/Botones%20entregas/RegistrarChofer/REGNA.png" class="icono-FAP-img" alt="Actualizar Pedido" style="max-width: 50%; height: auto; display: flex;">
+        </button>
+        
+        <!-- Aquí se mostrarán los mensajes de error -->
+        <div class="error-message">
+            <?php if (isset($error_message)) echo $error_message; ?>
+        </div>
+    </form>
+</div>
+
+</body>
+</html>

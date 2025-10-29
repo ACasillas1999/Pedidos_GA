@@ -1,0 +1,304 @@
+body {
+    /* display: flex; */
+    justify-content: center;
+    align-items: flex-start;
+    height: 100vh;
+    margin: 0;
+    background-color: #f0f0f0; /* Color de fondo gris claro */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Fuente moderna */
+    padding-left: 100px; /* Ajuste para el sidebar */
+    box-sizing: border-box; /* Ajustar el modelo de caja */
+}
+
+
+input[type="submit"] {
+    display: inline-block; /* Cambiar a display inline-block */
+    float: inherit; /* Alinear a la derecha */
+    background-color: #ed6b1f; /* Color naranja */
+    color: white; /* Texto en blanco */
+    padding: 10px 20px; /* Espaciado interno */
+    border: none; /* Sin borde */
+    border-radius: 5px; /* Bordes redondeados */
+    cursor: pointer; /* Cursor al pasar sobre el botón */
+    transition: background-color 0.3s; /* Transición suave para el cambio de color de fondo */
+}
+
+/* Estilos al pasar el cursor sobre el botón */
+input[type="submit"]:hover {
+    background-color: #005aa3; /* Azul oscuro */
+}
+
+#filtroEstadoForm {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px; /* Espacio inferior */
+    
+}
+
+#filtroEstadoForm label {
+    margin-right: 10px; /* Espacio entre los labels */
+}
+
+#filtroEstadoForm input[type="checkbox"] {
+    margin-right: 5px; /* Espacio entre los checkboxes */
+}
+
+.container {
+    text-align: center;
+    background-color: #ffffff; /* Color de fondo blanco */
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra suave */
+}
+
+@media only screen and (max-width: 600px) {
+    .container {
+        width: 100%; /* Ajustar al ancho completo en dispositivos móviles */
+        padding: 10px; /* Reducir el relleno para dispositivos móviles */
+        margin: 0; /* Eliminar el margen en dispositivos móviles */
+        box-shadow: none; /* Eliminar la sombra en dispositivos móviles */
+    }
+}
+
+
+
+.titulo {
+    color: #005aa3; /* Azul oscuro */
+    font-size: 24px; /* Tamaño de fuente grande */
+    font-weight: bold; /* Texto en negrita */
+    margin-bottom: 20px; /* Espacio entre el título y el contenido */
+}
+
+.label {
+    color: #005aa3; /* Azul oscuro */
+    font-size: 16px; /* Tamaño de fuente mediano */
+    font-weight: bold; /* Texto en negrita */
+}
+
+.input-text {
+      
+    width: 100%;
+    padding: 10px;
+    margin-top: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc; /* Borde gris claro */
+    border-radius: 4px;
+    box-sizing: border-box; /* Incluir el relleno y el borde en el tamaño total */
+    font-size: 14px; /* Tamaño de fuente normal */
+}
+
+.boton-consultar {
+    background-color: #ed6b1f; /* Naranja */
+    color: #ffffff; /* Texto blanco */
+    border: none;
+    border-radius: 4px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.3s ease; /* Transición suave */
+    font-size: 16px; /* Tamaño de fuente mediano */
+    margin-right: 50px;
+}
+
+.boton-consultar:hover {
+    background-color: #005aa3; /* Naranja más oscuro al pasar el ratón */
+}
+
+.mi-tabla {
+    table-layout: fixed;
+    margin: 0 auto;
+    width: 60%;
+    border-collapse: collapse;
+}
+
+.mi-tabla th, .mi-tabla td {
+    border: 1px solid #dddddd; /* Borde gris claro */
+    padding: 8px;
+    font-size: 14px; /* Tamaño de fuente normal */
+}
+
+.mi-tabla th {
+    background-color: #005aa3; /* Azul oscuro */
+    color: #ffffff; /* Texto blanco */
+}
+
+.mi-tabla tr:nth-child(even) {
+    background-color: #f2f2f2; /* Fondo gris claro para filas pares */
+}
+
+.mi-tabla tr:hover {
+    background-color: #dddddd;
+}
+
+.add-button {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+}
+
+.add-button button {
+    background-color: #4CAF50; /* Color de fondo verde */
+    color: white; /* Color del texto blanco */
+    padding: 10px 20px; /* Espaciado interno */
+    border: none; /* Sin borde */
+    border-radius: 5px; /* Bordes redondeados */
+    cursor: pointer; /* Cursor al pasar sobre el botón */
+    transition: background-color 0.3s;/* Transición suave para el cambio de color de fondo */
+}
+
+.add-button button:hover {
+    background-color: #45a049; /* Color de fondo más oscuro al pasar el mouse */
+}
+
+.sta-button {
+    position: absolute;
+    top: 50px;
+    left: 10px;
+}
+
+.sta-button button {
+    background-color: #4CAF50; /* Color de fondo verde */
+    color: white; /* Color del texto blanco */
+    padding: 10px 20px; /* Espaciado interno */
+    border: none; /* Sin borde */
+    border-radius: 5px; /* Bordes redondeados */
+    cursor: pointer; /* Cursor al pasar sobre el botón */
+    transition: background-color 0.3s;/* Transición suave para el cambio de color de fondo */
+}
+
+#busqueda {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-right: 10px; /* Espacio entre el campo de búsqueda y el botón */
+    width: 200px; /* Ancho del campo de búsqueda */
+}
+
+
+
+
+.logout-button input[type="submit"] {
+     position: absolute;
+    bottom: 20px; /* Ajusta la distancia desde la parte inferior del sidebar */
+     width: 90%; /* Asegura que el botón ocupe todo el ancho */
+    background-color: #ed6b1f; /* Color de fondo */
+    color: white; /* Color del texto */
+    border: none; /* Quita el borde */
+    padding: 10px 20px; /* Espaciado interior */
+    text-align: center; /* Alineación del texto */
+    text-decoration: none; /* Quita subrayado del texto */
+    display: inline-block; /* Muestra como bloque en línea */
+    font-size: 16px; /* Tamaño de la fuente */
+    margin: 4px 2px; /* Margen */
+    cursor: pointer; /* Cambia el cursor al pasar sobre el botón */
+    border-radius: 4px; /* Bordes redondeados */
+}
+
+.logout-button input[type="submit"]:hover {
+    background-color: #005aa3; /* Cambio de color al pasar el ratón */
+}
+/*------------------------------------------------------------------------------------------*/
+
+/* Estilos para la barra lateral */
+.sidebar {
+    height: 100%;
+    width: 100px;
+    position: fixed;
+    top: 0;
+    left: 0; /* Cambiar a 0 para que la barra lateral se muestre en pantalla */
+    background-color: #005aa3;
+    overflow-x: hidden;
+    transition: 0.5s;
+    z-index: 1;
+}
+
+.sidebar.open {
+    left: 0;
+}
+
+.toggle-btn {
+    position: absolute;
+    left: 10px;
+    top: 10px;
+    font-size: 20px;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    z-index: 2;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 20px 0;
+}
+
+li {
+    padding: 10px;
+}
+
+a {
+    text-decoration: none;
+    color: #ed6b1f;
+}
+
+
+/* Estilos para el contenido */
+.content {
+    margin-left: 250px; /* Ajustar el margen izquierdo al ancho de la barra lateral */
+    padding: 20px;
+    width: calc(100% - 250px); /* Restar el ancho de la barra lateral del ancho total */
+    transition: 0.5s;
+    overflow-x: auto; /* Permitir desplazamiento horizontal en caso de que el contenido sea más ancho que el espacio disponible */
+    max-width: calc(100% - 250px); /* Limitar el ancho máximo para que no se superponga con la barra lateral */
+    box-sizing: border-box; /* Incluir el padding y el borde en el ancho total */
+}
+
+/*
+.reg-button {
+    position: absolute;
+    top: 350px;
+    left: 0px; /*1580px*/
+   /* 
+    
+}*/
+
+
+
+.reg-button {
+    font-size: 16px; /* Tamaño de la fuente */
+    margin: 4px 2px; /* Margen */
+    color: white; /* Color del texto blanco */
+    padding: 10px 20px; /* Espaciado interno */
+    border: none; /* Sin borde */
+    border-radius: 5px; /* Bordes redondeados */
+    cursor: pointer; /* Cursor al pasar sobre el botón */
+    transition: background-color 0.3s;/* Transición suave para el cambio de color de fondo */
+}
+
+.reg-button{
+    
+    position: relative;
+    top: 350 px;
+    left: auto;
+    
+}
+
+ .logo-container {
+            display: flex;
+            justify-content: center;
+        }
+
+
+
+.corner-left-bottom {
+    position: fixed;
+    left: 0px; /* Ajusta la distancia desde el borde izquierdo */
+    bottom: 10px; /* Ajusta la distancia desde el borde inferior */
+    /* Ajusta si necesitas que esté encima de otros elementos */
+}
+
+
+

@@ -1,0 +1,227 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #005aa3; /* Naranja muy suave */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    color: #fff;
+}
+
+
+
+
+.login-container {
+    background: rgba(255, 255, 255, 0.15); /* Fondo semitransparente */
+    border: 1px solid rgba(255, 255, 255, 0.3); /* Borde sutil */
+    border-radius: 12px;
+   
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px); /* Difumina el fondo detrás */
+    -webkit-backdrop-filter: blur(10px); /* Soporte para Safari */
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    color: #fff; /* Texto blanco para contraste */
+
+
+    width: 300px;
+    padding: 30px 30px;
+    border-radius: 10px;
+    
+    text-align: center;
+}
+
+
+.login-container h2 {
+    margin-bottom: 20px;
+}
+
+.login-container input[type="text"],
+.login-container input[type="password"] {
+    width: 90%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ffffff;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    font-size: 16px;
+    outline: none;
+    backdrop-filter: blur(5px);
+    transition: 0.3s;
+}
+
+.login-container input[type="text"]::placeholder,
+.login-container input[type="password"]::placeholder {
+    color: #ffffff;
+}
+
+
+.login-container input[type="submit"] {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: #ed6b1f; 
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    backdrop-filter: blur(5px);
+}
+
+.login-container input[type="submit"]:hover {
+    background: #005aa3;
+}
+
+
+/* Envoltura: se encarga de mover y girar */
+.camion-wrapper {
+    position: absolute;
+    top: 93%;
+    left: -150px;
+    width: 120px;
+    z-index: 0;
+    transform: translateY(-50%);
+    animation: moverCamion 13s linear infinite;
+    
+}
+
+
+
+/* Imagen dentro: vibra */
+.camion {
+    width: 100%;
+    animation: vibrar 0.1s infinite;
+    transform-origin: center;
+}
+
+/* Movimiento + giro en el contenedor */
+@keyframes moverCamion {
+    0% {
+        left: -150px;
+        transform: translateY(-50%) scaleX(1);
+    }
+    50% {
+        left: 100vw;
+        transform: translateY(-50%) scaleX(1);
+    }
+    51% {
+        transform: translateY(-50%) scaleX(-1);
+    }
+    100% {
+        left: -150px;
+        transform: translateY(-50%) scaleX(-1);
+    }
+}
+
+/* Vibración en la imagen */
+@keyframes vibrar {
+    0%   { transform: translateY(0); }
+    25%  { transform: translateY(-1px); }
+    50%  { transform: translateY(1px); }
+    75%  { transform: translateY(-1px); }
+    100% { transform: translateY(0); }
+}
+
+/* Login encima */
+.login-container {
+    position: relative;
+    z-index: 1;
+}
+
+/* Quita barras de scroll */
+html, body {
+    overflow: hidden;
+}
+
+
+
+
+
+/* Camión entra y se va (adelante) */
+.camion-icono {
+    position: absolute;
+    top: 44px;
+    left: -150px;
+    font-size: 70px;
+    color: #ed6b1f;
+    animation: moverCamion 8s ease-in-out forwards;
+    z-index: 98;
+}
+
+/* Logo sigue al camión pero se queda */
+.logo-arrastrado {
+    position: absolute;
+    top: 44px;
+    left: -800px;
+    width: 617px;
+    height: auto;
+    animation: dejarLogo 8s ease-in-out forwards;
+    z-index: 97;
+}
+
+/* Movimiento del camión hasta salir */
+@keyframes moverCamion {
+    0% {
+        left: -150px;
+    }
+    40% {
+        left: calc(50% + 308.5px); /* Camión va justo delante del logo */
+    }
+    100% {
+        left: 120vw; /* Se va fuera de pantalla */
+    }
+}
+
+/* Movimiento del logo hasta el centro */
+@keyframes dejarLogo {
+    0% {
+        left: -800px;
+        opacity: 0;
+    }
+    40% {
+        left: calc(50% - 308.5px);
+        opacity: 1;
+    }
+    100% {
+        left: calc(50% - 308.5px);
+        opacity: 1;
+    }
+}
+
+/*cambio responsive*/
+
+/* animaciones quitadas*/
+@media (max-width: 991px) and (max-height: 795px) {
+  .camion-icono,
+  .camion,
+  .logo-arrastrado,
+  .camion-wrapper {
+    display: none;
+  }
+  
+
+  
+  /* formulario grande cuando se oculta */
+  .login-container {
+    width: 90% !important;
+    padding: 20px 15px !important;
+    margin: 0 auto;
+  }
+}
+/* animaciones quitadas*/
+@media (max-height: 795px) {
+  .camion-icono,
+  .camion,
+  .logo-arrastrado,
+  .camion-wrapper {
+    display: none;
+  }
+  
+  
+}

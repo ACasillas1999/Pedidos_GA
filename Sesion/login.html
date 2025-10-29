@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesion</title>
+    <link rel="stylesheet" type="text/css" href="login.css?v=1">
+    <!--conexion a fontawsome-->
+    <script src="https://kit.fontawesome.com/a3b59717ff.js" crossorigin="anonymous"></script>
+    <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+</head>
+<body>
+    
+<!-- Camión y logo separados pero animados coordinadamente -->
+<i class="fa-solid fa-truck-fast camion-icono fa-10x"></i>
+<img src="logo_ascencio.png" alt="Logo de la Empresa" class="logo-arrastrado">
+
+    <div class="camion-wrapper">
+    
+    <i class="fa-solid fa-truck-fast fa-8x fa-bounce" style="color: #ed6b1f;"></i>
+</div>
+    <div class="login-container">
+        <img src="pedidos_pro.png" alt="Logo" class="icono-registro">
+        <form action="login.php" method="post">
+            <input type="text" name="username" placeholder="Nombre de usuario" required>
+            <input type="password" name="password" placeholder="Contrasena" required>
+            <input type="submit" value="Iniciar Sesion">
+        </form>
+    </div>
+</body>
+</html>

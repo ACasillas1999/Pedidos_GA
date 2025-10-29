@@ -1,0 +1,1803 @@
+<?php
+// Iniciar sesión segura
+ini_set('session.cookie_httponly', true);
+ini_set('session.cookie_secure', true);
+session_name("GA");
+session_start();
+
+if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
+    header("location: /Pedidos_GA/Sesion/login.html");
+    exit;
+}
+require_once __DIR__ . "/Conexiones/Conexion.php";
+
+$sucursal = $_SESSION["Sucursal"];
+$rol      = $_SESSION["Rol"];
+// --- Sucursales canónicas (tal cual tu grid) ---
+$SUCURSALES_CANON = [
+    'DEASA',
+    'DIMEGSA',
+    'AIESA',
+    'TALLER ESI',
+    'TAPATIA',
+    'SEGSA',
+    'FESA',
+    'CODI',
+    'COMPRAS',
+    'CONTITUYENTES',
+    'VALLARTA',
+    'GABSA',
+    'QUERETARO',
+    'PRESTAMOS',
+    'FORANEOS'
+];
+
+// Helpers
+function suc_norm($s)
+{
+    return strtoupper(trim((string)$s));
+}
+function suc_valida($s)
+{
+    global $SUCURSALES_CANON;
+    return in_array(suc_norm($s), $SUCURSALES_CANON, true);
+}
+
+// ------- Datos base -------
+$id_vehiculo = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+$vehiculo = $conn->query("SELECT * FROM vehiculos WHERE id_vehiculo = $id_vehiculo")->fetch_assoc();
+
+$historial = $conn->query("
+    SELECT r.*, c.username AS chofer
+    FROM registro_kilometraje r
+    JOIN choferes c ON r.id_chofer = c.ID
+    WHERE r.id_vehiculo = $id_vehiculo
+    ORDER BY r.id_registro DESC
+");
+$ultimo_registro = $conn->query("
+    SELECT kilometraje_final
+    FROM registro_kilometraje
+    WHERE id_vehiculo = $id_vehiculo
+    ORDER BY id_registro DESC
+    LIMIT 1
+")->fetch_assoc();
+$kilometraje_inicial_sugerido = $ultimo_registro['kilometraje_final'] ?? ($vehiculo['Km_Actual'] ?? 0);
+
+
+// Historial de conductores
+$hist_conductores = $conn->query("
+  SELECT
+    hc.*,
+    ch.username AS chofer_nombre,
+    ch.Sucursal AS sucursal_chofer,
+    TIMESTAMPDIFF(MINUTE, hc.fecha_inicio, IFNULL(hc.fecha_fin, NOW())) AS minutos_total
+  FROM historial_conductores hc
+  JOIN choferes ch ON ch.ID = hc.id_chofer
+  WHERE hc.id_vehiculo = {$id_vehiculo}
+  ORDER BY hc.id DESC
+");
+
+
+// Historial de sucursal del vehículo
+$hist_sucursal = $conn->query("
+  SELECT sucursal_anterior, sucursal_nueva, fecha, usuario
+  FROM historial_sucursal
+  WHERE id_vehiculo = {$id_vehiculo}
+  ORDER BY id DESC
+");
+
+// Lista de sucursales disponibles (para cambiar sucursal)
+$lista_sucursales = $conn->query("SELECT DISTINCT Sucursal AS suc FROM choferes WHERE Sucursal IS NOT NULL AND Sucursal<>'' ORDER BY Sucursal");
+
+// ------- WhatsApp (igual que tenías) -------
+$whatsapp_token  = "EAAGacaATjwEBOZBgqhohcVk1ZBGEAbiTl7i86qESvSPjdllaomwzIG7LmOOvyTFpzyIlXX6dtTYTVTLLuw6SjaLoh2rec07I8qu1nGNYSVZAmQTGNa3QCQjujTqfd7QuLLwFNQllnX2z1V7JvToDhEi5KVqUWXHSqgSETvGyU7S2SN2fpXW0NpQaRI48pwZAgGS7A1BQMjLl5ZBjy";
+$phone_number_id = "335894526282507";
+$recipient_phone = "523339565268";
+$template_name   = "notificacion_servicio";
+
+// ------- POST registrar kilometraje -------
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['kilometraje_final'])) {
+    $id_chofer           = (int)$_POST['id_chofer'];
+    $kilometraje_inicial = (int)$_POST['kilometraje_inicial'];
+    $kilometraje_final   = (int)$_POST['kilometraje_final'];
+    $km_recorridos       = $kilometraje_final - $kilometraje_inicial;
+    $fecha_actual        = date("Y-m-d");
+
+    if ($km_recorridos < 0) {
+        echo "<script>alert('El kilometraje final no puede ser menor al inicial.'); window.history.back();</script>";
+        exit;
+    }
+
+    $nuevo_kilometraje = ((int)$vehiculo['Km_Actual']) + $km_recorridos;
+    $conn->query("UPDATE vehiculos
+                  SET Km_Actual = $nuevo_kilometraje,
+                      Km_Total  = Km_Total + $km_recorridos
+                  WHERE id_vehiculo = $id_vehiculo");
+
+    $conn->query("INSERT INTO registro_kilometraje
+                    (id_vehiculo, id_chofer, Tipo_Registro, fecha_registro, kilometraje_inicial, kilometraje_final)
+                  VALUES
+                    ($id_vehiculo, $id_chofer, 'Registro', '$fecha_actual', $kilometraje_inicial, $kilometraje_final)");
+
+    $km_faltante = ((int)$vehiculo['Km_de_Servicio']) - $nuevo_kilometraje;
+
+    if ($km_faltante <= 500) {
+        $url = "https://graph.facebook.com/v19.0/$phone_number_id/messages";
+        $data = [
+            "messaging_product" => "whatsapp",
+            "to" => $recipient_phone,
+            "type" => "template",
+            "template" => [
+                "name" => $template_name,
+                "language" => ["code" => "en_US"],
+                "components" => [[
+                    "type" => "body",
+                    "parameters" => [
+                        ["type" => "text", "text" => $vehiculo['placa']],
+                        ["type" => "text", "text" => $km_faltante]
+                    ]
+                ]]
+            ]
+        ];
+        $headers = [
+            "Authorization: Bearer $whatsapp_token",
+            "Content-Type: application/json"
+        ];
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $url,
+            CURLOPT_POST => 1,
+            CURLOPT_POSTFIELDS => json_encode($data),
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER => $headers
+        ]);
+        $response = curl_exec($ch);
+        curl_close($ch);
+        file_put_contents("whatsapp_log.txt", date("Y-m-d H:i:s") . " - " . $response . PHP_EOL, FILE_APPEND);
+    }
+
+    echo "<script>alert('Registro guardado exitosamente'); window.location.href='detalles_vehiculo.php?id=$id_vehiculo';</script>";
+    exit;
+}
+
+// ------- Valores visuales -------
+$rawFoto = (string)($vehiculo['foto_path'] ?? '');
+$vehImg  = $rawFoto !== '' ? '/Pedidos_GA/' . ltrim($rawFoto, '/')
+    : '/Pedidos_GA/Img/vehiculos/placeholder_car.png';
+
+$placa = (string)($vehiculo['placa'] ?? '');
+$tipoV = (string)($vehiculo['tipo'] ?? '');
+$sucV  = (string)($vehiculo['Sucursal'] ?? '');
+$serie = (string)($vehiculo['numero_serie'] ?? '');
+
+$kmAct = (int)($vehiculo['Km_Actual'] ?? 0);
+$kmTot = (int)($vehiculo['Km_Total'] ?? 0);
+$kmSrv = (int)($vehiculo['Km_de_Servicio'] ?? 5000);
+
+$proxSrv = max(0, $kmSrv - $kmAct);
+$ultServ = $vehiculo['Fecha_Ultimo_Servicio'] ?? 'No registrado';
+
+// Chofer asignado
+$choferNombre = null;
+$choferTel    = null;
+if (!empty($vehiculo['id_chofer_asignado'])) {
+    $idc = (int)$vehiculo['id_chofer_asignado'];
+    $rc  = $conn->query("SELECT username, Numero FROM choferes WHERE ID=$idc LIMIT 1");
+    if ($rc && $rc->num_rows) {
+        $c = $rc->fetch_assoc();
+        $choferNombre = $c['username'] ?? null;
+        $choferTel    = $c['Numero']   ?? null;
+    }
+}
+
+// Estado servicio
+if ($proxSrv <= 0) {
+    $estadoSrv = 'SERVICIO VENCIDO';
+    $estadoSrvClass = 'pill-danger';
+} elseif ($proxSrv <= 500) {
+    $estadoSrv = 'SERVICIO PRONTO';
+    $estadoSrvClass = 'pill-warn';
+} else {
+    $estadoSrv = 'OK';
+    $estadoSrvClass = 'pill-ok';
+}
+
+// Gasolina
+$historial_gasolina = $conn->query("
+  SELECT g.*, c.username AS chofer
+  FROM registro_gasolina g
+  JOIN choferes c ON g.id_chofer = c.ID
+  WHERE g.id_vehiculo = $id_vehiculo
+  ORDER BY g.id_registro DESC
+");
+
+/* ====== POST: Asignar chofer con historial ====== */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['accion'] === 'asignar_chofer') {
+    $idChoferNuevo = (int)($_POST['id_chofer_nuevo'] ?? 0);
+    if ($idChoferNuevo > 0 && $id_vehiculo > 0) {
+
+        // 1) Cerrar asignación anterior abierta (si existe)
+        // Cerrar asignación abierta (si hay)
+        $stmt = $conn->prepare("UPDATE historial_conductores
+                        SET fecha_fin = NOW()
+                        WHERE id_vehiculo = ? AND fecha_fin IS NULL");
+        $stmt->bind_param("i", $id_vehiculo);
+        $stmt->execute();
+
+        // Insertar nueva asignación con marca de tiempo completa
+        $usuarioCreador = $_SESSION['Usuario'] ?? ($_SESSION['Rol'] ?? 'sistema');
+        $stmt = $conn->prepare("INSERT INTO historial_conductores
+                        (id_vehiculo, id_chofer, fecha_inicio, creado_por)
+                        VALUES (?, ?, NOW(), ?)");
+        $stmt->bind_param("iis", $id_vehiculo, $idChoferNuevo, $usuarioCreador);
+        $stmt->execute();
+
+        // Actualizar chofer actual del vehículo
+        $stmt = $conn->prepare("UPDATE vehiculos SET id_chofer_asignado = ? WHERE id_vehiculo = ?");
+        $stmt->bind_param("ii", $idChoferNuevo, $id_vehiculo);
+        $stmt->execute();
+
+        header("Location: detalles_vehiculo.php?id={$id_vehiculo}&msg=chofer-actualizado");
+        exit;
+    }
+}
+
+/* ====== POST: Cambiar sucursal con historial ====== */
+/* ====== POST: Cambiar sucursal con historial ====== */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'cambiar_sucursal') {
+    $sucursalNueva = suc_norm($_POST['sucursal_nueva'] ?? '');
+    if ($sucursalNueva !== '' && suc_valida($sucursalNueva) && $id_vehiculo > 0) {
+        $sucursalAnterior = suc_norm($vehiculo['Sucursal'] ?? '');
+        if ($sucursalAnterior !== $sucursalNueva) {
+            $usuario = $_SESSION['Usuario'] ?? ($_SESSION['Rol'] ?? 'sistema');
+
+            $stmt = $conn->prepare("INSERT INTO historial_sucursal
+                                    (id_vehiculo, sucursal_anterior, sucursal_nueva, usuario)
+                                    VALUES (?, ?, ?, ?)");
+            $stmt->bind_param("isss", $id_vehiculo, $sucursalAnterior, $sucursalNueva, $usuario);
+            $stmt->execute();
+
+            $stmt = $conn->prepare("UPDATE vehiculos SET Sucursal = ? WHERE id_vehiculo = ?");
+            $stmt->bind_param("si", $sucursalNueva, $id_vehiculo);
+            $stmt->execute();
+
+            header("Location: detalles_vehiculo.php?id={$id_vehiculo}&msg=sucursal-actualizada");
+            exit;
+        }
+    } else {
+        echo "<script>alert('Sucursal no válida');history.back();</script>";
+        exit;
+    }
+}
+
+/* ====== POST: Desasignar chofer actual ====== */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'desasignar_chofer') {
+    // Cierra tramo abierto con NOW()
+    $stmt = $conn->prepare("UPDATE historial_conductores
+                            SET fecha_fin = NOW()
+                            WHERE id_vehiculo = ? AND fecha_fin IS NULL");
+    $stmt->bind_param("i", $id_vehiculo);
+    $stmt->execute();
+
+    // Limpia chofer actual en vehiculos
+    $stmt = $conn->prepare("UPDATE vehiculos SET id_chofer_asignado = NULL WHERE id_vehiculo = ?");
+    $stmt->bind_param("i", $id_vehiculo);
+    $stmt->execute();
+
+    header("Location: detalles_vehiculo.php?id={$id_vehiculo}&msg=chofer-desasignado");
+    exit;
+}
+
+
+?>
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <title>Detalles del Vehículo</title>
+    <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+    <style>
+        :root {
+            --brand: #005aa3;
+            --brand-2: #ed6b1f;
+            --stroke: #e6e8ee;
+            --surface: #fff;
+            --bg: #f5f7fb;
+            --text: #0f172a;
+            --muted: #64748b;
+            --radius: 16px;
+            --shadow: 0 10px 30px rgba(0, 0, 0, .08);
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            background: var(--bg);
+            margin: 0;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+            color: var(--text)
+        }
+
+        header.header {
+            background: #075a9e;
+            color: #fff;
+            padding: 14px 18px
+        }
+
+        header .logo {
+            font-weight: 900;
+            letter-spacing: .5px
+        }
+
+        /* Card principal */
+        .veh-card {
+            max-width: 98%;
+            margin: 16px auto;
+            background: var(--surface);
+            border: 1px solid var(--stroke);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden
+        }
+
+        .veh-hero {
+            height: 180px;
+            background: linear-gradient(135deg, #0a66c290, #0f172a)
+        }
+
+        @media(max-width:600px) {
+            .veh-hero {
+                height: 140px
+            }
+        }
+
+        .veh-header {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 18px;
+            padding: 0 18px 18px;
+            align-items: end
+        }
+
+        @media(max-width:960px) {
+            .veh-header {
+                grid-template-columns: auto 1fr
+            }
+
+            .veh-actions-row {
+                grid-column: 1/-1
+            }
+        }
+
+        .veh-avatar {
+            width: 110px;
+            height: 110px;
+            border-radius: 999px;
+            overflow: hidden;
+            border: 5px solid #fff;
+            margin-top: -55px;
+            background: #e2e8f0;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, .22);
+            cursor: pointer;
+            position: relative
+        }
+
+        .veh-avatar::after {
+            content: "Cambiar";
+            position: absolute;
+            inset: auto 0 0 0;
+            background: rgba(0, 0, 0, .45);
+            color: #fff;
+            font-size: 12px;
+            text-align: center;
+            padding: 4px 0;
+            opacity: 0;
+            transition: .15s
+        }
+
+        .veh-avatar:hover::after {
+            opacity: 1
+        }
+
+        .veh-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block
+        }
+
+        .veh-head-main {
+            display: flex;
+            flex-direction: column;
+            gap: 6px
+        }
+
+        .veh-title {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 800
+        }
+
+        .veh-sub {
+            font-size: 13px;
+            color: #475569
+        }
+
+        .veh-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 4px
+        }
+
+        .pill {
+            font-size: 12px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #f8fafc;
+            color: #0f172a;
+            border: 1px solid #e5e7eb;
+            font-weight: 700
+        }
+
+        .pill-ok {
+            background: #e7f9ef;
+            border-color: #c6f1d7;
+            color: #166534
+        }
+
+        .pill-warn {
+            background: #fff6d6;
+            border-color: #fde9a8;
+            color: #8a6d00
+        }
+
+        .pill-danger {
+            background: #ffe4e6;
+            border-color: #fecdd3;
+            color: #9f1239
+        }
+
+        .pill-info {
+            background: #e0f2fe;
+            border-color: #bae6fd;
+            color: #075985
+        }
+
+        .pill-muted {
+            background: #f1f5f9;
+            color: #475569
+        }
+
+        .veh-actions-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            justify-content: flex-end
+        }
+
+        .btn {
+            background: var(--brand);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-weight: 700;
+            cursor: pointer
+        }
+
+        .btn:hover {
+            filter: brightness(1.05)
+        }
+
+        .btn.alt {
+            background: var(--brand-2)
+        }
+
+        .btn.ghost {
+            background: #eef2f7;
+            color: #0f172a;
+            border: 1px solid #d8dee9
+        }
+
+        .veh-metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            padding: 0 18px 14px
+        }
+
+        @media(max-width:960px) {
+            .veh-metrics {
+                grid-template-columns: repeat(2, 1fr)
+            }
+        }
+
+        @media(max-width:600px) {
+            .veh-metrics {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .metric {
+            background: #f8fafc;
+            border: 1px solid #eef2f7;
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center
+        }
+
+        .m-title {
+            font-size: .82rem;
+            color: var(--muted)
+        }
+
+        .m-value {
+            font-size: 20px;
+            font-weight: 800
+        }
+
+        /* Tabs + panes */
+        .veh-tabs {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            padding: 0 18px 16px
+        }
+
+        .veh-tabs .tab {
+            display: block;
+            text-align: center;
+            background: #f1f5f9;
+            color: #0f172a;
+            padding: 10px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 800;
+            border: 1px solid #e2e8f0
+        }
+
+        .veh-tabs .tab.active {
+            background: #0a66c2;
+            color: #fff;
+            border-color: #0a66c2
+        }
+
+        .tab-pane {
+            max-width: 92%;
+            margin: 0 auto 22px;
+            background: #fff;
+            border: 1px solid #e8ecf2;
+            border-radius: 14px;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, .04);
+            padding: 16px
+        }
+
+        /* Tabla */
+        .mi-tabla {
+            width: 100%;
+            border-collapse: collapse
+        }
+
+        .mi-tabla th,
+        .mi-tabla td {
+            border: 1px solid #e5e7eb;
+            padding: 8px;
+            font-size: 14px
+        }
+
+        .mi-tabla th {
+            background: #005aa3;
+            color: #fff
+        }
+
+        /* ===== MODALES ===== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, .45);
+            backdrop-filter: blur(2px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .2s;
+            z-index: 999
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto
+        }
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .2s;
+            z-index: 1000
+        }
+
+        .modal.open {
+            opacity: 1;
+            pointer-events: auto
+        }
+
+        .modal__card {
+            width: min(560px, 92vw);
+            background: #fff;
+            border: 1px solid #e6e8ee;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(15, 23, 42, .18);
+            overflow: hidden;
+            transform: translateY(6px) scale(.98);
+            animation: modal-pop .18s ease forwards
+        }
+
+        @keyframes modal-pop {
+            to {
+                transform: translateY(0) scale(1)
+            }
+        }
+
+        .modal__head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            background: linear-gradient(135deg, #0a66c2, #0f345a);
+            color: #fff
+        }
+
+        .modal__title {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 800
+        }
+
+        .modal__close {
+            appearance: none;
+            border: 0;
+            background: transparent;
+            color: #fff;
+            font-size: 22px;
+            line-height: 1;
+            cursor: pointer;
+            padding: 0 6px;
+            opacity: .95
+        }
+
+        .modal__close:hover {
+            opacity: 1;
+            transform: scale(1.08)
+        }
+
+        .modal__body {
+            padding: 16px;
+            display: grid;
+            gap: 10px
+        }
+
+        .modal__row {
+            display: grid;
+            gap: 8px
+        }
+
+        .modal__row.inline {
+            grid-template-columns: 1fr 1fr;
+            gap: 12px
+        }
+
+        @media(max-width:520px) {
+            .modal__row.inline {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .modal__label {
+            font-size: 13px;
+            color: #475569;
+            font-weight: 700
+        }
+
+        .modal__field {
+            width: 100%;
+            border: 1px solid #dbe2ea;
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 14px;
+            outline: none;
+            background: #fff;
+            transition: border-color .15s, box-shadow .15s
+        }
+
+        .modal__field:focus {
+            border-color: #0a66c2;
+            box-shadow: 0 0 0 3px rgba(10, 102, 194, .16)
+        }
+
+        .modal__actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            padding: 12px 16px;
+            background: #f7f9fc;
+            border-top: 1px solid #eef2f7
+        }
+
+        .btn--ghost {
+            background: #eef2f7;
+            color: #0f172a;
+            border: 1px solid #d8dee9;
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-weight: 700;
+            cursor: pointer
+        }
+
+        .btn--ghost:hover {
+            filter: brightness(1.03)
+        }
+
+        .btn--primary {
+            background: #005aa3;
+            color: #fff;
+            border: 0;
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-weight: 800;
+            cursor: pointer
+        }
+
+        .btn--primary:hover {
+            filter: brightness(1.05)
+        }
+
+        .btn--warn {
+            background: #ed6b1f
+        }
+
+        .checkbox-cuadrado {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            background: #fff;
+            cursor: pointer;
+            position: relative
+        }
+
+        .checkbox-cuadrado:checked {
+            background: #005996;
+            border-color: #005996
+        }
+
+        .checkbox-cuadrado:checked::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 5px;
+            width: 4px;
+            height: 8px;
+            border: solid #fff;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg)
+        }
+
+        .btn-back-global {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid var(--stroke);
+            background: #e2e8f0;
+            color: #0f172a;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: .9rem;
+            transition: background .2s ease, transform .1s ease;
+            text-decoration: none;
+        }
+
+        .btn-back-global:hover {
+            background: #dbe4f0;
+        }
+
+        .btn-back-global:active {
+            transform: translateY(1px);
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="header">
+        <div class="logo">DETALLES DEL VEHÍCULO</div>
+        <div style="margin:10px 0;">
+            <button class="btn-back-global" onclick="location.href='vehiculos.php'">⬅ Volver</button>
+
+
+
+
+
+        </div>
+
+    </header>
+
+    <!-- Card perfil -->
+    <section class="veh-card">
+        <div class="veh-hero"></div>
+
+        <div class="veh-header">
+            <!-- Avatar clickeable -->
+            <div class="veh-avatar" id="veh-avatar" title="Clic para cambiar foto">
+                <img id="veh-img" src="<?= htmlspecialchars($vehImg) ?>" alt="Vehículo">
+            </div>
+
+            <!-- Form oculto para subir -->
+            <form id="form-foto-veh" action="subir_foto_vehiculo.php" method="post" enctype="multipart/form-data" style="display:none">
+                <?php $_SESSION['csrf_veh'] = bin2hex(random_bytes(16)); ?>
+                <input type="hidden" name="csrf" value="<?= $_SESSION['csrf_veh'] ?>">
+                <input type="hidden" name="id_vehiculo" value="<?= (int)$id_vehiculo ?>">
+                <input type="file" name="foto" id="veh-file" accept="image/*">
+            </form>
+
+            <div class="veh-head-main">
+                <h1 class="veh-title"><?= htmlspecialchars($placa ?: 'Vehículo') ?></h1>
+                <div class="veh-sub">
+                    Sucursal: <strong><?= htmlspecialchars($sucV ?: '—') ?></strong> ·
+                    Tipo: <strong><?= htmlspecialchars($tipoV ?: '—') ?></strong> ·
+                    ID: <strong><?= (int)$id_vehiculo ?></strong>
+                </div>
+                <div class="veh-pills">
+                    <span class="pill <?= $estadoSrvClass ?>"><?= $estadoSrv ?></span>
+                    <?php if ($serie): ?><span class="pill">Serie: <?= htmlspecialchars($serie) ?></span><?php endif; ?>
+                    <?php if ($choferNombre): ?><span class="pill pill-info">Chofer: <?= htmlspecialchars($choferNombre) ?></span>
+                    <?php else: ?><span class="pill pill-muted">Sin chofer asignado</span><?php endif; ?>
+                </div>
+            </div>
+
+            <div class="veh-actions-row">
+                <?php if ($choferTel): ?>
+                    <a class="btn ghost" href="tel:<?= htmlspecialchars(preg_replace('/\D+/', '', $choferTel)) ?>">Llamar</a>
+                    <a class="btn ghost" target="_blank" rel="noopener" href="https://wa.me/<?= htmlspecialchars(preg_replace('/\D+/', '', $choferTel)) ?>">WhatsApp</a>
+                <?php endif; ?>
+                <button class="btn" onclick="abrirModal()">Registrar Km</button>
+                <?php if ($rol === 'Admin'): ?><button class="btn" onclick="abrirModalServicio()">Registrar Servicio</button><?php endif; ?>
+                <button class="btn alt" onclick="abrirModalGasolina()">Registrar Gasolina</button>
+            </div>
+        </div>
+
+        <div class="veh-metrics">
+            <div class="metric">
+                <div class="m-title">Placa</div>
+                <div class="m-value"><?= htmlspecialchars($placa ?: '—') ?></div>
+            </div>
+            <div class="metric">
+                <div class="m-title">Sucursal</div>
+                <div class="m-value"><?= htmlspecialchars($sucV ?: '—') ?></div>
+            </div>
+            <div class="metric">
+                <div class="m-title">Km actual</div>
+                <div class="m-value"><?= number_format($kmAct) ?></div>
+            </div>
+            <div class="metric">
+                <div class="m-title">Próx. servicio</div>
+                <div class="m-value"><?= number_format($proxSrv) ?> km</div>
+            </div>
+        </div>
+
+        <div class="veh-tabs">
+            <a href="#info" class="tab active" data-tab="info">Información</a>
+            <a href="#hist" class="tab" data-tab="hist">Historial de kilometraje</a>
+            <a href="#cond" class="tab" data-tab="cond">Historial de Conductores</a> <!-- NUEVO -->
+
+            <a href="#gas" class="tab" data-tab="gas">Gasolina</a>
+            <a href="#ext" class="tab" data-tab="ext">MAPA GPS</a>
+
+
+        </div>
+
+    </section>
+
+    <!-- Panes -->
+    <section id="pane-info" class="tab-pane">
+        <table class="mi-tabla">
+            <tr>
+                <th>Placa</th>
+                <th>Tipo</th>
+                <th>Sucursal</th>
+                <th>Kilometraje actual</th>
+                <th>Kilometraje total</th>
+                <th>Último servicio</th>
+            </tr>
+            <tr>
+                <td><?= htmlspecialchars($placa ?: '—') ?></td>
+                <td><?= htmlspecialchars($tipoV ?: '—') ?></td>
+                <td><?= htmlspecialchars($sucV  ?: '—') ?></td>
+                <td><?= number_format($kmAct) ?></td>
+                <td><?= number_format($kmTot) ?></td>
+                <td><?= htmlspecialchars($ultServ) ?></td>
+            </tr>
+        </table>
+
+        <div style="margin-top:12px; padding:12px; border:1px dashed #e1e7ef; border-radius:10px; background:#f9fbff">
+            <form method="post" style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                <input type="hidden" name="accion" value="cambiar_sucursal">
+                <strong>Cambiar sucursal:</strong>
+                <select name="sucursal_nueva" class="modal__field" style="min-width:220px">
+                    <?php foreach ($SUCURSALES_CANON as $S):
+                        $sel = (suc_norm($sucV) === $S) ? 'selected' : ''; ?>
+                        <option value="<?= htmlspecialchars($S) ?>" <?= $sel ?>><?= htmlspecialchars($S) ?></option>
+                    <?php endforeach; ?>
+                </select>
+
+                <button type="submit" class="btn">Guardar</button>
+            </form>
+
+            <?php if ($hist_sucursal && $hist_sucursal->num_rows): ?>
+                <div style="margin-top:10px">
+                    <details>
+                        <summary style="cursor:pointer;font-weight:700;color:#0a66c2">Ver historial de cambios de sucursal</summary>
+                        <table class="mi-tabla" style="margin-top:8px">
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Anterior</th>
+                                <th>Nueva</th>
+                                <th>Usuario</th>
+                            </tr>
+                            <?php while ($hs = $hist_sucursal->fetch_assoc()): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($hs['fecha']) ?></td>
+                                    <td><?= htmlspecialchars($hs['sucursal_anterior']) ?></td>
+                                    <td><?= htmlspecialchars($hs['sucursal_nueva']) ?></td>
+                                    <td><?= htmlspecialchars($hs['usuario'] ?? '—') ?></td>
+                                </tr>
+                            <?php endwhile; ?>
+                        </table>
+                    </details>
+                </div>
+            <?php endif; ?>
+        </div>
+
+    </section>
+   <section id="pane-cond" class="tab-pane" style="display:none">
+  <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
+    <h3 style="margin:0">Historial de conductores</h3>
+
+    <!-- Form ASIGNAR -->
+    <form method="post" style="display:flex;gap:8px;align-items:center">
+      <input type="hidden" name="accion" value="asignar_chofer">
+      <label class="modal__label" for="selChoferNuevo" style="margin:0">Asignar chofer</label>
+      <select name="id_chofer_nuevo" id="selChoferNuevo" class="modal__field" required>
+        <?php
+        $sucVeh = $conn->real_escape_string($sucV);
+        $q = "SELECT ID, username, Sucursal FROM choferes WHERE Estado='ACTIVO'
+              ORDER BY (Sucursal='{$sucVeh}') DESC, Sucursal, username";
+        $chs2 = $conn->query($q);
+        while ($ch = $chs2->fetch_assoc()):
+        ?>
+          <option value="<?= (int)$ch['ID'] ?>">
+            <?= htmlspecialchars($ch['username']) ?> — <?= htmlspecialchars($ch['Sucursal']) ?>
+          </option>
+        <?php endwhile; ?>
+      </select>
+      <button class="btn alt" type="submit">Guardar</button>
+    </form>
+
+    <!-- Form DESASIGNAR (separado) -->
+    <?php if (!empty($vehiculo['id_chofer_asignado'])): ?>
+      <form method="post" onsubmit="return confirm('¿Desasignar chofer actual?');">
+        <input type="hidden" name="accion" value="desasignar_chofer">
+        <button class="btn ghost" type="submit">Desasignar chofer</button>
+      </form>
+    <?php endif; ?>
+  </div>
+<?php
+// helper para minutos → "xh ym"
+function fmtDuracion($min){
+  $h = intdiv((int)$min, 60);
+  $m = (int)$min % 60;
+  if ($h <= 0) return "{$m} min";
+  return $m > 0 ? "{$h} h {$m} min" : "{$h} h";
+}
+?>
+<table class="mi-tabla">
+  <tr>
+    <th>Chofer</th>
+    <th>Sucursal</th>
+    <th>Desde</th>
+    <th>Hasta</th>
+    <th>Duración</th>
+    <th>Estado</th>
+  </tr>
+  <?php if ($hist_conductores && $hist_conductores->num_rows): ?>
+    <?php while ($hc = $hist_conductores->fetch_assoc()):
+      $abierto = is_null($hc['fecha_fin']);
+      $desde   = date('d/m/Y H:i', strtotime($hc['fecha_inicio']));
+      $hasta   = $abierto ? '—' : date('d/m/Y H:i', strtotime($hc['fecha_fin']));
+      $dur     = fmtDuracion($hc['minutos_total']);
+    ?>
+      <tr>
+        <td><?= htmlspecialchars($hc['chofer_nombre']) ?></td>
+        <td><?= htmlspecialchars($hc['sucursal_chofer'] ?? '—') ?></td>
+        <td><?= $desde ?></td>
+        <td><?= $hasta ?></td>
+        <td><?= $dur ?></td>
+        <td><?= $abierto ? '<span class="pill pill-info">Actual</span>' : 'Cerrado' ?></td>
+      </tr>
+    <?php endwhile; ?>
+  <?php else: ?>
+    <tr><td colspan="6" style="text-align:center;color:#64748b">Sin registros aún</td></tr>
+  <?php endif; ?>
+</table>
+
+</section>
+
+
+    <section id="pane-hist" class="tab-pane" style="display:none">
+        <table class="mi-tabla">
+            <tr>
+                <th>Fecha</th>
+                <th>Chofer</th>
+                <th>Tipo</th>
+                <th>Kilometraje inicial</th>
+                <th>Kilometraje final</th>
+            </tr>
+            <?php while ($r = $historial->fetch_assoc()): ?>
+                <tr>
+                    <td><?= htmlspecialchars($r['fecha_registro']) ?></td>
+                    <td><?= htmlspecialchars($r['chofer']) ?></td>
+                    <td>
+                        <?php if (($r['Tipo_Registro'] ?? '') === 'Servicio'): ?>
+                            <a href="Detalle_Servicio.php?id=<?= (int)$r['id_registro'] ?>">Servicio</a>
+                            <?php else: ?>Registro<?php endif; ?>
+                    </td>
+                    <td><?= (int)$r['kilometraje_inicial'] ?></td>
+                    <td><?= (int)$r['kilometraje_final'] ?></td>
+                </tr>
+            <?php endwhile; ?>
+        </table>
+    </section>
+
+    <section id="pane-gas" class="tab-pane" style="display:none">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+            <button class="btn alt" onclick="abrirModalGasolina()">Agregar carga</button>
+        </div>
+        <table class="mi-tabla">
+            <tr>
+                <th>Fecha</th>
+                <th>Chofer</th>
+                <th>Litros</th>
+                <th>Costo</th>
+            </tr>
+            <?php while ($g = $historial_gasolina->fetch_assoc()): ?>
+                <tr>
+                    <td><?= htmlspecialchars($g['fecha_registro']) ?></td>
+                    <td><?= htmlspecialchars($g['chofer']) ?></td>
+                    <td><?= number_format((float)$g['litros'], 2) ?> L</td>
+                    <td>$<?= number_format((float)$g['costo'], 2) ?></td>
+                </tr>
+            <?php endwhile; ?>
+        </table>
+    </section>
+
+
+    <section id="pane-ext" class="tab-pane" style="display:none">
+        <div class="ext-controls" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+            <input type="text" id="ext-url" class="modal__field"
+                style="flex:1;max-width:520px"
+                value="https://spot.resser.com/admin/lastPosition"
+                placeholder="URL externa">
+            <input type="text" id="ext-term" class="modal__field"
+                style="width:220px"
+                value="<?= htmlspecialchars($placa ?: '') ?>"
+                placeholder="Término de búsqueda (ej. placa)">
+            <button class="btn" id="ext-copy" type="button">
+                Copiar placa para pegar en el buscador del mapa
+            </button>
+        </div>
+
+        <div class="ext-frame-wrap" style="height:88vh;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;background:#f8fafc">
+            <iframe id="ext-iframe" src="" style="width:100%;height:100%;border:0;background:#f8fafc"></iframe>
+        </div>
+
+        <p style="margin-top:10px;color:#64748b;font-size:.9rem">
+            Tip:Si no carga, ábrelo en ventana nueva.
+            <a class="btn ghost" id="ext-open-new" target="_blank" rel="noopener" style="margin-left:8px">Abrir en nueva pestaña</a>
+        </p>
+    </section>
+
+
+    <!-- ================= MODALES ================= -->
+    <!-- Gasolina -->
+    <div id="modalGasolina" class="modal" role="dialog" aria-modal="true" aria-labelledby="mg-title">
+        <div class="modal__card">
+            <div class="modal__head">
+                <h3 id="mg-title" class="modal__title">Registrar Carga de Gasolina</h3>
+                <button class="modal__close" onclick="cerrarModalGasolina()" aria-label="Cerrar">×</button>
+            </div>
+            <form method="POST" action="RegistrarGasolina.php">
+                <input type="hidden" name="id_vehiculo" value="<?= $id_vehiculo ?>">
+                <div class="modal__body">
+                    <?php $sucursalUsuario = $_SESSION["Sucursal"]; ?>
+                    <div class="modal__row">
+                        <label class="modal__label">Sucursal</label>
+                        <select id="filtroSucursalGas" onchange="filtrarChoferes('Gas')" class="modal__field" <?= ($rol === 'JC') ? 'disabled' : '' ?>>
+                            <?php
+                            if ($rol === 'Admin') {
+                                echo "<option value=''>Todas</option>";
+                                $sucs = $conn->query("SELECT DISTINCT Sucursal FROM choferes");
+                                while ($s = $sucs->fetch_assoc()) echo "<option value='{$s['Sucursal']}'>{$s['Sucursal']}</option>";
+                            } else {
+                                echo "<option value='{$sucursalUsuario}' selected>{$sucursalUsuario}</option>";
+                            }
+                            ?>
+                        </select>
+                    </div>
+                    <div class="modal__row">
+                        <label class="modal__label">Chofer</label>
+                        <select name="id_chofer" id="listaChoferesGas" class="modal__field" required>
+                            <?php
+                            $chs = $conn->query("SELECT * FROM choferes WHERE Estado='ACTIVO'");
+                            while ($ch = $chs->fetch_assoc()) {
+                                echo "<option value='{$ch['ID']}' data-sucursal='{$ch['Sucursal']}'>{$ch['username']} - {$ch['Sucursal']}</option>";
+                            }
+                            ?>
+                        </select>
+                    </div>
+                    <div class="modal__row inline">
+                        <div>
+                            <label class="modal__label">Fecha de carga</label>
+                            <input class="modal__field" type="date" name="fecha_registro" required>
+                        </div>
+                        <div>
+                            <label class="modal__label">Litros cargados</label>
+                            <input class="modal__field" type="number" name="litros" step="0.0001" required>
+                        </div>
+                    </div>
+                    <div class="modal__row">
+                        <label class="modal__label">Costo total</label>
+                        <input class="modal__field" type="number" name="costo" step="0.0001" required>
+                    </div>
+                </div>
+                <div class="modal__actions">
+                    <button type="button" class="btn--ghost" onclick="cerrarModalGasolina()">Cancelar</button>
+                    <button type="submit" class="btn--primary btn--warn">Registrar gasolina</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Kilometraje -->
+    <div id="modalRegistro" class="modal" role="dialog" aria-modal="true" aria-labelledby="mr-title">
+        <div class="modal__card">
+            <div class="modal__head">
+                <h3 id="mr-title" class="modal__title">Registrar Kilometraje</h3>
+                <button class="modal__close" onclick="cerrarModal()" aria-label="Cerrar">×</button>
+            </div>
+            <form method="POST">
+                <div class="modal__body">
+                    <?php $sucursalUsuario = $_SESSION["Sucursal"];
+                    $rol = $_SESSION["Rol"]; ?>
+                    <div class="modal__row">
+                        <label class="modal__label">Sucursal</label>
+                        <select id="filtroSucursalReg" onchange="filtrarChoferes('Reg')" class="modal__field" <?= ($rol === 'JC') ? 'disabled' : '' ?>>
+                            <?php
+                            if ($rol === 'Admin') {
+                                echo "<option value=''>Todas</option>";
+                                $sucs = $conn->query("SELECT DISTINCT Sucursal FROM choferes");
+                                while ($s = $sucs->fetch_assoc()) echo "<option value='{$s['Sucursal']}'>{$s['Sucursal']}</option>";
+                            } else {
+                                echo "<option value='{$sucursalUsuario}' selected>{$sucursalUsuario}</option>";
+                            }
+                            ?>
+                        </select>
+                    </div>
+                    <div class="modal__row">
+                        <label class="modal__label">Chofer</label>
+                        <select name="id_chofer" id="listaChoferesReg" class="modal__field" required>
+                            <?php
+                            $chs = ($rol === 'Admin')
+                                ? $conn->query("SELECT * FROM choferes WHERE Estado='ACTIVO'")
+                                : $conn->query("SELECT * FROM choferes WHERE Estado='ACTIVO' AND Sucursal='" . $conn->real_escape_string($sucursalUsuario) . "'");
+                            while ($ch = $chs->fetch_assoc()) {
+                                echo "<option value='{$ch['ID']}' data-sucursal='{$ch['Sucursal']}'>{$ch['username']} - {$ch['Sucursal']}</option>";
+                            }
+                            ?>
+                        </select>
+                    </div>
+                    <div class="modal__row inline">
+                        <div>
+                            <label class="modal__label">Kilometraje inicial</label>
+                            <input class="modal__field" type="number" name="kilometraje_inicial" value="<?= (int)$kilometraje_inicial_sugerido ?>" readonly>
+                        </div>
+                        <div>
+                            <label class="modal__label">Kilometraje final</label>
+                            <input class="modal__field" type="number" name="kilometraje_final" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal__actions">
+                    <button type="button" class="btn--ghost" onclick="cerrarModal()">Cancelar</button>
+                    <button type="submit" class="btn--primary">Registrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Servicio -->
+    <div id="modalServicio" class="modal" role="dialog" aria-modal="true" aria-labelledby="ms-title">
+        <div class="modal__card">
+            <div class="modal__head">
+                <h3 id="ms-title" class="modal__title">Registrar Servicio del Vehículo</h3>
+                <button class="modal__close" onclick="cerrarModalServicio()" aria-label="Cerrar">×</button>
+            </div>
+            <form method="POST" action="RegistrarServicio.php">
+                <input type="hidden" name="id_vehiculo" value="<?= $id_vehiculo ?>">
+                <div class="modal__body">
+                    <div class="modal__row inline">
+                        <div>
+                            <label class="modal__label">Usuario (ID)</label>
+                            <input class="modal__field" type="text" name="id_chofer" value="2" readonly>
+                        </div>
+                        <div>
+                            <label class="modal__label">Fecha de servicio</label>
+                            <input class="modal__field" type="date" name="fecha_servicio" required>
+                        </div>
+                    </div>
+                    <div class="modal__row inline">
+                        <div>
+                            <label class="modal__label">Km inicial</label>
+                            <input class="modal__field" type="number" name="kilometraje_inicial" value="<?= (int)$kilometraje_inicial_sugerido ?>" readonly>
+                        </div>
+                        <div>
+                            <label class="modal__label">Km final</label>
+                            <input class="modal__field" type="number" name="kilometraje_final" value="<?= (int)$kilometraje_inicial_sugerido ?>" readonly>
+                        </div>
+                    </div>
+                    <div class="modal__row">
+                        <label class="modal__label">Tipo de servicio</label>
+                        <select class="modal__field" name="tipo_servicio" required>
+                            <option value="Afinacion Mayor">Afinación Mayor</option>
+                            <option value="Afinacion Menor">Afinación Menor</option>
+                            <option value="Suspension">Suspensión</option>
+                            <option value="Frenos">Frenos</option>
+                            <option value="Sistema Electrico">Sistema Eléctrico</option>
+                            <option value="Mecanica General">Mecánica General</option>
+                            <option value="Carroceria y Estetico">Carrocería y Estético</option>
+                            <option value="Traslados con Proveedores">Traslados con Proveedores</option>
+                            <option value="Observaciones">Observaciones</option>
+                        </select>
+                    </div>
+                    <div class="modal__row"><label class="modal__label">Detalles (opcional)</label><input class="modal__field" type="text" name="detalles" placeholder="Detalles adicionales"></div>
+                    <div class="modal__row"><label class="modal__label">Observaciones</label><textarea class="modal__field" name="observaciones" rows="4" placeholder="Comentarios adicionales"></textarea></div>
+                    <div class="modal__row" style="display:flex;align-items:center;gap:10px;">
+                        <input class="checkbox-cuadrado" type="checkbox" name="reiniciar_km" value="1" id="reiniciarKm">
+                        <label class="modal__label" for="reiniciarKm" style="margin:0;">Reiniciar contador de Km a 0</label>
+                    </div>
+                </div>
+                <div class="modal__actions">
+                    <button type="button" class="btn--ghost" onclick="cerrarModalServicio()">Cancelar</button>
+                    <button type="submit" class="btn--primary">Registrar servicio</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Overlay global -->
+    <script>
+        // Overlay único
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        overlay.id = 'modalOverlay';
+        document.body.appendChild(overlay);
+        overlay.addEventListener('click', closeAllModals);
+
+        // Helpers modales (tus funciones originales)
+        function openModal(id) {
+            document.getElementById(id)?.classList.add('open');
+            overlay.classList.add('open');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id)?.classList.remove('open');
+            if (!document.querySelector('.modal.open')) overlay.classList.remove('open');
+        }
+
+        function closeAllModals() {
+            document.querySelectorAll('.modal.open').forEach(m => m.classList.remove('open'));
+            overlay.classList.remove('open');
+        }
+
+        function abrirModal() {
+            openModal('modalRegistro');
+        }
+
+        function cerrarModal() {
+            closeModal('modalRegistro');
+        }
+
+        function abrirModalServicio() {
+            openModal('modalServicio');
+        }
+
+        function cerrarModalServicio() {
+            closeModal('modalServicio');
+        }
+
+        function abrirModalGasolina() {
+            openModal('modalGasolina');
+        }
+
+        function cerrarModalGasolina() {
+            closeModal('modalGasolina');
+        }
+
+        // Tabs (tus tabs)
+        const tabs = document.querySelectorAll('.veh-tabs .tab');
+        const panes = {
+            info: document.getElementById('pane-info'),
+            hist: document.getElementById('pane-hist'),
+            cond: document.getElementById('pane-cond'), // ← ¡AQUÍ!
+
+            gas: document.getElementById('pane-gas'),
+            ext: document.getElementById('pane-ext') // ← nuevo
+        };
+        tabs.forEach(btn => {
+            btn.addEventListener('click', e => {
+                e.preventDefault();
+                tabs.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const k = btn.dataset.tab;
+                Object.keys(panes).forEach(id => panes[id].style.display = (id === k) ? 'block' : 'none');
+                panes[k].scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            });
+        });
+
+        // Filtrado choferes (igual)
+        function filtrarChoferes(ctx) {
+            const selSuc = document.getElementById('filtroSucursal' + ctx);
+            const selCh = document.getElementById('listaChoferes' + ctx);
+            if (!selSuc || !selCh) return;
+            const suc = (selSuc.value || '').toLowerCase();
+            Array.from(selCh.options).forEach(op => {
+                const sco = (op.getAttribute('data-sucursal') || '').toLowerCase();
+                op.style.display = (!suc || sco === suc) ? '' : 'none';
+            });
+            const firstVisible = Array.from(selCh.options).find(op => op.style.display !== 'none');
+            if (firstVisible) firstVisible.selected = true;
+        }
+
+        // Subida de foto (igual)
+        const avatar = document.getElementById('veh-avatar');
+        const img = document.getElementById('veh-img');
+        const fileInp = document.getElementById('veh-file');
+        const form = document.getElementById('form-foto-veh');
+        if (avatar && fileInp && form) {
+            avatar.addEventListener('click', () => fileInp.click());
+            fileInp.addEventListener('change', async () => {
+                if (!fileInp.files.length) return;
+                const fd = new FormData(form);
+                fd.set('foto', fileInp.files[0]);
+                try {
+                    const r = await fetch(form.action, {
+                        method: 'POST',
+                        body: fd
+                    });
+                    const j = await r.json();
+                    if (j.ok) {
+                        img.src = j.url + '?t=' + Date.now();
+                    } else {
+                        alert(j.error || 'No se pudo subir la foto.');
+                    }
+                } catch (e) {
+                    alert('Error subiendo la foto.');
+                } finally {
+                    fileInp.value = '';
+                }
+            });
+        }
+
+        // ------------ Ventana flotante + búsqueda via postMessage ------------
+        function abrirMiniFrame(url, titulo = 'Vista externa', termino = '') {
+            const box = document.getElementById('mini-frame');
+            const iframe = document.getElementById('mini-iframe');
+            const title = document.getElementById('mini-title');
+
+            title.textContent = titulo;
+            box.style.display = 'flex';
+            traibleRedimensionable.iniciar();
+
+            iframe.onload = () => {
+                if (termino) {
+                    // Enviamos la placa al iframe (otro origen)
+                    iframe.contentWindow.postMessage({
+                        type: 'SPOT_SEARCH',
+                        term: termino
+                    }, '*');
+                }
+            };
+            iframe.src = url;
+        }
+
+        function cerrarMiniFrame() {
+            const box = document.getElementById('mini-frame');
+            const iframe = document.getElementById('mini-iframe');
+            iframe.src = '';
+            box.style.display = 'none';
+        }
+
+        // Max/restore + arrastrar/redimensionar (tus funciones)
+        document.getElementById('mini-head')?.addEventListener('dblclick', toggleMaxMiniFrame);
+        document.getElementById('mini-close')?.addEventListener('click', cerrarMiniFrame);
+        document.getElementById('mini-max')?.addEventListener('click', toggleMaxMiniFrame);
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                cerrarMiniFrame();
+            }
+        });
+
+        let _prevRect = null;
+
+        function toggleMaxMiniFrame() {
+            const box = document.getElementById('mini-frame');
+            const btn = document.getElementById('mini-max');
+            if (!box.classList.contains('max')) {
+                _prevRect = {
+                    left: box.style.left || (box.getBoundingClientRect().left + 'px'),
+                    top: box.style.top || (box.getBoundingClientRect().top + 'px'),
+                    width: box.offsetWidth + 'px',
+                    height: box.offsetHeight + 'px'
+                };
+                box.classList.add('max');
+                btn.textContent = '▣';
+            } else {
+                box.classList.remove('max');
+                if (_prevRect) {
+                    box.style.left = _prevRect.left;
+                    box.style.top = _prevRect.top;
+                    box.style.width = _prevRect.width;
+                    box.style.height = _prevRect.height;
+                }
+                btn.textContent = '▢';
+            }
+        }
+
+        const traibleRedimensionable = (function() {
+            let dragging = false,
+                resizing = false,
+                startX = 0,
+                startY = 0,
+                startL = 0,
+                startT = 0,
+                startW = 0,
+                startH = 0;
+
+            function onDragStart(e) {
+                const box = document.getElementById('mini-frame');
+                if (box.classList.contains('max')) return;
+                dragging = true;
+                const r = box.getBoundingClientRect();
+                startX = (e.touches ? e.touches[0].clientX : e.clientX);
+                startY = (e.touches ? e.touches[0].clientY : e.clientY);
+                startL = r.left;
+                startT = r.top;
+                box.classList.add('dragging');
+                document.body.classList.add('noselect');
+                window.addEventListener('mousemove', onDragMove);
+                window.addEventListener('mouseup', onDragEnd);
+            }
+
+            function onDragMove(e) {
+                if (!dragging) return;
+                const box = document.getElementById('mini-frame');
+                const dx = (e.clientX - startX),
+                    dy = (e.clientY - startY);
+                let L = startL + dx,
+                    T = startT + dy;
+                const r = box.getBoundingClientRect(),
+                    vw = window.innerWidth,
+                    vh = window.innerHeight,
+                    margin = 10;
+                L = Math.max(margin - (r.width - 60), Math.min(vw - margin - 60, L));
+                T = Math.max(margin, Math.min(vh - margin - 60, T));
+                box.style.left = L + 'px';
+                box.style.top = T + 'px';
+            }
+
+            function onDragEnd() {
+                dragging = false;
+                const box = document.getElementById('mini-frame');
+                box.classList.remove('dragging');
+                document.body.classList.remove('noselect');
+                window.removeEventListener('mousemove', onDragMove);
+                window.removeEventListener('mouseup', onDragEnd);
+            }
+
+            function onResizeStart(e) {
+                const box = document.getElementById('mini-frame');
+                if (box.classList.contains('max')) return;
+                resizing = true;
+                const r = box.getBoundingClientRect();
+                startX = (e.touches ? e.touches[0].clientX : e.clientX);
+                startY = (e.touches ? e.touches[0].clientY : e.clientY);
+                startW = r.width;
+                startH = r.height;
+                box.classList.add('resizing');
+                document.body.classList.add('noselect');
+                window.addEventListener('mousemove', onResizeMove);
+                window.addEventListener('mouseup', onResizeEnd);
+                e.preventDefault();
+            }
+
+            function onResizeMove(e) {
+                if (!resizing) return;
+                const box = document.getElementById('mini-frame');
+                const dx = (e.clientX - startX),
+                    dy = (e.clientY - startY);
+                const minW = 320,
+                    minH = 200,
+                    maxW = Math.min(window.innerWidth - 20, 1200),
+                    maxH = Math.min(window.innerHeight - 20, 900);
+                let W = Math.max(minW, Math.min(maxW, startW + dx));
+                let H = Math.max(minH, Math.min(maxH, startH + dy));
+                box.style.width = W + 'px';
+                box.style.height = H + 'px';
+            }
+
+            function onResizeEnd() {
+                resizing = false;
+                const box = document.getElementById('mini-frame');
+                box.classList.remove('resizing');
+                document.body.classList.remove('noselect');
+                window.removeEventListener('mousemove', onResizeMove);
+                window.removeEventListener('mouseup', onResizeEnd);
+            }
+
+            function iniciar() {
+                const head = document.getElementById('mini-head');
+                const handle = document.getElementById('mini-resize');
+                if (head && !head._binded) {
+                    head.addEventListener('mousedown', onDragStart);
+                    head._binded = true;
+                }
+                if (handle && !handle._binded) {
+                    handle.addEventListener('mousedown', onResizeStart);
+                    handle._binded = true;
+                }
+            }
+            window.addEventListener('resize', () => {
+                const box = document.getElementById('mini-frame');
+                if (!box || box.style.display === 'none' || box.classList.contains('max')) return;
+                const r = box.getBoundingClientRect(),
+                    vw = window.innerWidth,
+                    vh = window.innerHeight,
+                    margin = 10;
+                let L = Math.min(r.left, vw - margin - 60);
+                let T = Math.min(r.top, vh - margin - 60);
+                L = Math.max(margin - (r.width - 60), L);
+                T = Math.max(margin, T);
+                box.style.left = L + 'px';
+                box.style.top = T + 'px';
+            });
+            return {
+                iniciar
+            };
+        })();
+
+        // ===== Vista Externa en pestaña =====
+        const extUrlInp = document.getElementById('ext-url');
+        const extTermInp = document.getElementById('ext-term');
+        const extOpenNew = document.getElementById('ext-open-new');
+        const extIframe = document.getElementById('ext-iframe');
+
+        function cargarExterno(url, term) {
+            // Actualiza link "abrir en nueva pestaña"
+            extOpenNew.href = url;
+
+            // Carga iframe y, al finalizar, envía la búsqueda si aplica
+            extIframe.onload = () => {
+                if (term) {
+                    try {
+                        extIframe.contentWindow.postMessage({
+                            type: 'SPOT_SEARCH',
+                            term
+                        }, '*');
+                    } catch (e) {
+                        // Silencioso si el origen bloquea postMessage
+                    }
+                }
+            };
+            extIframe.src = url;
+        }
+
+        // Botón cargar
+        // Botón copiar placa
+        // --- Copiar placa (con fallback para HTTP / navegadores viejos) ---
+        function feedback(btn, okText = "✅ Copiado") {
+            if (!btn) return;
+            const original = btn.textContent;
+            btn.textContent = okText;
+            setTimeout(() => (btn.textContent = original), 2000);
+        }
+
+        function fallbackCopy(text, btn) {
+            const ta = document.createElement("textarea");
+            ta.value = text;
+            ta.setAttribute("readonly", "");
+            ta.style.position = "fixed";
+            ta.style.opacity = "0";
+            ta.style.left = "-9999px";
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            let ok = false;
+            try {
+                ok = document.execCommand("copy");
+            } catch (e) {}
+            document.body.removeChild(ta);
+            if (ok) {
+                feedback(btn);
+            } else {
+                alert("No se pudo copiar al portapapeles");
+            }
+        }
+
+        const extCopyBtn = document.getElementById("ext-copy");
+        extCopyBtn?.addEventListener("click", () => {
+            const term = (extTermInp?.value || "").trim();
+            if (!term) return alert("No hay placa para copiar");
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(term)
+                    .then(() => feedback(extCopyBtn))
+                    .catch(() => fallbackCopy(term, extCopyBtn));
+            } else {
+                // HTTP u otros casos: usar fallback
+                fallbackCopy(term, extCopyBtn);
+            }
+        });
+
+
+        // Auto-cargar cuando el usuario entra a la pestaña "Externo"
+        // (si tiene URL por defecto)
+        tabs.forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (btn.dataset.tab === 'ext') {
+                    const url = (extUrlInp?.value || '').trim();
+                    const term = (extTermInp?.value || '').trim();
+                    if (!url) return;
+                    cargarExterno(url, term); // ← siempre recarga
+                }
+            });
+        });
+    </script>
+
+    <!-- Ventana flotante con iframe -->
+    <div id="mini-frame" class="mini-frame" style="display:none; left:20px; bottom:20px;">
+        <div class="mini-head" id="mini-head">
+            <span id="mini-title">Vista externa</span>
+            <div class="mini-actions">
+                <button class="mini-btn" id="mini-max">▢</button>
+                <button class="mini-btn" id="mini-close">×</button>
+            </div>
+        </div>
+
+        <iframe id="mini-iframe" src=""></iframe>
+
+        <!-- Tirador de redimensionado -->
+        <div class="resize-handle" id="mini-resize" title="Redimensionar"></div>
+    </div>
+
+    <style>
+        .mini-frame {
+            position: fixed;
+            width: 520px;
+            height: 360px;
+            min-width: 320px;
+            min-height: 200px;
+            max-width: 95vw;
+            max-height: 90vh;
+            background: #fff;
+            border: 1px solid #cfd6e4;
+            border-radius: 12px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, .28);
+            overflow: hidden;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .mini-head {
+            cursor: move;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 8px 10px;
+            background: #0a66c2;
+            color: #fff;
+            font-weight: 700;
+            user-select: none;
+        }
+
+        .mini-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .mini-btn {
+            border: 0;
+            background: transparent;
+            color: #fff;
+            font-size: 18px;
+            line-height: 1;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 6px;
+        }
+
+        .mini-btn:hover {
+            background: rgba(255, 255, 255, .18);
+        }
+
+        .mini-frame iframe {
+            flex: 1;
+            width: 100%;
+            border: 0;
+            background: #f8fafc;
+        }
+
+        /* Esquina para redimensionar */
+        .resize-handle {
+            position: absolute;
+            right: 6px;
+            bottom: 6px;
+            width: 16px;
+            height: 16px;
+            border-right: 3px solid #c7cedc;
+            border-bottom: 3px solid #c7cedc;
+            transform: rotate(0deg);
+            cursor: se-resize;
+            opacity: .9;
+        }
+
+        /* Estados */
+        .mini-frame.dragging,
+        .mini-frame.resizing {
+            transition: none;
+        }
+
+        body.noselect {
+            user-select: none;
+        }
+
+        /* Maximizda ocupa casi toda la pantalla dejando margen */
+        .mini-frame.max {
+            left: 10px !important;
+            top: 10px !important;
+            right: auto;
+            bottom: auto;
+            width: calc(100vw - 20px) !important;
+            height: calc(100vh - 20px) !important;
+            max-width: none;
+            max-height: none;
+            border-radius: 10px;
+        }
+    </style>
+
+
+</body>
+
+</html>

@@ -1,0 +1,271 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f1f1f1;
+    margin: 0;
+    padding: 20px; /* Ajusta el espacio alrededor del cuerpo */
+   /* display: flex;*/
+    flex-direction: column;
+    justify-content: center; /* Centra verticalmente los elementos */
+    align-items: center; /* Centra horizontalmente los elementos */
+    min-height: 10vh; /* Establece la altura mínima del cuerpo para ocupar toda la altura de la ventana */
+    text-align: center;
+    max-width: none;
+
+}
+
+.chart-container {
+      width: 100%;
+      margin-bottom: 20px;
+    }
+    .chart-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .row {
+      display: flex;
+    }
+    .col-md-4 {
+      flex: 0 0 33.333%;
+      max-width: 33.333%;
+      padding: 0 1px;
+    }
+
+.header {
+  background-color: #005aa3;
+  color: #fff;
+  padding: 20px 0;
+  text-align: center;
+    width: 100%;
+}
+
+.logo {
+  font-size: 28px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.navbar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-item {
+  display: inline-block;
+  margin: 0 15px;
+}
+
+.nav-link {
+  color: #fff;
+  text-decoration: none;
+  font-size: 18px;
+}
+
+.nav-link:hover {
+  color: #ffcc00;
+}
+
+.social-icons {
+  margin-top: 20px;
+}
+
+.social-icon {
+  color: #fff;
+  font-size: 24px;
+  text-decoration: none;
+  margin: 0 10px;
+}
+
+.container {
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Centra verticalmente los elementos */
+    align-items: center; /* Centra horizontalmente los elementos */
+    min-height: 10vh; /* Establece la altura mínima del contenedor para ocupar toda la altura de la ventana */
+    background-color: #ffffff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+.container2 {
+   
+    
+    
+    background-color: #ffffff;
+   
+}
+
+
+/* Estilo para todas las tablas */
+.chart-container table,
+#table_div_aiesa,
+#table_div_deasa,
+#table_div_dimegsa,
+#table_div_gabsa,
+#table_div_ilu,
+#table_div_segsa,
+#table_div_fesa,
+#table_div_tapatia,
+#table_div_vallarta {
+  font-family: Arial, sans-serif; /* Fuente */
+  border-collapse: collapse; /* Colapsar bordes de las celdas */
+  width: 100%; /* Ancho completo */
+  border-radius: 10px; /* Bordes redondeados */
+  overflow: hidden; /* Ocultar contenido que sobresale */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra */
+  margin-bottom: 20px; /* Margen inferior */
+}
+
+.chart-container th,
+.chart-container td,
+#table_div_aiesa th,
+#table_div_aiesa td,
+#table_div_deasa th,
+#table_div_deasa td,
+#table_div_dimegsa th,
+#table_div_dimegsa td,
+#table_div_gabsa th,
+#table_div_gabsa td,
+#table_div_ilu th,
+#table_div_ilu td,
+#table_div_segsa th,
+#table_div_segsa td,
+#table_div_fesa th,
+#table_div_fesa td,
+#table_div_tapatia th,
+#table_div_tapatia td,
+#table_div_vallarta th,
+#table_div_vallarta td {
+  border: 1px solid #dddddd; /* Borde delgado gris */
+  padding: 10px; /* Espaciado interno */
+  text-align: left; /* Alineación del texto a la izquierda */
+}
+
+.chart-container th,
+#table_div_aiesa th,
+#table_div_deasa th,
+#table_div_dimegsa th,
+#table_div_gabsa th,
+#table_div_ilu th,
+#table_div_segsa th,
+#table_div_fesa th,
+#table_div_tapatia th,
+#table_div_vallarta th {
+  background-color: #ed6b1f; /* Color de fondo gris claro para las celdas de encabezado */
+}
+
+.chart-container tr:nth-child(even),
+#table_div_aiesa tr:nth-child(even),
+#table_div_deasa tr:nth-child(even),
+#table_div_dimegsa tr:nth-child(even),
+#table_div_gabsa tr:nth-child(even),
+#table_div_ilu tr:nth-child(even),
+#table_div_segsa tr:nth-child(even),
+#table_div_fesa tr:nth-child(even),
+#table_div_tapatia tr:nth-child(even),
+#table_div_vallarta tr:nth-child(even) {
+  background-color: #f9f9f9; /* Color de fondo gris claro para filas pares */
+}
+
+.chart-container tr:hover,
+#table_div_aiesa tr:hover,
+#table_div_deasa tr:hover,
+#table_div_dimegsa tr:hover,
+#table_div_gabsa tr:hover,
+#table_div_ilu tr:hover,
+#table_div_segsa tr:hover,
+#table_div_fesa tr:hover,
+#table_div_tapatia tr:hover,
+#table_div_vallarta tr:hover {
+  background-color: #f0f0f0; /* Color de fondo gris claro al pasar el mouse */
+}
+
+
+.summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.summary-table th,
+.summary-table td {
+    border: 1px solid #ddd;
+    padding: 12px; /* Incrementamos el padding para más espacio */
+    text-align: left;
+}
+
+.summary-table th {
+    background-color: #005aa3; /* Azul oscuro para el fondo */
+    color: white; /* Letras blancas */
+}
+.linea-horizontal {
+  width: 100%;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  position: relative; /* Hace que el texto se posicione relativo a este div */
+}
+
+.texto-linea {
+  position: absolute; /* Posiciona el texto encima de la línea */
+  top: 50%; /* Lo sitúa en el centro vertical */
+  left: 50%; /* Lo sitúa en el centro horizontal */
+  transform: translate(-50%, -50%); /* Lo centra exactamente */
+  color: white; /* Color del texto */
+  font-size: 18px; /* Tamaño del texto */
+  font-weight: bold; /* Texto en negrita */
+  background-color: #005aa3; /* Fondo azul oscuro */
+  padding: 5px 20px; /* Espaciado horizontal y vertical */
+  border-radius: 5px; /* Bordes redondeados */
+}
+
+.linea-horizontal::after {
+  content: ''; /* Crea la línea */
+  display: block;
+  border-bottom: 4px solid #005aa3; /* Línea azul oscuro y gruesa */
+}
+
+.button {
+            background-color: #005aa3; /* Color de fondo azul oscuro */
+            color: white; /* Texto en blanco */
+            padding: 10px 20px; /* Espaciado interno */
+            border: none; /* Sin borde */
+            border-radius: 5px; /* Bordes redondeados */
+            cursor: pointer; /* Cursor al pasar sobre el botón */
+            transition: background-color 0.3s; /* Transición suave para el cambio de color de fondo */
+        }
+
+        .button:hover {
+            background-color: #ed6b1f; /* Color de fondo azul más claro al pasar el cursor */
+        }
+
+
+
+@media print {
+    body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        /* Ajusta el ancho al 100% para que se ajuste a la impresión estándar */
+         height: 100%;
+        
+        font-size: 12px; /* Ajusta el tamaño de fuente según sea necesario */
+    }
+    
+    .container {
+        width: 100%; /* Ajusta el ancho del contenedor principal según sea necesario */
+        margin: 0 auto;
+        padding: 0px;
+    }
+    #barchart {
+        width: 10% !important; /* Ajusta el ancho del gráfico de barras para que ocupe el espacio completo */
+        height: auto !important;
+    }
+    .resumen-table {
+        width: 1%; /* Ajusta el ancho de la tabla de resumen para que ocupe el espacio completo */
+    }
+    #pedidos-chofer {
+        width: 1%; /* Ajusta el ancho del elemento según sea necesario */
+    }
+}
+
