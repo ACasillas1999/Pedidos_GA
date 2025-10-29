@@ -195,6 +195,15 @@ $qKm = $conn->query("SELECT id_vehiculo, SUM(GREATEST(0, kilometraje_final - kil
                    GROUP BY id_vehiculo");
 if ($qKm) while ($r = $qKm->fetch_assoc()) $km30Map[(int)$r['id_vehiculo']] = (int)$r['km'];
 
+// Datos para rendimiento (90 dias)
+$litros90Map = [];
+$qLit90 = $conn->query("SELECT id_vehiculo, SUM(litros) AS litros FROM registro_gasolina WHERE fecha_registro >= DATE_SUB(NOW(), INTERVAL 90 DAY) GROUP BY id_vehiculo");
+if ($qLit90) while ($r = $qLit90->fetch_assoc()) $litros90Map[(int)$r['id_vehiculo']] = (float)$r['litros'];
+
+$km90Map = [];
+$qKm90 = $conn->query("SELECT id_vehiculo, SUM(GREATEST(0, kilometraje_final - kilometraje_inicial)) AS km FROM registro_kilometraje WHERE fecha_registro >= DATE_SUB(NOW(), INTERVAL 90 DAY) GROUP BY id_vehiculo");
+if ($qKm90) while ($r = $qKm90->fetch_assoc()) $km90Map[(int)$r['id_vehiculo']] = (int)$r['km'];
+
 function capacityScoreByTipo($t) {
   $t = strtolower(trim((string)$t));
   if ($t === '') return 60;
@@ -205,6 +214,20 @@ function capacityScoreByTipo($t) {
   if (strpos($t, 'pickup') !== false) return 80;
   if (strpos($t, 'auto') !== false || strpos($t, 'carro') !== false) return 55;
   return 60;
+}
+
+// Puntuacion de rendimiento a partir de km/l (0-100)
+function fuelScore($kmPerL, $tipo) {
+  $t = strtolower(trim((string)$tipo));
+  $min = 5; $max = 15; // default
+  if (strpos($t, 'moto') !== false) { $min = 20; $max = 45; }
+  elseif (strpos($t, 'camion') !== false) { $min = 2; $max = 8; }
+  elseif (strpos($t, 'panel') !== false) { $min = 7; $max = 12; }
+  elseif (strpos($t, 'pickup') !== false || strpos($t, 'np300') !== false || strpos($t, 'chasis') !== false) { $min = 6; $max = 14; }
+  elseif (strpos($t, 'auto') !== false || strpos($t, 'carro') !== false) { $min = 8; $max = 16; }
+  if ($kmPerL <= 0) return 0;
+  $pct = (int)round( ($kmPerL - $min) * 100 / max(1, ($max - $min)) );
+  return (int)max(0, min(100, $pct));
 }
 
 /* ======================================================
@@ -258,19 +281,25 @@ while ($v = $vehiculos->fetch_assoc()) {
   $idVeh   = (int)($v['id_vehiculo'] ?? 0);
   $kmSrv   = max(1, (int)($v['Km_de_Servicio'] ?? 5000));
   $kmAct   = max(0, (int)($v['Km_Actual'] ?? 0));
-  $cap     = capacityScoreByTipo($v['tipo'] ?? '');
+  $kmTot   = max(0, (int)($v['Km_Total'] ?? 0));
   $km30    = (int)($km30Map[$idVeh] ?? 0);
-  $gas90   = (int)($gasCountMap[$idVeh] ?? 0);
-  $pctMant = (int)max(0, min(100, round(100 - ($kmAct / $kmSrv) * 100)));
-  $pctCons = (int)max(0, min(100, 100 - ($gas90 * 10)));
-  $pctLlant= $pctMant;
-  $uso30Pct= (int)max(0, min(100, round(($km30 / $kmSrv) * 100)));
-  $pctSalud= (int)max(0, min(100, round(($pctMant * 0.7) + ((100 - $uso30Pct) * 0.3))));
+  $km90    = (int)($km90Map[$idVeh] ?? 0);
+  $lit90   = (float)($litros90Map[$idVeh] ?? 0);
+
+  // NUEVAS METRICAS
+  // Kilometraje: porcentaje del Km_Actual vs Km_Total (si hay total)
+  $pctKm   = ($kmTot > 0) ? (int)max(0, min(100, round(($kmAct * 100) / $kmTot))) : 0;
+  // Para llegar a 5,000: avance hacia Km_de_Servicio
+  $pctTo5k = (int)max(0, min(100, round(($kmAct * 100) / $kmSrv)));
+  // Mantenimiento: 0 si en taller, 100 si no
+  $enTallerFlag = !empty($v['en_mantenimiento']) && (int)$v['en_mantenimiento'] === 1;
+  $pctMant = $enTallerFlag ? 0 : 100;
+  // Salud general: promedio simple de las anteriores
+  $pctSalud= (int)round(($pctKm + $pctTo5k + $pctMant) / 3);
 
   $titleAlias = (string)($v['placa'] ?? '');
   $vehName    = (string)($v['tipo']  ?? 'Vehículo');
 
-  $enTallerFlag = !empty($v['en_mantenimiento']) && (int)$v['en_mantenimiento'] === 1;
   $osEstatus    = isset($v['os_estatus']) ? (string)$v['os_estatus'] : '';
 
   $vehiclesArr[] = [
@@ -287,11 +316,14 @@ while ($v = $vehiculos->fetch_assoc()) {
     'en_taller'  => $enTallerFlag,
     'os_estatus' => $osEstatus,
     'stats'     => [
-      'capacidad'       => $cap,
-      'consumo'         => $pctCons,
+      // claves nuevas
+      'kilometraje'     => $pctKm,
+      'hacia5000'       => $pctTo5k,
       'mantenimiento'   => $pctMant,
-      'estado_llantas'  => $pctLlant,
       'salud'           => $pctSalud,
+      // compatibilidad con nombres previos usados en UI
+      'capacidad'       => $pctKm,
+      'consumo'         => $pctTo5k
     ],
     'tags'      => array_values(array_filter([
       'GPS',
@@ -704,10 +736,9 @@ ${v.en_taller ? `<div class="status-badge danger">🔧 ${v.os_estatus || 'En ser
       </div>
       <div class="chips">${(v.tags||[]).map(t=>`<span class="chip">${t}</span>`).join('')}</div>
       <div class="stats">
-        ${bar('Capacidad de carga', v.stats?.capacidad, 100)}
-        ${bar('Rendimiento combustible', v.stats?.consumo, 100)}
+        ${bar('Kilometraje', v.stats?.kilometraje, 100)}
+        ${bar('Km para 5000', v.stats?.hacia5000, 100)}
         ${bar('Mantenimiento', v.stats?.mantenimiento, 100)}
-        ${bar('Llantas', v.stats?.estado_llantas, 100)}
         ${bar('Salud general', v.stats?.salud, 100)}
       </div>
       <div class="footer">
