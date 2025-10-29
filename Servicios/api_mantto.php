@@ -65,6 +65,7 @@ function select_tablero(PDO $pdo, ?int $singleId = null) {
 
       (SELECT v.placa FROM vehiculos v WHERE v.id_vehiculo = os.id_vehiculo)   AS placa,
       (SELECT v.tipo  FROM vehiculos v WHERE v.id_vehiculo = os.id_vehiculo)   AS tipo,
+      (SELECT v.Sucursal FROM vehiculos v WHERE v.id_vehiculo = os.id_vehiculo) AS suc,
       (SELECT v.Km_Actual FROM vehiculos v WHERE v.id_vehiculo = os.id_vehiculo) AS km,
       (SELECT s.nombre FROM servicios s WHERE s.id = os.id_servicio)           AS servicio,
 
@@ -76,6 +77,7 @@ function select_tablero(PDO $pdo, ?int $singleId = null) {
       ) AS faltantes,
 
       os.estatus,
+      os.notas,
       os.fecha_programada,
       EXISTS(SELECT 1 FROM inventario_movimiento im
         WHERE im.referencia = CONCAT('OS:', os.id) AND im.tipo='AJUSTE') AS has_reserva
@@ -97,6 +99,8 @@ function select_tablero(PDO $pdo, ?int $singleId = null) {
     $r['status'] = $st;
     $r['faltantes'] = (int)($r['faltantes'] ?? 0);
     $r['prio'] = ($r['duracion_minutos'] >= 120 ? 'Alta' : ($r['duracion_minutos'] >= 60 ? 'Media' : 'Baja'));
+    $notes = (string)($r['notas'] ?? '');
+    $r['auto_km'] = (stripos($notes, 'AUTO_KM') !== false);
   }
   return $rows;
 }
@@ -429,6 +433,109 @@ try {
       try { $pdo->prepare("UPDATE orden_servicio SET estatus='Pendiente' WHERE id=?")->execute([$id]); } catch (Throwable $e) {}
       try { $user = isset($_SESSION['usuario']) ? (string)$_SESSION['usuario'] : null; $pdo->prepare("INSERT INTO orden_servicio_hist (id_orden,de,a,usuario) VALUES (?,?,?,?)")->execute([$id,(string)$cur['status'],'Pendiente',$user]); } catch (Throwable $e) {}
       echo json_encode(['ok'=>true,'msg'=>'Movido a Pendiente']); exit;
+    }
+  }
+
+  // Asignar o cambiar servicio de una orden (usado para AUTO_KM)
+  if ($method === 'POST' && $action === 'set_service') {
+    $in = json_input();
+    $id_orden   = (int)($in['id'] ?? 0);
+    $id_serv    = (int)($in['id_servicio'] ?? 0);
+    $dur        = isset($in['duracion_minutos']) ? (int)$in['duracion_minutos'] : null;
+    $materiales = is_array($in['materiales'] ?? null) ? $in['materiales'] : null; // [{id_inventario,cantidad}]
+    if ($id_orden<=0 || $id_serv<=0) { http_response_code(400); echo json_encode(['ok'=>false,'error'=>'VALIDATION','msg'=>'Datos incompletos']); exit; }
+
+    // Cargar orden actual
+    $cur = select_tablero($pdo, $id_orden)[0] ?? null;
+    if (!$cur) { http_response_code(404); echo json_encode(['ok'=>false,'error'=>'NOT_FOUND']); exit; }
+    if (in_array((string)$cur['status'], ['Programado','EnTaller','Completado'], true)) {
+      http_response_code(409); echo json_encode(['ok'=>false,'error'=>'STATUS','msg'=>'Solo se puede cambiar servicio en Pendiente']); exit;
+    }
+
+    // Validar compatibilidad servicio-vehículo si hay restricciones
+    try {
+      $st = $pdo->prepare("SELECT COUNT(*) FROM servicio_vehiculo WHERE id_servicio=?");
+      $st->execute([$id_serv]);
+      $restrict = (int)$st->fetchColumn();
+      if ($restrict>0) {
+        $chk = $pdo->prepare("SELECT COUNT(*) FROM servicio_vehiculo WHERE id_servicio=? AND id_vehiculo=?");
+        $chk->execute([$id_serv, (int)$cur['id_vehiculo']]);
+        if ((int)$chk->fetchColumn()===0) {
+          echo json_encode(['ok'=>false,'error'=>'INCOMPATIBLE','msg'=>'Servicio no compatible con el vehículo']); exit;
+        }
+      }
+    } catch (Throwable $e) {}
+
+    // Determinar materiales a usar: si llegan, reemplazan el catálogo; validar compatibilidad inventario-vehículo
+    $matsToUse = [];
+    if (is_array($materiales) && count($materiales)>0) {
+      foreach ($materiales as $m) {
+        $iid = (int)($m['id_inventario'] ?? 0);
+        $cant = (float)($m['cantidad'] ?? 0);
+        if ($iid>0 && $cant>0) $matsToUse[] = ['id_inventario'=>$iid,'cantidad'=>$cant];
+      }
+    } else {
+      try {
+        $q = $pdo->prepare("SELECT id_inventario, cantidad FROM servicio_insumo WHERE id_servicio=?");
+        $q->execute([$id_serv]);
+        foreach ($q->fetchAll(PDO::FETCH_ASSOC) as $m) {
+          $iid=(int)$m['id_inventario']; $cant=(float)$m['cantidad'];
+          if ($iid>0 && $cant>0) $matsToUse[] = ['id_inventario'=>$iid,'cantidad'=>$cant];
+        }
+      } catch (Throwable $e) {}
+    }
+    if (!empty($matsToUse)) {
+      $bad = [];
+      foreach ($matsToUse as $m) {
+        $iid = (int)$m['id_inventario'];
+        try {
+          $stAll = $pdo->prepare("SELECT COUNT(*) FROM inventario_vehiculo WHERE id_inventario=?");
+          $stAll->execute([$iid]);
+          $invHasRestr = (int)$stAll->fetchColumn();
+          if ($invHasRestr > 0) {
+            $chk = $pdo->prepare("SELECT COUNT(*) FROM inventario_vehiculo WHERE id_inventario=? AND id_vehiculo=?");
+            $chk->execute([$iid, (int)$cur['id_vehiculo']]);
+            if ((int)$chk->fetchColumn() === 0) {
+              $nm = $pdo->prepare("SELECT nombre FROM inventario WHERE id=?");
+              $nm->execute([$iid]);
+              $label = $nm->fetchColumn();
+              $bad[] = $label ? (string)$label : ('ID '.$iid);
+            }
+          }
+        } catch (Throwable $e) {}
+      }
+      if (!empty($bad)) { echo json_encode(['ok'=>false,'error'=>'INCOMPATIBLE','msg'=>'Hay materiales no compatibles con el vehículo: '.implode(', ',$bad)]); exit; }
+    }
+
+    $pdo->beginTransaction();
+    try {
+      // Actualizar servicio y duración; limpiar marca AUTO_KM de notas
+      $sql = "UPDATE orden_servicio SET id_servicio=?, notas=TRIM(REPLACE(COALESCE(notas,''),'[AUTO_KM]',''))";
+      $params = [$id_serv];
+      if ($dur !== null) { $sql .= ", duracion_minutos=?"; $params[] = $dur; }
+      $sql .= " WHERE id=?"; $params[] = $id_orden;
+      $stmt = $pdo->prepare($sql); $stmt->execute($params);
+
+      // Reemplazar materiales por los del catálogo de ese servicio
+      $pdo->prepare("DELETE FROM orden_servicio_material WHERE id_orden=?")->execute([$id_orden]);
+      $ins = $pdo->prepare("INSERT INTO orden_servicio_material (id_orden,id_inventario,cantidad) VALUES (?,?,?)");
+      foreach ($matsToUse as $m) {
+        $iid=(int)$m['id_inventario']; $cant=(float)$m['cantidad'];
+        if ($iid>0 && $cant>0) $ins->execute([$id_orden,$iid,$cant]);
+      }
+
+      // Historial
+      try {
+        $user = isset($_SESSION['usuario']) ? (string)$_SESSION['usuario'] : null;
+        $pdo->prepare("INSERT INTO orden_servicio_hist (id_orden,de,a,usuario,comentario) VALUES (?,?,?,?,?)")
+            ->execute([$id_orden,'Pendiente','Pendiente',$user,'Asignación de servicio #'.$id_serv]);
+      } catch (Throwable $e) {}
+
+      $pdo->commit();
+      echo json_encode(['ok'=>true,'msg'=>'Servicio asignado']); exit;
+    } catch (Throwable $e) {
+      if ($pdo->inTransaction()) $pdo->rollBack();
+      http_response_code(500); echo json_encode(['ok'=>false,'error'=>'SERVER','msg'=>$e->getMessage()]); exit;
     }
   }
 

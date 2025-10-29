@@ -1,5 +1,5 @@
 ﻿<?php
-// Iniciar la sesiÃ³n de forma segura
+// Iniciar la sesión de forma segura
 ini_set('session.cookie_httponly', true);
 ini_set('session.cookie_secure', true);
 session_name("GA");
@@ -121,7 +121,7 @@ session_start();
       @media (max-width:900px){  .kanban{grid-template-columns:repeat(2,minmax(260px,1fr))} }
       @media (max-width:640px){  .kanban{grid-template-columns:1fr} .list-tools input{width:100%} }
 
-      /* estilos mÃ­nimos del modal si tu styles.css no los tiene */
+      /* estilos mínimos del modal si tu styles.css no los tiene */
       .modal-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.35); display:none; align-items:center; justify-content:center; z-index:50}
       .modal{background:#fff; border-radius:16px; width:min(720px, 92vw); box-shadow:var(--shadow); padding:12px 16px}
       .modal header{display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border); margin:-12px -16px 12px; padding:12px 16px}
@@ -227,7 +227,7 @@ async function apiPost(action, data) {
         btnAdd:  root.querySelector('#btn-add'),
       };
 
-      // Modal de confirmaciÃ³n de cambio de estatus
+      // Modal de confirmación de cambio de estatus
       const confirmEl = (function(){
         const html = document.createElement('div');
         html.innerHTML = `
@@ -268,7 +268,7 @@ async function apiPost(action, data) {
 
       function openConfirm({id, to, onConfirm}){
         const human = humanStatus(to);
-        confirmEl.msg.textContent = `¿Confirmas mover la orden ${id} a ${human}? Esta operación no se podrá revertir.`;
+        confirmEl.msg.textContent = `Confirmas mover la orden ${id} a ${human}? Esta operación no se podrá revertir.`;
         const needDate = (to === 'Programado');
         confirmEl.dateWrap.style.display = needDate ? 'block' : 'none';
         if (needDate) {
@@ -314,23 +314,30 @@ async function apiPost(action, data) {
         });
         div.addEventListener('dragend', () => { state.draggingId = null; div.classList.remove('dragging'); });
 
+        const titleLabel = (it.auto_km ? 'Seleccionar servicio' : (it.servicio || it.tipo || ''));
         div.innerHTML = `
           <div class="top">
-            <div class="title">ID ${it.id} · ${it.servicio || it.tipo || ''}</div>
+            <div class="title">ID ${it.id} - ${titleLabel}</div>
             <div class="meta">${it.fecha_programada ? ('Prog: ' + it.fecha_programada) : (it.fecha || '')}</div>
           </div>
-          <div class="meta">Placa: <b>${it.placa || ''}</b> · Km: <b>${fmt(it.km)}</b></div>
+          <div class="meta">Placa: <b>${it.placa || ''}</b> - Suc: <b>${it.suc || ''}</b> - Km: <b>${fmt(it.km)}</b></div>
           <div class="tags">
             <span class="tag ${prioClass(it.prio || 'Media')}">Prio: ${it.prio || 'Media'}</span>
             <span class="tag">Estatus: ${humanStatus(it.status || 'Pendiente')}</span>
             ${ (Number(it.faltantes||0) > 0) ? '<span class="tag" style="background:#fee2e2; color:#991b1b; border:1px solid #fecaca">Faltantes</span>' : '' }
             ${it.fecha_programada ? `<span class="tag">Prog: ${it.fecha_programada}</span>` : ''}
+            ${it.auto_km ? '<span class="tag" style="background:#eef2ff; color:#3730a3; border:1px solid #c7d2fe">Auto KM</span>' : ''}
             <span class="goto" data-goto="${it.id}" title="Ver detalle">ver detalle</span>
+            ${it.auto_km ? `<span class="goto" data-assign="${it.id}" title="Asignar servicio">asignar servicio</span>` : ''}
           </div>
         `;
         div.querySelector('.goto').addEventListener('click', () => {
           window.location.href = `/Pedidos_GA/Servicios/detalles_orden.php?id=${it.id}`;
         });
+        if (it.auto_km) {
+          const asn = div.querySelector('[data-assign]');
+          if (asn) asn.addEventListener('click', ()=> openAssign(it));
+        }
         return div;
       }
 
@@ -346,7 +353,7 @@ async function apiPost(action, data) {
         const curIdx = order[cur?.status || 'Pendiente'] ?? 0;
         const destIdx = order[dest] ?? 0;
         if (destIdx < curIdx) { toast('No puedes retroceder estatus', false); return; }
-        if (destIdx > curIdx + 1) { toast('Sigue la secuencia: Pendiente → Programado → En Taller → Completado', false); return; }
+        if (destIdx > curIdx + 1) { toast('Sigue la secuencia: Pendiente ? Programado ? En Taller ? Completado', false); return; }
         if (dest === 'Programado' && cur && cur.status !== 'Pendiente') { toast('Solo se puede reprogramar desde Programado (usa el detalle).', false); return; }
 
         openConfirm({ id, to: dest, onConfirm: (payload)=>{
@@ -396,16 +403,17 @@ async function apiPost(action, data) {
             <td>${it.id}</td>
             <td>${it.placa || ''}</td>
             <td>${it.tipo || ''}</td>
-            <td>${it.servicio || ''}</td>
+            <td>${it.auto_km ? '<i>Seleccionar servicio</i>' : (it.servicio || '')}</td>
             <td>${fmt(it.km)}</td>
             <td>${it.fecha || ''}</td>
             <td>${it.fecha_programada || ''}</td>
             <td><span class="status-pill ${ (it.status==='Completado'?'s-comp':(it.status==='EnTaller'?'s-taller':(it.status==='Programado'?'s-prog':'s-pend'))) }">${humanStatus(it.status || 'Pendiente')}</span></td>
             <td>${it.prio || 'Media'}</td>
             <td>
-              ${it.status==='Pendiente' ? `<button data-move="${it.id}" data-to="Programado">→ Programado</button>` : ''}
-              ${it.status==='Programado' ? `<button data-move="${it.id}" data-to="EnTaller">→ En Taller</button>` : ''}
-              ${it.status==='EnTaller' ? `<button data-move="${it.id}" data-to="Completado">→ Completado</button>` : ''}
+              ${it.status==='Pendiente' ? `<button data-move="${it.id}" data-to="Programado">? Programado</button>` : ''}
+              ${it.status==='Programado' ? `<button data-move="${it.id}" data-to="EnTaller">? En Taller</button>` : ''}
+              ${it.status==='EnTaller' ? `<button data-move="${it.id}" data-to="Completado">? Completado</button>` : ''}
+              ${it.auto_km ? `<button data-assign="${it.id}">Asignar servicio</button>` : ''}
               <button data-goto="${it.id}">Detalle</button>
             </td>
           </tr>
@@ -416,7 +424,7 @@ async function apiPost(action, data) {
             const id = Number(btn.getAttribute('data-move'));
             const to = btn.getAttribute('data-to');
             const cur = state.items.find(x=> x.id===id);
-            if (to==='Programado' && cur && cur.status !== 'Pendiente') { toast('No puedes volver a Programado aquí­. Usa reprogramación en el detalle.', false); return; }
+            if (to==='Programado' && cur && cur.status !== 'Pendiente') { toast('No puedes volver a Programado aqui. Usa reprogramacion en el detalle.', false); return; }
             openConfirm({ id, to, onConfirm: (payload)=>{
               apiPost('update_status', payload).then(res=>{
                 if (!res.ok) {
@@ -436,6 +444,13 @@ async function apiPost(action, data) {
             window.location.href = `/Pedidos_GA/detalles_orden.php?id=${id}`;
           });
         });
+        el.tbody.querySelectorAll('button[data-assign]').forEach(btn=>{
+          btn.addEventListener('click', ()=>{
+            const id = Number(btn.getAttribute('data-assign'));
+            const it = state.items.find(x=> x.id===id);
+            if (it) openAssign(it);
+          });
+        });
       }
 
       function setTab(tab){
@@ -452,7 +467,7 @@ async function apiPost(action, data) {
       el.tabs.forEach(b => b.addEventListener('click', ()=> setTab(b.dataset.tab)));
       root.querySelector('#mantto-q').addEventListener('input', renderList);
 
-      // ===== Modal (ahora sÃ­, despuÃ©s de que TODO el DOM existe) =====
+      // ===== Modal (ahora sí, después de que TODO el DOM existe) =====
       const mb = document.getElementById('modal-os');
       const f  = document.getElementById('form-os');
       const selVeh = document.getElementById('vehiculo');
@@ -501,13 +516,13 @@ async function apiPost(action, data) {
               COSTO_MINUTO = Number(cfg.data.costo_minuto_mo)||0;
             }
             if (selVeh) selVeh.innerHTML = '<option value="" disabled selected>Seleccionado</option>' +
-              state.options.vehiculos.map(v => `<option value="${v.id}">${v.placa} · ${v.tipo} · ${fmt(v.km)}</option>`).join('');
-            // servicios se filtran al elegir vehÃ­culo
+              state.options.vehiculos.map(v => `<option value="${v.id}">${v.placa} - ${v.tipo} - ${fmt(v.km)}</option>`).join('');
+            // servicios se filtran al elegir vehículo
             if (selSrv) selSrv.innerHTML = '<option value="" disabled selected>Seleccionado</option>';
             renderMoAuto2();
-          }).catch(()=> toast('Error de red (catálogos)', false));
+          }).catch(()=> toast('Error de red (catalogos)', false));
         } else {
-          // ya tenemos catÃ¡logos; al abrir solo recalcula el MO con lo actual
+          // ya tenemos catálogos; al abrir solo recalcula el MO con lo actual
           renderMoAuto2();
         }
       }
@@ -531,7 +546,7 @@ async function apiPost(action, data) {
       });
 
       selSrv?.addEventListener('change', ()=>{
-        // Al seleccionar servicio, cargar materiales del catálogo en la lista editable
+        // Al seleccionar servicio, cargar materiales del cat�logo en la lista editable
         const vid = Number(selVeh.value||0);
         const inv = (state.options.inventario||[]).filter(i => !Array.isArray(i.vehiculos) || i.vehiculos.length===0 || i.vehiculos.includes(vid));
         btnAddMat?.addEventListener('click', ()=> addMatRow(inv), { once:true });
@@ -560,7 +575,7 @@ async function apiPost(action, data) {
                   const it=(state.options.inventario||[]).find(x=>x.id===id);
                   return it? it.nombre : ('ID '+id);
                 }).join(', ');
-                toast('Algunos insumos del servicio no aplican al vehículo: '+labels, false);
+                toast('Algunos insumos del servicio no aplican al vehiculo: '+labels, false);
               }
             }).catch(()=>{});
         }
@@ -572,7 +587,7 @@ async function apiPost(action, data) {
         addMatRow(inv);
       });
 
-      // CÃ¡lculo automÃ¡tico de MO en este modal
+      // Cálculo automático de MO en este modal
       function renderMoAuto2(){
         const dur = document.getElementById('duracion_minutos');
         const span = document.getElementById('moAuto2');
@@ -596,7 +611,7 @@ async function apiPost(action, data) {
           id_servicio: Number(f.id_servicio.value),
           duracion_minutos: Number(f.duracion_minutos.value || 0),
           notas: f.notas.value || null,
-          // Siempre crear como Pendiente; la programación se hace en el tablero
+          // Siempre crear como Pendiente; la programaci�n se hace en el tablero
           programar: false,
           materiales: mats
         };
@@ -647,7 +662,7 @@ async function apiPost(action, data) {
           <textarea id="notas" name="notas" rows="3" placeholder="Detalles del servicio..."></textarea>
         </div>
 
-        <!-- Eliminado: la orden siempre inicia Pendiente y se programa después en el tablero -->
+        <!-- Eliminado: la orden siempre inicia Pendiente y se programa despu�s en el tablero -->
         <div class="field grid-1" style="grid-column:1/-1">
           
         </div>
@@ -670,7 +685,144 @@ async function apiPost(action, data) {
   </div>
 
   <div class="toast" id="toast" style="display:none"></div>
+  <script>
+  // Modal simple para asignar servicio en órdenes AUTO_KM
+  (function(){
+    const modal = document.createElement('div');
+    modal.className = 'modal-backdrop';
+    modal.id = 'modal-assign';
+    modal.style.display = 'none';
+    modal.innerHTML = `
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="assign-title">
+        <header>
+          <h3 id="assign-title">Asignar servicio</h3>
+          <button class="close" data-x>&times;</button>
+        </header>
+        <div class="grid">
+          <div class="field">
+            <label>Servicio</label>
+            <select id="assign-serv"></select>
+          </div>
+          <div class="field">
+            <label>Duración (min)</label>
+            <input type="number" id="assign-dur" min="0" value="0" />
+          </div>
+          <div class="grid-1" style="grid-column:1/-1">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <h4 style="margin:6px 0">Materiales (opcional)</h4>
+              <button type="button" class="btn-ghost" id="assign-add-mat">+ Añadir material</button>
+            </div>
+            <div id="assign-mat-rows"></div>
+          </div>
+          <div class="actions" style="grid-column:1/-1">
+            <button class="btn-ghost" data-cancel>Cancelar</button>
+            <button class="btn-primary" data-ok>Asignar</button>
+          </div>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+
+    let current = null;
+    async function fetchOptions(){
+      try{ const r = await fetch('api_mantto.php?action=options',{credentials:'same-origin'}); const j = await r.json(); return j && j.ok ? j : {vehiculos:[],servicios:[],inventario:[]}; }catch{return {vehiculos:[],servicios:[],inventario:[]};}
+    }
+
+    function addMatRowAssign(inv = [], preset){
+      const wrap = modal.querySelector('#assign-mat-rows');
+      const row = document.createElement('div');
+      row.className = 'grid';
+      row.innerHTML = `
+        <div class="field">
+          <label>Insumo</label>
+          <select class="assign-mat-inv">
+            <option value="" disabled selected>Seleccionado</option>
+            ${inv.map(i=>`<option value="${i.id}" ${Number(i.cantidad||0)<=0?'disabled':''}>${i.nombre} (disp: ${i.cantidad||0}${(i.stock_minimo!=null&&Number(i.cantidad)<=Number(i.stock_minimo)?' abajo':'' )})</option>`).join('')}
+          </select>
+        </div>
+        <div class="field">
+          <label>Cantidad</label>
+          <input type="number" class="assign-mat-cant" min="0.001" step="0.001" value="1">
+        </div>
+        <div class="field" style="align-self:end">
+          <button type="button" class="btn-ghost assign-mat-del">Quitar</button>
+        </div>`;
+      row.querySelector('.assign-mat-del').addEventListener('click', ()=> row.remove());
+      wrap.appendChild(row);
+      if (preset) {
+        const sel = row.querySelector('.assign-mat-inv');
+        const qty = row.querySelector('.assign-mat-cant');
+        if (sel) sel.value = String(preset.id_inventario);
+        if (qty) qty.value = String(preset.cantidad);
+      }
+    }
+
+    window.openAssign = async function(it){
+      current = it;
+      const opts = await fetchOptions();
+      const sel = modal.querySelector('#assign-serv');
+      const dur = modal.querySelector('#assign-dur');
+      const btnAdd = modal.querySelector('#assign-add-mat');
+      const matWrap = modal.querySelector('#assign-mat-rows');
+      const vid = Number(it.id_vehiculo || it.vehiculo || 0);
+      const servicios = (opts.servicios||[]).filter(s => !Array.isArray(s.vehiculos) || s.vehiculos.length===0 || s.vehiculos.includes(vid));
+      sel.innerHTML = '<option value="" disabled selected>Seleccionado</option>' + servicios.map(s=>`<option value="${s.id}" data-d="${s.duracion_minutos||0}">${s.nombre}</option>`).join('');
+      dur.value = 0;
+      matWrap.innerHTML = '';
+      const inv = (opts.inventario||[]).filter(i => !Array.isArray(i.vehiculos) || i.vehiculos.length===0 || i.vehiculos.includes(vid));
+      btnAdd.onclick = ()=> addMatRowAssign(inv);
+      sel.onchange = ()=>{
+        const d = Number(sel.options[sel.selectedIndex]?.getAttribute('data-d')||0); dur.value = String(d);
+        // Cargar materiales por defecto del servicio seleccionado
+        const srvId = Number(sel.value||0);
+        if (!srvId) return;
+        fetch('servicios_api.php?action=get&id='+srvId, {credentials:'same-origin'})
+          .then(r=>r.json())
+          .then(j=>{
+            if (!j || !j.ok) return;
+            matWrap.innerHTML='';
+            const mats = Array.isArray(j.data?.materiales) ? j.data.materiales : [];
+            const notCompat = [];
+            mats.forEach(m=>{
+              const exists = inv.find(x=> x.id === m.id_inventario);
+              if (!exists) { notCompat.push(m.id_inventario); return; }
+              addMatRowAssign(inv, m);
+            });
+            if (notCompat.length){
+              alert('Algunos insumos del servicio no aplican al vehículo actual.');
+            }
+          }).catch(()=>{});
+      };
+      modal.style.display = 'flex';
+    }
+
+    function close(){ modal.style.display='none'; }
+    modal.addEventListener('click', e=>{ if (e.target===modal) close(); });
+    modal.querySelector('[data-x]').addEventListener('click', close);
+    modal.querySelector('[data-cancel]').addEventListener('click', close);
+    modal.querySelector('[data-ok]').addEventListener('click', async ()=>{
+      const sel = modal.querySelector('#assign-serv');
+      const dur = modal.querySelector('#assign-dur');
+      const id_servicio = Number(sel.value||0);
+      const d = Number(dur.value||0);
+      if (!current || id_servicio<=0) { alert('Selecciona un servicio'); return; }
+      // Recolectar materiales
+      const materiales = Array.from(modal.querySelectorAll('#assign-mat-rows .grid')).map(row=>{
+        const id_inv = Number(row.querySelector('.assign-mat-inv')?.value || 0);
+        const cant = Number(row.querySelector('.assign-mat-cant')?.value || 0);
+        return (id_inv>0 && cant>0) ? {id_inventario:id_inv, cantidad:cant} : null;
+      }).filter(Boolean);
+      try {
+        const r = await fetch('api_mantto.php?action=set_service', { method:'POST', headers:{'Content-Type':'application/json'}, credentials:'same-origin', body: JSON.stringify({ id: current.id, id_servicio, duracion_minutos: d, materiales })});
+        const j = await r.json();
+        if (!j || !j.ok) { alert(j?.msg||'No se pudo asignar'); return; }
+        close();
+        location.reload();
+      } catch { alert('Error de red'); }
+    });
+  })();
+  </script>
 </body>
 </html>
+
 
 

@@ -160,7 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['kilometraje_final']))
             }
 
             if ($svcId > 0) {
-                $nota = $conn->real_escape_string('Autogenerado por kilometraje alcanzado');
+                $nota = $conn->real_escape_string('[AUTO_KM] Autogenerado por kilometraje alcanzado');
                 if ($hasEstatus) {
                     $conn->query("INSERT INTO orden_servicio (id_vehiculo,id_servicio,duracion_minutos,notas,estatus)
                                   VALUES ($id_vehiculo,$svcId,0,'$nota','Pendiente')");
