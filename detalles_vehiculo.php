@@ -119,6 +119,74 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['kilometraje_final']))
                   VALUES
                     ($id_vehiculo, $id_chofer, 'Registro', '$fecha_actual', $kilometraje_inicial, $kilometraje_final)");
 
+    // Si ya alcanzó o superó el kilometraje de servicio, auto-crear una Orden de Servicio Pendiente (si no existe abierta)
+    $km_objetivo = (int)($vehiculo['Km_de_Servicio'] ?? 0);
+    if ($km_objetivo > 0 && $nuevo_kilometraje >= $km_objetivo) {
+        // Verificar si existe columna estatus/fecha_programada en orden_servicio (evitar errores en instalaciones antiguas)
+        $hasEstatus = false;
+        if ($rc = $conn->query("SHOW COLUMNS FROM orden_servicio LIKE 'estatus'")) {
+            $hasEstatus = ($rc->num_rows > 0);
+        }
+        if (!$hasEstatus) {
+            // Intentar agregar columnas; si falla, continuamos sin romper el flujo
+            @$conn->query("ALTER TABLE orden_servicio ADD COLUMN IF NOT EXISTS estatus VARCHAR(20) NULL");
+            @$conn->query("ALTER TABLE orden_servicio ADD COLUMN IF NOT EXISTS fecha_programada DATE NULL");
+            if ($rc = $conn->query("SHOW COLUMNS FROM orden_servicio LIKE 'estatus'")) {
+                $hasEstatus = ($rc->num_rows > 0);
+            }
+        }
+
+        // Evitar duplicados: buscar OS abierta (estatus NULL o en Pendiente/Programado/EnTaller)
+        $sqlOpen = $hasEstatus
+            ? "SELECT id FROM orden_servicio WHERE id_vehiculo=$id_vehiculo AND (estatus IS NULL OR estatus IN ('Pendiente','Programado','EnTaller')) LIMIT 1"
+            : "SELECT id FROM orden_servicio WHERE id_vehiculo=$id_vehiculo LIMIT 1"; // mejor que nada
+        $existeAbierta = false;
+        if ($r = $conn->query($sqlOpen)) { $existeAbierta = (bool)$r->num_rows; }
+
+        if (!$existeAbierta) {
+            // Elegir un servicio compatible con el vehículo (si hay reglas); si no, el primero disponible
+            $svcId = 0;
+            if ($r = $conn->query("SELECT s.id
+                                     FROM servicios s
+                                     JOIN servicio_vehiculo sv ON sv.id_servicio = s.id
+                                    WHERE sv.id_vehiculo = $id_vehiculo
+                                    ORDER BY s.id LIMIT 1")) {
+                if ($r->num_rows) { $svcId = (int)$r->fetch_assoc()['id']; }
+            }
+            if ($svcId <= 0) {
+                if ($r = $conn->query("SELECT id FROM servicios ORDER BY id LIMIT 1")) {
+                    if ($r->num_rows) { $svcId = (int)$r->fetch_assoc()['id']; }
+                }
+            }
+
+            if ($svcId > 0) {
+                $nota = $conn->real_escape_string('Autogenerado por kilometraje alcanzado');
+                if ($hasEstatus) {
+                    $conn->query("INSERT INTO orden_servicio (id_vehiculo,id_servicio,duracion_minutos,notas,estatus)
+                                  VALUES ($id_vehiculo,$svcId,0,'$nota','Pendiente')");
+                    $osId = $conn->insert_id;
+                    // Historial de estatus (si existe la tabla de historial)
+                    @$conn->query("CREATE TABLE IF NOT EXISTS orden_servicio_hist (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        id_orden INT NOT NULL,
+                        de VARCHAR(20) NULL,
+                        a VARCHAR(20) NOT NULL,
+                        hecho_en DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                        usuario VARCHAR(64) NULL,
+                        comentario VARCHAR(255) NULL,
+                        INDEX idx_hist_orden (id_orden)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+                    $usuarioLog = $conn->real_escape_string($_SESSION['Usuario'] ?? ($_SESSION['Rol'] ?? 'sistema'));
+                    @$conn->query("INSERT INTO orden_servicio_hist (id_orden,de,a,usuario,comentario)
+                                   VALUES ($osId,'','Pendiente','$usuarioLog','Autogenerado por KM')");
+                } else {
+                    $conn->query("INSERT INTO orden_servicio (id_vehiculo,id_servicio,duracion_minutos,notas)
+                                  VALUES ($id_vehiculo,$svcId,0,'$nota')");
+                }
+            }
+        }
+    }
+
     $km_faltante = ((int)$vehiculo['Km_de_Servicio']) - $nuevo_kilometraje;
 
     if ($km_faltante <= 500) {
