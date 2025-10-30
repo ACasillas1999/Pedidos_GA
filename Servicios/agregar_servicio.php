@@ -224,6 +224,7 @@ session_start();
     <div class="sidebar">
       <ul>
         <li><a href="inventario.php">Inventario</a></li>
+        <li><a href="servicios_estadisticas.php">Estadísticas Servicios</a></li>
         <li class="corner-left-bottom">
           <a href="../Servicios/Servicios.php">
             <img src="/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Volver" class="icono-Volver" style="max-width:35%;height:auto;">
@@ -233,6 +234,7 @@ session_start();
     </div>
 
     <main class="content">
+      
       <div class="ga-card" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
         <div>
           <h1 class="ga-title">Servicios</h1>

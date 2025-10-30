@@ -55,8 +55,8 @@ session_start();
 
   <div class="sidebar">
     <ul>
-      <li><a href="inventario.php"><i class="fa-solid fa-boxes-stacked"></i> Inventario</a></li>
-      <li><a href="agregar_servicio.php">Agregar Servicio</a></li>
+      <li><a href="inventario.php"><i ></i> Inventario</a></li>
+      <li><a href="agregar_servicio.php">Crear Servicios</a></li>
       <li class="corner-left-bottom">
         <a href="../vehiculos.php">
           <img src="/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Volver" class="icono-Volver" style="max-width:35%;height:auto;">

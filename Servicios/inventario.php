@@ -152,7 +152,8 @@ while ($v = $qVehiculos->fetch_assoc()) {
   <!-- Sidebar -->
   <div class="sidebar">
     <ul>
-      <li><a href="agregar_servicio.php">Agregar servicios</a></li>
+      <li><a href="agregar_servicio.php">Crear servicios</a></li>
+      <li><a href="inventario_estadisticas.php">Estadísticas Inventario</a></li>
       <li class="corner-left-bottom">
         <a href="../Servicios/Servicios.php">
           <img src="/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Volver" class="icono-Volver" style="max-width:35%;height:auto;">
