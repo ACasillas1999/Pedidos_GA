@@ -457,6 +457,9 @@ session_start();
                     <label for="confirm-date">Fecha programada</label>
                     <input type="text" id="confirm-date" placeholder="YYYY-MM-DD" />
                   </div>
+                  <div class="field grid-1" style="grid-column:1/-1;display:none" id="confirm-reset-wrap">
+                    <label><input type="checkbox" id="confirm-reset"> Reiniciar Km_actual a 0</label>
+                  </div>
                   <div class="actions" style="grid-column:1/-1">
                     <button class="btn" data-cancel>Cancelar</button>
                     <button class="btn primary" data-ok>Confirmar</button>
@@ -472,6 +475,8 @@ session_start();
           msg: modal.querySelector('#confirm-msg'),
           dateWrap: modal.querySelector('#confirm-date-wrap'),
           date: modal.querySelector('#confirm-date'),
+          resetWrap: modal.querySelector('#confirm-reset-wrap'),
+          reset: modal.querySelector('#confirm-reset'),
           ok: modal.querySelector('[data-ok]'),
           cancel: modal.querySelector('[data-cancel]'),
           close: modal.querySelector('[data-x]')
@@ -480,6 +485,9 @@ session_start();
           modalRefs.msg.textContent = `¿Confirmas mover la orden ${o.id} a “${human(to)}”? Esta operación no se podrá revertir.`;
           const needDate = (to==='Programado');
           modalRefs.dateWrap.style.display = needDate ? 'block' : 'none';
+          const needReset = (to==='Completado');
+          modalRefs.resetWrap.style.display = needReset ? 'block' : 'none';
+          if (!needReset && modalRefs.reset) modalRefs.reset.checked = false;
           const today = new Date().toISOString().slice(0,10);
           modalRefs.date.value = (o.fecha_programada || today);
           if (window.jQuery && typeof jQuery.fn.datepicker==='function') {
@@ -502,6 +510,7 @@ session_start();
               if (val < today) { alert('No se puede programar antes de hoy'); return; }
               payload.fecha_programada = val;
             }
+            if (to==='Completado' && modalRefs.reset && modalRefs.reset.checked) { payload.reset_km = true; }
             close(); cb(payload);
           }
           modalRefs.ok.addEventListener('click', onOk);

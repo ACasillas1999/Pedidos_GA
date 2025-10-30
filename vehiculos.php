@@ -585,11 +585,14 @@ while ($c = $choferes->fetch_assoc()) {
     <h1>Gestión de Vehículos</h1>
 
     <!-- Tabs -->
-    <header class="topbar">
+    <header class="topbar" style="display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap">
       <nav class="tabs">
         <button class="tab active" data-tab="vehicles">Vehículos</button>
         <button class="tab" data-tab="drivers">Choferes</button>
       </nav>
+      <div class='global-search' style='margin-left:auto'>
+        <input id='global-q' type='search' placeholder='Buscar vehiculos y choferes...' style='padding:8px 12px;border:1px solid #e5e7eb;border-radius:12px;min-width:260px'>
+      </div>
     </header>
 
     <main class="wrap">
@@ -706,6 +709,23 @@ while ($c = $choferes->fetch_assoc()) {
                            <button class="btn-mini back" id="veh-back">Regresar</button>`;
       const list = VEHICLES.filter(v => (v.sucursal || '—') === s);
       vGrid.innerHTML = list.map(vehicleCard).join('');
+      // Buscador rápido para la lista de vehículos por sucursal
+      (function(){
+        if (!document.getElementById('veh-q')) {
+          const html = '<div id="veh-search" style="margin-top:6px"><input id="veh-q" type="search" placeholder="Buscar: placa, tipo, nombre..." style="padding:6px 10px;border:1px solid #e5e7eb;border-radius:10px;min-width:220px"></div>';
+          vHeader.insertAdjacentHTML('beforeend', html);
+          const inp = document.getElementById('veh-q');
+          if (inp) {
+            inp.addEventListener('input', () => {
+              const q = (inp.value || '').trim().toLowerCase();
+              Array.from(document.querySelectorAll('#vehicles-grid .card.vehicle-card')).forEach(card => {
+                const txt = card.textContent.toLowerCase();
+                card.style.display = (!q || txt.includes(q)) ? '' : 'none';
+              });
+            });
+          }
+        }
+      })();
       $('#veh-back')?.addEventListener('click', () => { vState = { level: 'branches', branch: null }; renderVehicles(); animateBars(); });
     }
   }
@@ -1047,6 +1067,46 @@ ${v.en_taller ? `<div class="status-badge danger">🔧 ${v.os_estatus || 'En ser
   renderVehicles();
   renderDrivers();
   animateBars();
+
+  // ===== Buscador global (vehículos y choferes) =====
+  (function(){
+    const topbar = document.querySelector('.topbar .tabs');
+    if (!topbar) return;
+    if (!document.getElementById('global-q')) {
+      const wrap = document.createElement('div');
+      wrap.style.marginLeft = 'auto';
+      wrap.innerHTML = "<input id='global-q' type='search' placeholder='Buscar vehículos y choferes...' style='padding:8px 12px;border:1px solid #e5e7eb;border-radius:12px;min-width:260px'>";
+      topbar.parentElement.appendChild(wrap);
+    }
+    const gq = document.getElementById('global-q');
+    if (!gq) return;
+    gq.addEventListener('input', () => {
+      const q = (gq.value||'').trim().toLowerCase();
+      // Vehículos
+      if (document.querySelector('#vehicles-view:not(.hide)')) {
+        // Forzar vista de lista con todos para filtrar
+        vState = { level: 'list', branch: 'TODO' };
+        const list = VEHICLES.filter(v => !q || [v.placa, v.tipo, v.nombre, v.alias, v.sucursal].join(' ').toLowerCase().includes(q));
+        vHeader.innerHTML = `<div class="crumb"><span class="muted">Vehículos</span> → <strong>${q?('Resultados'): (vState.branch||'')}</strong></div>
+                             <button class="btn-mini back" id="veh-back">Regresar</button>`;
+        vGrid.innerHTML = list.map(vehicleCard).join('');
+        document.getElementById('veh-back')?.addEventListener('click', ()=>{ vState={level:'branches',branch:null}; renderVehicles(); animateBars(); });
+        animateBars();
+        return; // si está en pestaña Vehículos, no tocar choferes
+      }
+      // Choferes
+      if (document.querySelector('#drivers-view:not(.hide)')) {
+        dState = { level: 'list', branch: 'TODO' };
+        const list = DRIVERS.filter(d => !q || [d.nombre, d.username, d.sucursal, d.numero].join(' ').toLowerCase().includes(q));
+        dHeader.innerHTML = `<div class="crumb"><span class="muted">Choferes</span> → <strong>${q?('Resultados'): (dState.branch||'')}</strong></div>
+                             <button class="btn-mini back" id="drv-back">Regresar</button>`;
+        dGrid.innerHTML = list.map(driverCard).join('');
+        document.getElementById('drv-back')?.addEventListener('click', ()=>{ dState={level:'branches',branch:null}; renderDrivers(); animateBars(); });
+        animateBars();
+      }
+    });
+  })();
   </script>
 </body>
 </html>
+
