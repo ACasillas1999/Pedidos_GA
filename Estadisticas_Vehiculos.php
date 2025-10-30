@@ -36,6 +36,8 @@ $result = $conn->query($sql);
 $sucursales = $km_por_sucursal = $litros_por_sucursal = $costo_por_sucursal = [];
 $choferes = $km_por_chofer = $litros_por_chofer = $costo_por_chofer = [];
 $vehiculos = $km_por_vehiculo = $litros_por_vehiculo = $costo_por_vehiculo = [];
+// Nuevos acumuladores: costo de servicios (materiales + mano de obra)
+$costo_srv_por_sucursal = $costo_srv_por_chofer = $costo_srv_por_vehiculo = [];
 
 while ($row = $result->fetch_assoc()) {
     $chofer = $row['chofer'] ? $row['chofer'] : "Desconocido";
@@ -57,6 +59,45 @@ while ($row = $result->fetch_assoc()) {
     $litros_por_vehiculo[$vehiculo] = ($litros_por_vehiculo[$vehiculo] ?? 0) + $row['total_litros'];
     $costo_por_vehiculo[$vehiculo] = ($costo_por_vehiculo[$vehiculo] ?? 0) + $row['total_costo'];
 }
+
+// Calcular costo de servicios en el rango de fechas
+$costoMinuto = 1.145833; // fallback por si no existe config
+try {
+    $resCfg = $conn->query("SELECT valor FROM servicios_config WHERE clave='costo_minuto_mo' LIMIT 1");
+    if ($resCfg && $resCfg->num_rows) { $costoMinuto = (float)$resCfg->fetch_assoc()['valor']; }
+} catch (Throwable $e) { /* continuar */ }
+
+try {
+    $fi = $conn->real_escape_string($fecha_inicio . ' 00:00:00');
+    $ff = $conn->real_escape_string($fecha_fin   . ' 23:59:59');
+    $q = "
+      SELECT v.Sucursal, v.placa,
+             COALESCE(ch.username,'Sin Asignar') AS chofer,
+             SUM(COALESCE(sub.costo_mat,0) + (COALESCE(os.duracion_minutos,0) * {$costoMinuto})) AS costo_servicio
+      FROM orden_servicio os
+      JOIN vehiculos v ON v.id_vehiculo = os.id_vehiculo
+      LEFT JOIN (
+        SELECT m.id_orden, SUM(m.cantidad * COALESCE(i.costo,0)) AS costo_mat
+        FROM orden_servicio_material m
+        JOIN inventario i ON i.id = m.id_inventario
+        GROUP BY m.id_orden
+      ) sub ON sub.id_orden = os.id
+      LEFT JOIN choferes ch ON ch.ID = v.id_chofer_asignado
+      WHERE os.creado_en BETWEEN '{$fi}' AND '{$ff}'
+      GROUP BY v.Sucursal, v.placa, chofer
+    ";
+    if ($rs = $conn->query($q)) {
+        while($r = $rs->fetch_assoc()){
+            $s = (string)($r['Sucursal'] ?? '');
+            $v = (string)($r['placa'] ?? '');
+            $c = (string)($r['chofer'] ?? 'Sin Asignar');
+            $cost = (float)($r['costo_servicio'] ?? 0);
+            $costo_srv_por_sucursal[$s] = ($costo_srv_por_sucursal[$s] ?? 0) + $cost;
+            $costo_srv_por_chofer[$c]   = ($costo_srv_por_chofer[$c]   ?? 0) + $cost;
+            $costo_srv_por_vehiculo[$v] = ($costo_srv_por_vehiculo[$v] ?? 0) + $cost;
+        }
+    }
+} catch (Throwable $e) { /* continuar */ }
 
 $conn->close();
 ?>
@@ -274,6 +315,26 @@ $conn->close();
     renderChartAndTable("Comparación por Sucursal", "sucursalChart", array_keys($km_por_sucursal), array_values($km_por_sucursal), array_values($litros_por_sucursal), array_values($costo_por_sucursal), $fecha_inicio, $fecha_fin);
     renderChartAndTable("Comparación por Chofer", "choferChart", array_keys($km_por_chofer), array_values($km_por_chofer), array_values($litros_por_chofer), array_values($costo_por_chofer), $fecha_inicio, $fecha_fin);
     renderChartAndTable("Comparación por Vehículo", "vehiculoChart", array_keys($km_por_vehiculo), array_values($km_por_vehiculo), array_values($litros_por_vehiculo), array_values($costo_por_vehiculo), $fecha_inicio, $fecha_fin);
+    // ====== Reporte adicional: Costo de Servicios ======
+    function renderServicios($title,$canvasID,$labels,$costos){
+        echo "<h2>$title (Costo de Servicios)</h2>";
+        echo "<div class='chart-container'><canvas id='$canvasID'></canvas></div>";
+        echo "<table><tr><th>Nombre</th><th>Costo de Servicios</th></tr>";
+        foreach($labels as $i=>$n){ echo "<tr><td>".htmlspecialchars($n)."</td><td>$".number_format((float)($costos[$i]??0),2)."</td></tr>"; }
+        echo "</table>";
+        echo "<script>new Chart(document.getElementById('$canvasID').getContext('2d'),{type:'bar',data:{labels:".json_encode($labels).",datasets:[{label:'Costo de Servicios',data:".json_encode(array_map('floatval',$costos)).",backgroundColor:'rgba(237,108,36,0.7)'}]}});</script>";
+    }
+
+    // Sucursales
+    $labSrvS = array_keys($costo_srv_por_sucursal); $valSrvS = array_values($costo_srv_por_sucursal);
+    if (!empty($labSrvS)) renderServicios('Por Sucursal','srvSucursalChart',$labSrvS,$valSrvS);
+    // Choferes
+    $labSrvC = array_keys($costo_srv_por_chofer); $valSrvC = array_values($costo_srv_por_chofer);
+    if (!empty($labSrvC)) renderServicios('Por Chofer','srvChoferChart',$labSrvC,$valSrvC);
+    // Vehículos
+    $labSrvV = array_keys($costo_srv_por_vehiculo); $valSrvV = array_values($costo_srv_por_vehiculo);
+    if (!empty($labSrvV)) renderServicios('Por Vehículo','srvVehiculoChart',$labSrvV,$valSrvV);
+
     ?>
 </div>
 

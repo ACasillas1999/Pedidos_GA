@@ -292,7 +292,7 @@ while ($v = $vehiculos->fetch_assoc()) {
   // Para llegar a 5,000: avance hacia Km_de_Servicio
   $pctTo5k = (int)max(0, min(100, round(($kmAct * 100) / $kmSrv)));
   // Mantenimiento: 0 si en taller, 100 si no
-  $enTallerFlag = !empty($v['en_mantenimiento']) && (int)$v['en_mantenimiento'] === 1;
+  $enTallerFlag = (isset($v['os_estatus']) && (string)$v['os_estatus'] === 'EnTaller');
   $pctMant = $enTallerFlag ? 0 : 100;
   // Salud general: promedio simple de las anteriores
   $pctSalud= (int)round(($pctKm + $pctTo5k + $pctMant) / 3);
@@ -327,7 +327,9 @@ while ($v = $vehiculos->fetch_assoc()) {
     ],
     'tags'      => array_values(array_filter([
       'GPS',
-      (isset($v['tipo']) && stripos((string)$v['tipo'], 'panel') !== false) ? 'Panel' : null
+      (isset($v['tipo']) && stripos((string)$v['tipo'], 'panel') !== false) ? 'Panel' : null,
+      ($osEstatus==='Programado' ? 'OS Programado' : null),
+      ($osEstatus==='Pendiente' ? 'OS Pendiente' : null)
     ])),
   ];
 }
@@ -544,6 +546,9 @@ while ($c = $choferes->fetch_assoc()) {
     position:relative; z-index:2;
   }
   </style>
+
+  <!-- Font Awesome (iconos) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous">
 </head>
 <body>
   <!-- Sidebar -->
@@ -563,8 +568,8 @@ while ($c = $choferes->fetch_assoc()) {
       </li>
 
       <li>
-        <a href="/Pedidos_GA/Servicios/Servicios.php" title="servicios">
-          <img src="/Pedidos_GA/Img/Botones%20entregas/Usuario/CERRARNA.png" class="icono-Logout sidebar-icon small" alt="Servicios">
+        <a href="/Pedidos_GA/Servicios/Servicios.php" title="servicios" aria-label="Servicios">
+          <i class="fa-sharp fa-solid fa-gears sidebar-icon small" style="font-size:48px;color:orange;"></i>
         </a>
       </li>
       
