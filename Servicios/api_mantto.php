@@ -426,6 +426,18 @@ try {
     if ($to === 'EnTaller') {
       try { $pdo->prepare("UPDATE orden_servicio SET estatus='EnTaller' WHERE id=?")->execute([$id]); } catch (Throwable $e) {}
       try { $user = isset($_SESSION['usuario']) ? (string)$_SESSION['usuario'] : null; $pdo->prepare("INSERT INTO orden_servicio_hist (id_orden,de,a,usuario) VALUES (?,?,?,?)")->execute([$id,(string)$cur['status'],'EnTaller',$user]); } catch (Throwable $e) {}
+
+      // Desasignar chofer del vehículo al entrar a taller (si tiene)
+      try {
+        $veh = (int)($cur['id_vehiculo'] ?? 0);
+        if ($veh > 0) {
+          // Cierra tramo abierto en historial_conductores
+          try { $pdo->prepare("UPDATE historial_conductores SET fecha_fin = NOW() WHERE id_vehiculo = ? AND fecha_fin IS NULL")->execute([$veh]); } catch (Throwable $e) {}
+          // Quita asignación actual en vehiculos
+          try { $pdo->prepare("UPDATE vehiculos SET id_chofer_asignado = NULL WHERE id_vehiculo = ?")->execute([$veh]); } catch (Throwable $e) {}
+        }
+      } catch (Throwable $e) {}
+
       echo json_encode(['ok'=>true,'msg'=>'Movido a En Taller']); exit;
     }
 
