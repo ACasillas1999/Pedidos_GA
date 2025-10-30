@@ -216,22 +216,33 @@ while ($v = $qVehiculos->fetch_assoc()) {
       <div><label>SKU</label><input id="f_sku" class="ga-input" type="text" autocomplete="off"></div>
       <div><label>Costo unitario</label><input id="f_costo" class="ga-number" type="number" min="0" step="0.01" value="0"></div>
       <div><label>Presentación - Contenido</label><input id="f_cont" class="ga-number" type="number" min="0" step="0.001" value="1"></div>
-      <div><label>Presentación - Unidad</label>
-        <input id="f_uni" class="ga-input" type="text" list="d_unidades" placeholder="pieza, litro, juego, paquete...">
-        <datalist id="d_unidades">
-          <option value="pieza"></option>
-          <option value="piezas"></option>
-          <option value="juego"></option>
-          <option value="paquete"></option>
-          <option value="litro"></option>
-          <option value="ml"></option>
-          <option value="caja"></option>
-          <option value="kit"></option>
-          <option value="galón"></option>
-          <option value="kg"></option>
-          <option value="g"></option>
-        </datalist>
+
+
+      <div>
+        <label>Presentación - Unidad</label>
+        <select id="f_uni" class="ga-select">
+          <option value="">— Seleccione unidad —</option>
+          <option value="pieza">pieza</option>
+          <option value="piezas">piezas</option>
+          <option value="juego">juego</option>
+          <option value="paquete">paquete</option>
+          <option value="litro">litro</option>
+          <option value="ml">ml</option>
+          <option value="caja">caja</option>
+          <option value="kit">kit</option>
+          <option value="galón">galón</option>
+          <option value="kg">kg</option>
+          <option value="g">g</option>
+        </select>
       </div>
+
+
+      
+
+
+
+
+
       <div style="grid-column:1/-1">
         <label>Vehículos aplicables</label>
         <div style="display:flex; gap:10px; align-items:center; margin:6px 0;">
