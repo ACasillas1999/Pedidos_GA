@@ -291,6 +291,7 @@ while ($v = $vehiculos->fetch_assoc()) {
   $pctKm   = ($kmTot > 0) ? (int)max(0, min(100, round(($kmAct * 100) / $kmTot))) : 0;
   // Para llegar a 5,000: avance hacia Km_de_Servicio
   $pctTo5k = (int)max(0, min(100, round(($kmAct * 100) / $kmSrv)));
+  $kmFalt  = max(0, $kmSrv - $kmAct);
   // Mantenimiento: 0 si en taller, 100 si no
   $enTallerFlag = (isset($v['os_estatus']) && (string)$v['os_estatus'] === 'EnTaller');
   $pctMant = $enTallerFlag ? 0 : 100;
@@ -315,6 +316,8 @@ while ($v = $vehiculos->fetch_assoc()) {
     'assignedDriverId' => $assignedDriverId,
     'en_taller'  => $enTallerFlag,
     'os_estatus' => $osEstatus,
+    'km_srv'     => $kmSrv,
+    'km_faltante'=> $kmFalt,
     'stats'     => [
       // claves nuevas
       'kilometraje'     => $pctKm,
@@ -762,7 +765,7 @@ ${v.en_taller ? `<div class="status-badge danger">🔧 ${v.os_estatus || 'En ser
       <div class="chips">${(v.tags||[]).map(t=>`<span class="chip">${t}</span>`).join('')}</div>
       <div class="stats">
         ${bar('Kilometraje', v.stats?.kilometraje, 100)}
-        ${bar('Km para 5000', v.stats?.hacia5000, 100)}
+        ${bar(`Km para ${Number(v.km_srv||5000)} (${new Intl.NumberFormat('es-MX').format(Math.max(0, Number(v.km_faltante||0)))} restantes)` , v.stats?.hacia5000, 100)}
         ${bar('Mantenimiento', v.stats?.mantenimiento, 100)}
         ${bar('Salud general', v.stats?.salud, 100)}
       </div>
@@ -1092,7 +1095,7 @@ ${v.en_taller ? `<div class="status-badge danger">🔧 ${v.os_estatus || 'En ser
         vGrid.innerHTML = list.map(vehicleCard).join('');
         document.getElementById('veh-back')?.addEventListener('click', ()=>{ vState={level:'branches',branch:null}; renderVehicles(); animateBars(); });
         animateBars();
-        return; // si está en pestaña Vehículos, no tocar choferes
+        // return desactivado: busqueda combinada
       }
       // Choferes
       if (document.querySelector('#drivers-view:not(.hide)')) {
@@ -1106,7 +1109,29 @@ ${v.en_taller ? `<div class="status-badge danger">🔧 ${v.os_estatus || 'En ser
       }
     });
   })();
+
+  // Render combinado de resultados para búsqueda global (vehículos + choferes)
+  (function(){
+    const gq = document.getElementById('global-q');
+    if (!gq) return;
+    gq.addEventListener('input', () => {
+      const q = (gq.value||'').trim().toLowerCase();
+      if (!q) return; // la restauración ya la maneja el listener anterior
+      const vehView = document.getElementById('vehicles-view');
+      const drvView = document.getElementById('drivers-view');
+      if (vehView) vehView.classList.remove('hide');
+      if (drvView) drvView.classList.remove('hide');
+      const vList = VEHICLES.filter(v => [v.placa, v.tipo, v.nombre, v.alias, v.sucursal].join(' ').toLowerCase().includes(q));
+      const dList = DRIVERS.filter(d => [d.nombre, d.username, d.sucursal, d.numero].join(' ').toLowerCase().includes(q));
+      vHeader.innerHTML = `<div class="crumb"><span class="muted">Vehículos</span> → <strong>Resultados</strong> <span class="muted">(${vList.length})</span></div>`;
+      vGrid.innerHTML = vList.map(vehicleCard).join('');
+      dHeader.innerHTML = `<div class="crumb"><span class="muted">Choferes</span> → <strong>Resultados</strong> <span class="muted">(${dList.length})</span></div>`;
+      dGrid.innerHTML = dList.map(driverCard).join('');
+      animateBars();
+    });
+  })();
   </script>
 </body>
 </html>
+
 

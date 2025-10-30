@@ -1,11 +1,10 @@
 <?php
 header('Content-Type: application/json; charset=UTF-8');
 
-// Ajusta estos datos a tu entorno si es necesario
-$DB_HOST = 'localhost';
-$DB_NAME = 'gopascen_pedidos_app';
-$DB_USER = 'root';
-$DB_PASS = '';
+require_once __DIR__ . '/Conexiones/Conexion.php';
+if (isset($conn) && $conn instanceof mysqli) {
+    $conn->set_charset('utf8mb4');
+}
 
 $username = isset($_POST['username']) ? trim($_POST['username']) : (isset($_GET['username']) ? trim($_GET['username']) : '');
 if ($username === '') {
@@ -15,77 +14,64 @@ if ($username === '') {
 }
 
 try {
-    $pdo = new PDO("mysql:host={$DB_HOST};dbname={$DB_NAME};charset=utf8", $DB_USER, $DB_PASS, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-    ]);
+    // Vehículo asignado al chofer (por username)
+    $sqlVeh = 'SELECT v.id_vehiculo, c.ID AS id_chofer
+               FROM vehiculos AS v
+               INNER JOIN choferes AS c ON c.ID = v.id_chofer_asignado
+               WHERE c.username = ?
+               LIMIT 1';
+    $st = $conn->prepare($sqlVeh);
+    if (!$st) { throw new Exception('Prepare veh: ' . $conn->error); }
+    $st->bind_param('s', $username);
+    $st->execute();
+    $st->store_result();
+    $idVehiculo = null; $idChofer = null;
+    $st->bind_result($idVehiculo, $idChofer);
+    $found = $st->fetch();
+    $st->free_result();
+    $st->close();
 
-    // Buscar vehículo asignado por username; probar dos posibles columnas
-    $sql = "SELECT v.id_vehiculo, c.id_chofer
-            FROM vehiculos v
-            INNER JOIN choferes c ON c.id_chofer = v.id_chofer_asignado
-            WHERE c.username = :u
-            LIMIT 1";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([':u' => $username]);
-    $veh = $stmt->fetch();
-
-    if (!$veh) {
-        // Intento alterno si la columna fuera 'usuario'
-        try {
-            $sql2 = "SELECT v.id_vehiculo, c.id_chofer
-                     FROM vehiculos v
-                     INNER JOIN choferes c ON c.id_chofer = v.id_chofer_asignado
-                     WHERE c.usuario = :u
-                     LIMIT 1";
-            $stmt2 = $pdo->prepare($sql2);
-            $stmt2->execute([':u' => $username]);
-            $veh = $stmt2->fetch();
-        } catch (Throwable $e) {
-            // Ignorar si la columna no existe
-        }
-    }
-
-    if (!$veh) {
+    if (!$found) {
         echo json_encode(['ok' => true, 'assigned' => false]);
         exit;
     }
 
-    $idVehiculo = (int)$veh['id_vehiculo'];
-    $idChofer   = isset($veh['id_chofer']) ? (int)$veh['id_chofer'] : null;
-
     // Último registro de kilometraje del vehículo
-    $sqlLast = "SELECT id_registro, fecha_registro, kilometraje_final
+    $sqlLast = 'SELECT id_registro, fecha_registro, kilometraje_final
                 FROM registro_kilometraje
-                WHERE id_vehiculo = :idv
+                WHERE id_vehiculo = ?
                 ORDER BY fecha_registro DESC, id_registro DESC
-                LIMIT 1";
-    $stmtLast = $pdo->prepare($sqlLast);
-    $stmtLast->execute([':idv' => $idVehiculo]);
-    $last = $stmtLast->fetch();
+                LIMIT 1';
+    $stLast = $conn->prepare($sqlLast);
+    if (!$stLast) { throw new Exception('Prepare last: ' . $conn->error); }
+    $stLast->bind_param('i', $idVehiculo);
+    $stLast->execute();
+    $stLast->store_result();
+    $idReg = null; $fecha = null; $kmFin = null;
+    $stLast->bind_result($idReg, $fecha, $kmFin);
+    $hasLast = $stLast->fetch();
+    $stLast->free_result();
+    $stLast->close();
 
-    $needs = true; // si nunca ha registrado, pedimos
+    $needs = true;
     $lastFecha = null;
     $lastKm = null;
 
-    if ($last) {
-        $lastFecha = $last['fecha_registro'];
-        $lastKm = is_null($last['kilometraje_final']) ? null : (int)$last['kilometraje_final'];
+    if ($hasLast) {
+        $lastFecha = $fecha;
+        $lastKm = is_null($kmFin) ? null : (int)$kmFin;
 
-        // Comparar con hoy - 3 días
         $hoy = new DateTime('today');
         $limite = (clone $hoy)->modify('-3 days');
-        $f = DateTime::createFromFormat('Y-m-d', substr($lastFecha, 0, 10));
-        if ($f && $f >= $limite) {
-            $needs = false;
-        }
+        $f = DateTime::createFromFormat('Y-m-d', substr((string)$lastFecha, 0, 10));
+        if ($f && $f >= $limite) { $needs = false; }
     }
 
     echo json_encode([
         'ok' => true,
         'assigned' => true,
-        'id_vehiculo' => $idVehiculo,
-        'id_chofer' => $idChofer,
+        'id_vehiculo' => (int)$idVehiculo,
+        'id_chofer' => is_null($idChofer) ? null : (int)$idChofer,
         'last_fecha' => $lastFecha,
         'last_km_final' => $lastKm,
         'needs_km' => $needs,
