@@ -572,7 +572,8 @@ while ($c = $choferes->fetch_assoc()) {
 
       <li>
         <a href="/Pedidos_GA/Servicios/Servicios.php" title="servicios" aria-label="Servicios">
-          <i class="fa-sharp fa-solid fa-gears sidebar-icon small" style="font-size:48px;color:orange;"></i>
+          <!--<i class="fa-sharp fa-solid fa-gears sidebar-icon small" style="font-size:48px;color:orange;"></i>-->
+          <img src="/Pedidos_GA/Img/SVG/ServiciosN.svg" style="font-size:48px;color:orange;" class="icono-servicios idebar-icon" alt="Servicios">
         </a>
       </li>
       
@@ -887,9 +888,12 @@ ${v.en_taller ? `<div class="status-badge danger">🔧 ${v.os_estatus || 'En ser
     const iconoAddChofer   = document.querySelector(".icono-AddChofer");
     const iconoVolver      = document.querySelector(".icono-Volver");
     const iconoEstadisticas= document.querySelector(".icono-estadisticas");
+    const iconoServicios= document.querySelector(".icono-servicios");
     if (iconoAddChofer) { const n="/Pedidos_GA/Img/Botones%20entregas/Choferes/ADDSERVMECNA.png", h="/Pedidos_GA/Img/Botones%20entregas/Choferes/ADDSERVMECBLANC.png"; iconoAddChofer.addEventListener("mouseover", () => iconoAddChofer.src=h); iconoAddChofer.addEventListener("mouseout",  () => iconoAddChofer.src=n); }
     if (iconoVolver)      { const n="/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVAZ.png", h="/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVNA.png"; iconoVolver.addEventListener("mouseover", () => iconoVolver.src=h);      iconoVolver.addEventListener("mouseout",  () => iconoVolver.src=n); }
     if (iconoEstadisticas){ const n="/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/ESTNA2.png", h="/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/ESTBL2.png"; iconoEstadisticas.addEventListener("mouseover", () => iconoEstadisticas.src=h); iconoEstadisticas.addEventListener("mouseout",  () => iconoEstadisticas.src=n); }
+    if (iconoServicios){ const n="/Pedidos_GA/Img/SVG/ServiciosN.svg", h="/Pedidos_GA/Img/SVG/ServiciosB.svg"; iconoServicios.addEventListener("mouseover", () => iconoServicios.src=h); iconoServicios.addEventListener("mouseout",  () => iconoServicios.src=n); }
+
   });
 
   // ==== APIs de asignación (igual que antes) ====

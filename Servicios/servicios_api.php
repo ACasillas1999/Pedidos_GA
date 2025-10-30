@@ -67,8 +67,15 @@ switch ($action) {
     ok($rows);
   }
 
-  case 'inventario': { // catálogo de materiales (incluye costo/stock/presentación)
-    $res = $conn->query("SELECT id, nombre, marca, modelo, costo, cantidad, stock_minimo, base_unidad, presentacion_unidad, presentacion_cantidad FROM inventario ORDER BY nombre");
+  case 'inventario': { // catálogo de materiales (incluye costo/stock/presentación y vehículos aplicables)
+    $res = $conn->query("SELECT i.id, i.nombre, i.marca, i.modelo, i.costo, i.cantidad, i.stock_minimo, i.base_unidad, i.presentacion_unidad, i.presentacion_cantidad,
+                                (
+                                  SELECT GROUP_CONCAT(iv.id_vehiculo)
+                                  FROM inventario_vehiculo iv
+                                  WHERE iv.id_inventario = i.id
+                                ) AS vehs
+                         FROM inventario i
+                         ORDER BY i.nombre");
     $rows=[];
     while($r=$res->fetch_assoc()){
       $label = trim($r['nombre'].
@@ -76,6 +83,13 @@ switch ($action) {
           ($r['modelo']?' · '.$r['modelo']:'').
           ((isset($r['presentacion_cantidad']) && $r['presentacion_cantidad']>0 && !empty($r['presentacion_unidad']))
             ? (' · '.$r['presentacion_cantidad'].' '.$r['presentacion_unidad']) : ''));
+      $veh = [];
+      if (!empty($r['vehs'])) {
+        foreach (explode(',', $r['vehs']) as $v) {
+          $v = trim($v);
+          if ($v !== '') $veh[] = (int)$v;
+        }
+      }
       $rows[]=[
         'id'=>(int)$r['id'],
         'nombre'=>$r['nombre'],
@@ -87,7 +101,8 @@ switch ($action) {
         'contenido'=> isset($r['presentacion_cantidad']) ? (float)$r['presentacion_cantidad'] : null,
         'cantidad'=> isset($r['cantidad']) ? (int)$r['cantidad'] : 0,
         'stock_minimo'=> isset($r['stock_minimo']) ? (int)$r['stock_minimo'] : 0,
-        'label'=>$label
+        'label'=>$label,
+        'vehiculos'=>$veh
       ];
     }
     ok($rows);
@@ -188,6 +203,50 @@ switch ($action) {
       jerr("No se puede crear el servicio: materiales sin stock o inválidos: ".implode('; ', $faltantes), 409);
     }
 
+    // Validación de compatibilidad materiales-vehículos
+    if (!empty($veh) && !empty($mat)) {
+      // armar mapa de inventario -> vehículos permitidos (si vacío => aplica a todos)
+      $invIds = [];
+      foreach ($mat as $m) { $iid = (int)$m['id_inventario']; if ($iid>0) $invIds[$iid]=true; }
+      if (!empty($invIds)) {
+        $ids = implode(',', array_map('intval', array_keys($invIds)));
+        $q = $conn->query("SELECT iv.id_inventario, GROUP_CONCAT(iv.id_vehiculo) AS vehs, i.nombre
+                           FROM inventario i
+                           LEFT JOIN inventario_vehiculo iv ON iv.id_inventario=i.id
+                           WHERE i.id IN ($ids)
+                           GROUP BY i.id");
+        $compat = [];
+        while ($r = $q->fetch_assoc()) {
+          $list = [];
+          if (!empty($r['vehs'])) {
+            foreach (explode(',', $r['vehs']) as $v) { $v = trim($v); if ($v!=='') $list[] = (int)$v; }
+          }
+          $compat[(int)$r['id_inventario']] = ['veh'=>$list, 'nombre'=>$r['nombre']];
+        }
+        $bad = [];
+        foreach (array_keys($invIds) as $iid) {
+          $row = $compat[$iid] ?? ['veh'=>[], 'nombre'=>('ID '.$iid)];
+          $allowed = $row['veh'];
+          if (empty($allowed)) continue; // sin restricción => aplica a todos
+          $notAllowed = [];
+          foreach ($veh as $vid) { if (!in_array((int)$vid, $allowed, true)) $notAllowed[] = (int)$vid; }
+          if (!empty($notAllowed)) {
+            // mapear a placas para mensaje
+            $placas = [];
+            if (!empty($notAllowed)) {
+              $idsStr = implode(',', array_map('intval',$notAllowed));
+              $resP = $conn->query("SELECT id_vehiculo, placa FROM vehiculos WHERE id_vehiculo IN ($idsStr)");
+              while ($p = $resP->fetch_assoc()) { $placas[] = ($p['placa'] ?: ('ID '.$p['id_vehiculo'])); }
+            }
+            $bad[] = ($row['nombre'] ?: ('ID '.$iid)).' no aplica a: '.(empty($placas)? implode(',',$notAllowed) : implode(', ',$placas));
+          }
+        }
+        if (!empty($bad)) {
+          jerr('Materiales incompatibles con los vehículos seleccionados: '.implode(' | ', $bad), 409);
+        }
+      }
+    }
+
     $conn->begin_transaction();
     try{
       $st=$conn->prepare("INSERT INTO servicios (nombre,duracion_minutos,costo_mano_obra,precio) VALUES (?,?,?,?)");
@@ -235,6 +294,46 @@ switch ($action) {
     }
     if (!empty($faltantes)) {
       jerr("No se puede actualizar el servicio: materiales sin stock o inválidos: ".implode('; ', $faltantes), 409);
+    }
+
+    // Validación de compatibilidad materiales-vehículos en update
+    if (!empty($veh) && !empty($mat)) {
+      $invIds = [];
+      foreach ($mat as $m) { $iid = (int)$m['id_inventario']; if ($iid>0) $invIds[$iid]=true; }
+      if (!empty($invIds)) {
+        $ids = implode(',', array_map('intval', array_keys($invIds)));
+        $q = $conn->query("SELECT iv.id_inventario, GROUP_CONCAT(iv.id_vehiculo) AS vehs, i.nombre
+                           FROM inventario i
+                           LEFT JOIN inventario_vehiculo iv ON iv.id_inventario=i.id
+                           WHERE i.id IN ($ids)
+                           GROUP BY i.id");
+        $compat = [];
+        while ($r = $q->fetch_assoc()) {
+          $list = [];
+          if (!empty($r['vehs'])) {
+            foreach (explode(',', $r['vehs']) as $v) { $v = trim($v); if ($v!=='') $list[] = (int)$v; }
+          }
+          $compat[(int)$r['id_inventario']] = ['veh'=>$list, 'nombre'=>$r['nombre']];
+        }
+        $bad = [];
+        foreach (array_keys($invIds) as $iid) {
+          $row = $compat[$iid] ?? ['veh'=>[], 'nombre'=>('ID '.$iid)];
+          $allowed = $row['veh'];
+          if (empty($allowed)) continue;
+          $notAllowed = [];
+          foreach ($veh as $vid) { if (!in_array((int)$vid, $allowed, true)) $notAllowed[] = (int)$vid; }
+          if (!empty($notAllowed)) {
+            $placas = [];
+            $idsStr = implode(',', array_map('intval',$notAllowed));
+            $resP = $conn->query("SELECT id_vehiculo, placa FROM vehiculos WHERE id_vehiculo IN ($idsStr)");
+            while ($p = $resP->fetch_assoc()) { $placas[] = ($p['placa'] ?: ('ID '.$p['id_vehiculo'])); }
+            $bad[] = ($row['nombre'] ?: ('ID '.$iid)).' no aplica a: '.(empty($placas)? implode(',',$notAllowed) : implode(', ',$placas));
+          }
+        }
+        if (!empty($bad)) {
+          jerr('Materiales incompatibles con los vehículos seleccionados: '.implode(' | ', $bad), 409);
+        }
+      }
     }
 
     $conn->begin_transaction();

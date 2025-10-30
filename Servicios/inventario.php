@@ -222,17 +222,8 @@ while ($v = $qVehiculos->fetch_assoc()) {
         <label>Presentación - Unidad</label>
         <select id="f_uni" class="ga-select">
           <option value="">— Seleccione unidad —</option>
-          <option value="pieza">pieza</option>
-          <option value="piezas">piezas</option>
-          <option value="juego">juego</option>
-          <option value="paquete">paquete</option>
-          <option value="litro">litro</option>
-          <option value="ml">ml</option>
-          <option value="caja">caja</option>
-          <option value="kit">kit</option>
-          <option value="galón">galón</option>
-          <option value="kg">kg</option>
-          <option value="g">g</option>
+          <option value="pieza">pieza/s</option>
+          <option value="litro">litro/s</option>
         </select>
       </div>
 

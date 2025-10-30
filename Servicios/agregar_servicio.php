@@ -661,6 +661,26 @@ session_start();
         return;
       }
 
+      // Validación de compatibilidad materiales-vehículos
+      if (selectedVeh.size > 0 && selectedMat.size > 0) {
+        const incompatibles = [];
+        const vehSelected = [...selectedVeh];
+        for (const [id, qty] of selectedMat.entries()) {
+          const it = INVENTARIO.find(x => x.id === id);
+          const allowed = Array.isArray(it?.vehiculos) ? it.vehiculos : [];
+          if (allowed.length === 0) continue; // sin restricción => aplica a todos
+          const noAplica = vehSelected.filter(v => !allowed.includes(v));
+          if (noAplica.length) {
+            const nombres = noAplica.map(v => (VEHICULOS.find(x => x.id === v)?.placa) || ('ID ' + v));
+            incompatibles.push(`${it?.label || ('ID ' + id)} no aplica a: ${nombres.join(', ')}`);
+          }
+        }
+        if (incompatibles.length) {
+          alert('No se puede guardar: materiales incompatibles con los vehículos seleccionados:\n- ' + incompatibles.join('\n- '));
+          return;
+        }
+      }
+
       const data = {
         id: $('#btnGuardar').dataset.editId || undefined,
         nombre: $('#f_nombre').value.trim(),
