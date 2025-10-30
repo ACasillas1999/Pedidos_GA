@@ -245,6 +245,14 @@ async function apiPost(action, data) {
                   <label for="confirm-date">Fecha programada</label>
                   <input type="date" id="confirm-date" />
                 </div>
+                <div class="field grid-1" style="grid-column:1/-1;display:none" id="confirm-service-wrap">
+                  <label for="confirm-service">Servicio</label>
+                  <select id="confirm-service"></select>
+                  <div style="color:#64748b; font-size:.9rem; margin-top:4px">Selecciona el servicio para esta orden.</div>
+                </div>
+                <div class="field grid-1" style="grid-column:1/-1;display:none" id="confirm-reset-wrap">
+                  <label><input type="checkbox" id="confirm-reset"> Reiniciar Km_actual a 0</label>
+                </div>
                 <div class="actions" style="grid-column:1/-1">
                   <button class="btn-ghost" data-cancel>Cancelar</button>
                   <button class="btn-primary" data-ok>Confirmar</button>
@@ -260,6 +268,10 @@ async function apiPost(action, data) {
           msg: wrap.querySelector('#confirm-msg'),
           dateWrap: wrap.querySelector('#confirm-date-wrap'),
           date: wrap.querySelector('#confirm-date'),
+          resetWrap: wrap.querySelector('#confirm-reset-wrap'),
+          reset: wrap.querySelector('#confirm-reset'),
+          serviceWrap: wrap.querySelector('#confirm-service-wrap'),
+          service: wrap.querySelector('#confirm-service'),
           btnOk: wrap.querySelector('[data-ok]'),
           btnCancel: wrap.querySelector('[data-cancel]'),
           btnX: wrap.querySelector('[data-x]')
@@ -271,9 +283,32 @@ async function apiPost(action, data) {
         confirmEl.msg.textContent = `Confirmas mover la orden ${id} a ${human}? Esta operación no se podrá revertir.`;
         const needDate = (to === 'Programado');
         confirmEl.dateWrap.style.display = needDate ? 'block' : 'none';
+        const needReset = (to === 'Completado');
+        confirmEl.resetWrap.style.display = needReset ? 'block' : 'none';
+        if (!needReset) confirmEl.reset.checked = false;
         if (needDate) {
           const hoy = new Date().toISOString().slice(0,10);
           confirmEl.date.value = hoy;
+        }
+        // Si la orden no tiene servicio y vamos a Programado, pedirlo
+        const cur = state.items.find(x=> x.id===id);
+        const needService = (to==='Programado' && (!cur || !Number(cur.id_servicio||0)));
+        confirmEl.serviceWrap.style.display = needService ? 'block' : 'none';
+        if (needService) {
+          // Cargar catálogos si faltan
+          const ensureOptions = async ()=>{
+            if (!state.options.servicios.length || !state.options.vehiculos.length) {
+              const res = await apiGet('options');
+              if (res && res.ok) {
+                state.options = { vehiculos:res.vehiculos||[], servicios:res.servicios||[], inventario:res.inventario||[] };
+              }
+            }
+          };
+          ensureOptions().then(()=>{
+            const vid = Number(cur?.id_vehiculo||0);
+            const servicios = (state.options.servicios||[]).filter(s => !Array.isArray(s.vehiculos) || s.vehiculos.length===0 || s.vehiculos.includes(vid));
+            confirmEl.service.innerHTML = '<option value="" disabled selected>Selecciona...</option>' + servicios.map(s=>`<option value="${s.id}">${s.nombre}</option>`).join('');
+          });
         }
         function close(){ confirmEl.wrap.style.display='none'; cleanup(); }
         function cleanup(){
@@ -283,14 +318,22 @@ async function apiPost(action, data) {
           confirmEl.wrap.removeEventListener('click', onBackdrop);
         }
         function onBackdrop(e){ if (e.target===confirmEl.wrap) close(); }
-        function onOk(){
+        async function onOk(){
           const payload = { id, estatus: to };
           if (to==='Programado') {
             const val = (confirmEl.date.value||'').slice(0,10);
             const hoy = new Date().toISOString().slice(0,10);
             if (!val || val < hoy) { toast('La fecha no puede ser anterior a hoy', false); return; }
             payload.fecha_programada = val;
+            if (confirmEl.serviceWrap.style.display !== 'none') {
+              const srv = Number(confirmEl.service.value||0);
+              if (!srv) { toast('Selecciona un servicio', false); return; }
+              // Asignar servicio antes de programar
+              const res = await apiPost('set_service', { id, id_servicio: srv });
+              if (!res || !res.ok) { toast(res?.msg||'No se pudo asignar el servicio', false); return; }
+            }
           }
+          if (to==='Completado' && confirmEl.reset && confirmEl.reset.checked) { payload.reset_km = true; }
           close();
           onConfirm(payload);
         }
@@ -328,9 +371,25 @@ async function apiPost(action, data) {
             <span class="goto" data-goto="${it.id}" title="Ver detalle">ver detalle</span>
           </div>
         `;
+        // Si no tiene servicio asignado, agrega un acceso para asignarlo
+        try {
+          if (!(Number(it.id_servicio||0) > 0)) {
+            const tags = div.querySelector('.tags');
+            if (tags) {
+              const a = document.createElement('span');
+              a.className = 'goto';
+              a.setAttribute('data-assign', String(it.id));
+              a.title = 'Asignar servicio';
+              a.textContent = 'asignar servicio';
+              tags.appendChild(a);
+            }
+          }
+        } catch(_){}
         div.querySelector('.goto').addEventListener('click', () => {
           window.location.href = `/Pedidos_GA/Servicios/detalles_orden.php?id=${it.id}`;
         });
+        const assignEl = div.querySelector('[data-assign]');
+        if (assignEl) assignEl.addEventListener('click', ()=> openServicePicker(it.id));
         return div;
       }
 
@@ -430,12 +489,75 @@ async function apiPost(action, data) {
             }});
           });
         });
+        // Agregar boton Asignar servicio dinámicamente a filas sin servicio
+        try {
+          const trs = Array.from(el.tbody.querySelectorAll('tr'));
+          trs.forEach((tr, idx)=>{
+            const it = rows[idx];
+            if (it && !(Number(it.id_servicio||0) > 0)) {
+              const cell = tr.querySelector('td:last-child');
+              if (cell) {
+                const b = document.createElement('button');
+                b.setAttribute('data-assign', String(it.id));
+                b.textContent = 'Asignar servicio';
+                cell.insertBefore(b, cell.querySelector('button[data-goto]'));
+              }
+            }
+          });
+        } catch(_){}
+        el.tbody.querySelectorAll('button[data-assign]').forEach(btn=>{
+          btn.addEventListener('click', ()=>{
+            const id = Number(btn.getAttribute('data-assign'));
+            openServicePicker(id);
+          });
+        });
         el.tbody.querySelectorAll('button[data-goto]').forEach(btn=>{
           btn.addEventListener('click', ()=>{
             const id = Number(btn.getAttribute('data-goto'));
             window.location.href = `/Pedidos_GA/detalles_orden.php?id=${id}`;
           });
         });
+      }
+
+      // Modal para asignar servicio a una OS pendiente sin servicio
+      function openServicePicker(id){
+        const cur = state.items.find(x=> x.id===id);
+        confirmEl.msg.textContent = `Asignar servicio a la orden ${id}`;
+        confirmEl.dateWrap.style.display = 'none';
+        confirmEl.serviceWrap.style.display = 'block';
+        const ensureOptions = async ()=>{
+          if (!state.options.servicios.length || !state.options.vehiculos.length) {
+            const res = await apiGet('options');
+            if (res && res.ok) {
+              state.options = { vehiculos:res.vehiculos||[], servicios:res.servicios||[], inventario:res.inventario||[] };
+            }
+          }
+        };
+        ensureOptions().then(()=>{
+          const vid = Number(cur?.id_vehiculo||0);
+          const servicios = (state.options.servicios||[]).filter(s => !Array.isArray(s.vehiculos) || s.vehiculos.length===0 || s.vehiculos.includes(vid));
+          confirmEl.service.innerHTML = '<option value="" disabled selected>Selecciona...</option>' + servicios.map(s=>`<option value="${s.id}">${s.nombre}</option>`).join('');
+        });
+        function close(){ confirmEl.wrap.style.display='none'; cleanup(); }
+        function cleanup(){
+          confirmEl.btnOk.removeEventListener('click', onOk);
+          confirmEl.btnCancel.removeEventListener('click', close);
+          confirmEl.btnX.removeEventListener('click', close);
+          confirmEl.wrap.removeEventListener('click', onBack);
+        }
+        function onBack(e){ if (e.target===confirmEl.wrap) close(); }
+        async function onOk(){
+          const srv = Number(confirmEl.service.value||0);
+          if (!srv) { toast('Selecciona un servicio', false); return; }
+          const res = await apiPost('set_service', { id, id_servicio: srv });
+          if (!res || !res.ok) { toast(res?.msg||'No se pudo asignar', false); return; }
+          close(); toast('Servicio asignado'); loadList();
+        }
+        confirmEl.btnOk.addEventListener('click', onOk);
+        confirmEl.btnCancel.addEventListener('click', close);
+        confirmEl.btnX.addEventListener('click', close);
+        confirmEl.wrap.addEventListener('click', onBack);
+        confirmEl.wrap.style.display='flex';
       }
 
       function setTab(tab){

@@ -358,6 +358,12 @@ try {
     if (!$cur) { http_response_code(404); echo json_encode(['ok'=>false,'error'=>'NOT_FOUND']); exit; }
 
     if ($to === 'Programado') {
+      // Exigir servicio asignado antes de programar
+      $cur = select_tablero($pdo, $id)[0] ?? null;
+      if (!$cur) { http_response_code(404); echo json_encode(['ok'=>false,'error'=>'NOT_FOUND']); exit; }
+      if ((int)($cur['id_servicio'] ?? 0) <= 0) {
+        echo json_encode(['ok'=>false,'error'=>'NEED_SERVICE','msg'=>'Asigna un servicio antes de programar']); exit;
+      }
       $fecha = trim($in['fecha_programada'] ?? '');
       // si ya está programado o más adelante, solo actualiza fecha
       if (in_array((string)$cur['status'], ['Programado','EnTaller','Completado'], true)) {
@@ -425,6 +431,14 @@ try {
 
     if ($to === 'Completado') {
       try { $pdo->prepare("UPDATE orden_servicio SET estatus='Completado' WHERE id=?")->execute([$id]); } catch (Throwable $e) {}
+      // Reset opcional de Km_Actual a 0
+      $reset = !empty($in['reset_km']);
+      if ($reset) {
+        try {
+          $veh = (int)($cur['id_vehiculo'] ?? 0);
+          if ($veh > 0) { $pdo->prepare("UPDATE vehiculos SET Km_Actual=0 WHERE id_vehiculo=?")->execute([$veh]); }
+        } catch (Throwable $e) {}
+      }
       try { $user = isset($_SESSION['usuario']) ? (string)$_SESSION['usuario'] : null; $pdo->prepare("INSERT INTO orden_servicio_hist (id_orden,de,a,usuario) VALUES (?,?,?,?)")->execute([$id,(string)$cur['status'],'Completado',$user]); } catch (Throwable $e) {}
       echo json_encode(['ok'=>true,'msg'=>'Servicio completado']); exit;
     }

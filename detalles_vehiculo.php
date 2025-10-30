@@ -108,11 +108,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['kilometraje_final']))
         exit;
     }
 
-    $nuevo_kilometraje = ((int)$vehiculo['Km_Actual']) + $km_recorridos;
-    $conn->query("UPDATE vehiculos
-                  SET Km_Actual = $nuevo_kilometraje,
-                      Km_Total  = Km_Total + $km_recorridos
+// Comportamiento como en vehiculos_old: Km_Actual avanza con el uso y Km_Total conserva histórico
+$kmActualNuevo = ((int)$vehiculo['Km_Actual']) + $km_recorridos;
+$kmTotalNuevo  = ((int)$vehiculo['Km_Total'])  + $km_recorridos;
+$conn->query("UPDATE vehiculos
+                  SET Km_Actual = $kmActualNuevo,
+                      Km_Total  = $kmTotalNuevo
                   WHERE id_vehiculo = $id_vehiculo");
+// Para la lógica siguiente, usar el nuevo Km_Actual
+$nuevo_kilometraje = $kmActualNuevo;
 
     $conn->query("INSERT INTO registro_kilometraje
                     (id_vehiculo, id_chofer, Tipo_Registro, fecha_registro, kilometraje_inicial, kilometraje_final)
@@ -144,26 +148,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['kilometraje_final']))
         if ($r = $conn->query($sqlOpen)) { $existeAbierta = (bool)$r->num_rows; }
 
         if (!$existeAbierta) {
-            // Elegir un servicio compatible con el vehículo (si hay reglas); si no, el primero disponible
-            $svcId = 0;
-            if ($r = $conn->query("SELECT s.id
-                                     FROM servicios s
-                                     JOIN servicio_vehiculo sv ON sv.id_servicio = s.id
-                                    WHERE sv.id_vehiculo = $id_vehiculo
-                                    ORDER BY s.id LIMIT 1")) {
-                if ($r->num_rows) { $svcId = (int)$r->fetch_assoc()['id']; }
+            // Ya no seleccionamos un servicio automático: intentamos crear la OS sin servicio
+            // Asegurar que orden_servicio.id_servicio permita NULL
+            $permiteNull = true;
+            if ($rc = $conn->query("SHOW COLUMNS FROM orden_servicio LIKE 'id_servicio'")) {
+                if ($rc->num_rows) {
+                    $col = $rc->fetch_assoc();
+                    $permiteNull = (strtoupper((string)($col['Null'] ?? '')) === 'YES');
+                }
             }
-            if ($svcId <= 0) {
-                if ($r = $conn->query("SELECT id FROM servicios ORDER BY id LIMIT 1")) {
-                    if ($r->num_rows) { $svcId = (int)$r->fetch_assoc()['id']; }
+            if (!$permiteNull) {
+                // Intentar modificar el esquema para permitir NULL
+                try { @$conn->query("ALTER TABLE orden_servicio MODIFY id_servicio INT NULL"); } catch (Throwable $e) {}
+                // Revalidar
+                if ($rc = $conn->query("SHOW COLUMNS FROM orden_servicio LIKE 'id_servicio'")) {
+                    if ($rc->num_rows) {
+                        $col = $rc->fetch_assoc();
+                        $permiteNull = (strtoupper((string)($col['Null'] ?? '')) === 'YES');
+                    }
                 }
             }
 
-            if ($svcId > 0) {
+            if ($permiteNull) {
                 $nota = $conn->real_escape_string('[AUTO_KM] Autogenerado por kilometraje alcanzado');
                 if ($hasEstatus) {
+                    // Insertar con id_servicio NULL y estatus Pendiente
                     $conn->query("INSERT INTO orden_servicio (id_vehiculo,id_servicio,duracion_minutos,notas,estatus)
-                                  VALUES ($id_vehiculo,$svcId,0,'$nota','Pendiente')");
+                                  VALUES ($id_vehiculo, NULL, 0, '$nota','Pendiente')");
                     $osId = $conn->insert_id;
                     // Historial de estatus (si existe la tabla de historial)
                     @$conn->query("CREATE TABLE IF NOT EXISTS orden_servicio_hist (
@@ -180,9 +191,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['kilometraje_final']))
                     @$conn->query("INSERT INTO orden_servicio_hist (id_orden,de,a,usuario,comentario)
                                    VALUES ($osId,'','Pendiente','$usuarioLog','Autogenerado por KM')");
                 } else {
+                    // Si no existe la columna estatus, inserta sin estatus
                     $conn->query("INSERT INTO orden_servicio (id_vehiculo,id_servicio,duracion_minutos,notas)
-                                  VALUES ($id_vehiculo,$svcId,0,'$nota')");
+                                  VALUES ($id_vehiculo, NULL, 0, '$nota')");
                 }
+            } else {
+                // No se pudo permitir NULL en id_servicio: evitar fatal y continuar sin crear OS
+                error_log('ORDEN_SERVICIO auto: id_servicio es NOT NULL. No se creó OS automática.');
             }
         }
     }
@@ -306,6 +321,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
         $stmt->execute();
 
         header("Location: detalles_vehiculo.php?id={$id_vehiculo}&msg=chofer-actualizado");
+        exit;
+    }
+}
+
+/* ====== POST: Cambiar Km de Servicio ====== */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && (($_POST['accion'] ?? '') === 'cambiar_km_servicio')) {
+    $nuevoKmServicio = (int)($_POST['km_de_servicio'] ?? 0);
+    if ($nuevoKmServicio > 0 && $id_vehiculo > 0) {
+        $stmt = $conn->prepare("UPDATE vehiculos SET Km_de_Servicio = ? WHERE id_vehiculo = ?");
+        $stmt->bind_param("ii", $nuevoKmServicio, $id_vehiculo);
+        $stmt->execute();
+        header("Location: detalles_vehiculo.php?id={$id_vehiculo}&msg=km-servicio-actualizado");
+        exit;
+    } else {
+        echo "<script>alert('Valor inválido para Km de Servicio');history.back();</script>";
         exit;
     }
 }
@@ -971,6 +1001,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'desas
             <a href="#ext" class="tab" data-tab="ext">MAPA GPS</a>
 
 
+        </div>
+
+        <!-- Cambiar Km de Servicio -->
+        <div style="margin-top:12px; padding:12px; border:1px dashed #e1e7ef; border-radius:10px; background:#f9fbff">
+            <form method="post" style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                <input type="hidden" name="accion" value="cambiar_km_servicio">
+                <strong>Km para próximo servicio:</strong>
+                <input type="number" name="km_de_servicio" class="modal__field" style="min-width:180px" min="1" required value="<?= (int)$kmSrv ?>">
+                <button type="submit" class="btn">Guardar</button>
+                <span style="color:#64748b; font-size:.9rem">Define el kilometraje objetivo al que le toca servicio.</span>
+            </form>
         </div>
 
     </section>
