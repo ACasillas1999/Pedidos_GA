@@ -147,12 +147,28 @@ while ($v = $qVehiculos->fetch_assoc()) {
 
 </head>
 <body class="theme-light">
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var iconoAgregarSer = document.querySelector(".icono-agregar_servicio");
+    if (iconoAgregarSer) {
+        var imgNormalAgregarSer = "/Pedidos_GA/Img/SVG/CrearSerN.svg";
+        var imgHoverAgregarSer  = "/Pedidos_GA/Img/SVG/CrearSerB.svg";
+       iconoAgregarSer.addEventListener("mouseover", function(){ this.src = imgHoverAgregarSer; });
+       iconoAgregarSer.addEventListener("mouseout",  function(){ this.src = imgNormalAgregarSer ; });
+      }
+    });
+</script>
 <div class="wrapper">
 
   <!-- Sidebar -->
   <div class="sidebar">
     <ul>
-      <li><a href="agregar_servicio.php">Crear servicios</a></li>
+      <li>
+        <a href="agregar_servicio.php">
+          <img src="/Pedidos_GA/Img/SVG/CrearSerN.svg" class="icono-agregar_servicio sidebar-icon" alt="Agregar">
+        </a>
+      </li>
       <li><a href="inventario_estadisticas.php">Estadísticas Inventario</a></li>
       <li class="corner-left-bottom">
         <a href="../Servicios/Servicios.php">

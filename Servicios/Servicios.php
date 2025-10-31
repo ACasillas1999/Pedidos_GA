@@ -27,12 +27,12 @@ session_start();
 <body>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
-      var iconoAddChofer = document.querySelector(".icono-AddChofer");
-      if (iconoAddChofer) {
-        var imgNormalAddChoferes = "/Pedidos_GA/Img/Botones%20entregas/Choferes/ADDSERVMECNA.png";
-        var imgHoverCAddhoferes  = "/Pedidos_GA/Img/Botones%20entregas/Choferes/ADDSERVMECBLANC.png";
-        iconoAddChofer.addEventListener("mouseover", function(){ this.src = imgHoverCAddhoferes; });
-        iconoAddChofer.addEventListener("mouseout",  function(){ this.src = imgNormalAddChoferes; });
+      var iconoInventario = document.querySelector(".icono-inventario");
+      if (iconoInventario) {
+        var imgNormalInventario = "/Pedidos_GA/Img/SVG/InventarioN.svg";
+        var imgHoverInventario  = "/Pedidos_GA/Img/SVG/InventarioB.svg";
+        iconoInventario.addEventListener("mouseover", function(){ this.src = imgHoverInventario; });
+        iconoInventario.addEventListener("mouseout",  function(){ this.src = imgNormalInventario ; });
       }
 
       var iconoVolver = document.querySelector(".icono-Volver");
@@ -43,20 +43,29 @@ session_start();
         iconoVolver.addEventListener("mouseout",  function(){ this.src = imgNormalVolver; });
       }
 
-      var iconoEstadisticas = document.querySelector(".icono-estadisticas");
-      if (iconoEstadisticas) {
-        var imgNormalEstadisticas = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/ESTNA2.png";
-        var imgHoverEstadisticas  = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/ESTBL2.png";
-        iconoEstadisticas.addEventListener("mouseover", function(){ this.src = imgHoverEstadisticas; });
-        iconoEstadisticas.addEventListener("mouseout",  function(){ this.src = imgNormalEstadisticas; });
+      var iconoAgregar = document.querySelector(".icono-agregar_servicio");
+      if (iconoAgregar) {
+        var imgNormalAgregar = "/Pedidos_GA/Img/SVG/CrearSerN.svg";
+        var imgHoverAgregar  = "/Pedidos_GA/Img/SVG/CrearSerB.svg";
+        iconoAgregar.addEventListener("mouseover", function(){ this.src = imgHoverAgregar; });
+        iconoAgregar.addEventListener("mouseout",  function(){ this.src = imgNormalAgregar; });
       }
     });
   </script>
 
   <div class="sidebar">
     <ul>
-      <li><a href="inventario.php"><i ></i> Inventario</a></li>
-      <li><a href="agregar_servicio.php">Crear Servicios</a></li>
+      <li>
+        <a href="inventario.php">
+           <img src="/Pedidos_GA/Img/SVG/InventarioN.svg" class="icono-inventario sidebar-icon" alt="Inventario">
+        </a>
+      </li>
+      <li>
+        <a href="agregar_servicio.php">
+          <img src="/Pedidos_GA/Img/SVG/CrearSerN.svg" class="icono-agregar_servicio sidebar-icon" alt="Agregar">
+        </a>
+        </a>
+      </li>
       <li class="corner-left-bottom">
         <a href="../vehiculos.php">
           <img src="/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Volver" class="icono-Volver" style="max-width:35%;height:auto;">
@@ -141,6 +150,13 @@ session_start();
       .list-wrap tbody tr:hover td{background:#f1f5f9}
       .list-wrap td button{border:1px solid var(--border); background:#fff; border-radius:8px; padding:.25rem .5rem; cursor:pointer}
       .list-wrap td button:hover{background:#0a66c2; color:#fff; border-color:#0a66c2}
+
+    .sidebar-icon {
+    width: 62px;
+    height: auto;
+    display: block;
+    transition: transform .15s ease;
+}
 
 
     </style>

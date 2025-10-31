@@ -95,6 +95,25 @@ $result = $stmt->get_result();
 
 $pedidos = array();
 
+// Consultar si el chofer tiene vehículo asignado
+$vehiculo = null;
+$sqlVeh = "SELECT v.id_vehiculo, v.placa, v.numero_serie, v.tipo, v.Km_Actual, v.Sucursal
+           FROM vehiculos v
+           JOIN choferes c ON c.ID = v.id_chofer_asignado
+           WHERE c.username = ?
+           LIMIT 1";
+$stVeh = $conn->prepare($sqlVeh);
+if ($stVeh) {
+    $stVeh->bind_param('s', $username);
+    if ($stVeh->execute()) {
+        $resVeh = $stVeh->get_result();
+        if ($resVeh && $resVeh->num_rows > 0) {
+            $vehiculo = $resVeh->fetch_assoc();
+        }
+    }
+    $stVeh->close();
+}
+
 if ($result->num_rows > 0) {
    
     // Recorrer los resultados y agregarlos al array de pedidos
@@ -119,8 +138,10 @@ if ($result->num_rows > 0) {
             'COMENTARIOS' => $row['COMENTARIOS'],
             'Ruta' => $row['Ruta'],
             'Coord_Origen' => $row['Coord_Origen'],
-            'Coord_Destino' => $row['Coord_Destino']
-             
+            'Coord_Destino' => $row['Coord_Destino'],
+            'VEHICULO_ASIGNADO' => $vehiculo !== null,
+            'VEHICULO_DETALLE' => $vehiculo
+            
         );
         array_push($pedidos, $pedido);
     }
@@ -132,7 +153,22 @@ if ($result->num_rows > 0) {
 ob_clean();
 // Devolver los pedidos como JSON
 header('Content-Type: application/json');
-$json = json_encode($pedidos);
+
+$v2 = isset($_GET['v2']) ? (int)$_GET['v2'] : 0;
+if ($v2 === 1) {
+    $payload = [
+        'ok' => true,
+        'username' => $username,
+        'vehiculo_asignado' => $vehiculo !== null,
+        'vehiculo' => $vehiculo,
+        'pedidos' => $pedidos,
+    ];
+    $json = json_encode($payload);
+} else {
+    // Compatibilidad: respuesta como arreglo de pedidos (cada pedido ya incluye info de vehículo si existe)
+    $json = json_encode($pedidos);
+}
+
 if ($json === false) {
     echo json_encode(["error" => "Error al codificar JSON", "detalle" => json_last_error_msg()]);
 } else {
