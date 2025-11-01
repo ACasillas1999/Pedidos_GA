@@ -157,7 +157,16 @@ while ($v = $qVehiculos->fetch_assoc()) {
        iconoAgregarSer.addEventListener("mouseover", function(){ this.src = imgHoverAgregarSer; });
        iconoAgregarSer.addEventListener("mouseout",  function(){ this.src = imgNormalAgregarSer ; });
       }
-    });
+    
+
+    var iconoInvEstadisticas = document.querySelector(".icono-invEstadisticas");
+    if (iconoInvEstadisticas) {
+        var imgNormalInvEstadisticas = "/Pedidos_GA/Img/SVG/EstaInventarioN.svg";
+        var imgHoverInvEstadisticas  = "/Pedidos_GA/Img/SVG/EstaInventarioB.svg";
+       iconoInvEstadisticas.addEventListener("mouseover", function(){ this.src = imgHoverInvEstadisticas ; });
+       iconoInvEstadisticas.addEventListener("mouseout",  function(){ this.src = imgNormalInvEstadisticas  ; });
+      }
+    }); 
 </script>
 <div class="wrapper">
 
@@ -169,7 +178,11 @@ while ($v = $qVehiculos->fetch_assoc()) {
           <img src="/Pedidos_GA/Img/SVG/CrearSerN.svg" class="icono-agregar_servicio sidebar-icon" alt="Agregar">
         </a>
       </li>
-      <li><a href="inventario_estadisticas.php">Estadísticas Inventario</a></li>
+      <li>
+        <a href="inventario_estadisticas.php">
+          <img src="/Pedidos_GA/Img/SVG/EstaInventarioN.svg" class="icono-invEstadisticas sidebar-icon" alt="Inventario Estadistica">
+        </a>
+      </li>
       <li class="corner-left-bottom">
         <a href="../Servicios/Servicios.php">
           <img src="/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Volver" class="icono-Volver" style="max-width:35%;height:auto;">

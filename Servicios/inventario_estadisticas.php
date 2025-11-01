@@ -159,10 +159,28 @@ try {
 </head>
 
 <body>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var iconoInventario = document.querySelector(".icono-inventario");
+      if (iconoInventario) {
+        var imgNormalInventario = "/Pedidos_GA/Img/SVG/InventarioN.svg";
+        var imgHoverInventario  = "/Pedidos_GA/Img/SVG/InventarioB.svg";
+        iconoInventario.addEventListener("mouseover", function(){ this.src = imgHoverInventario; });
+        iconoInventario.addEventListener("mouseout",  function(){ this.src = imgNormalInventario ; });
+      }
+
+  
+    });
+  </script>
+
   <div class="wrap">
     <div class="sidebar">
       <ul>
-        <li><a href="inventario.php">Inventario</a></li>
+        <li><a href="inventario.php">
+                   <img src="/Pedidos_GA/Img/SVG/InventarioN.svg" class="icono-inventario sidebar-icon" alt="Inventario">
+
+        </a>
+      </li>
         <li class="corner-left-bottom"><a href="../Servicios/Servicios.php"><img src="/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Volver" style="max-width:35%;height:auto;"></a></li>
       </ul>
     </div>

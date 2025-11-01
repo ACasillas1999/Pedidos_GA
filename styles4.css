@@ -1,103 +1,139 @@
+/* ============================================================
+   ESTILOS GENERALES
+   ============================================================ */
+
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f1f1f1;
+    font-family: 'Arial', sans-serif;
+    background-color: #f5f5f5;
     margin: 0;
-    padding: 20px; /* Ajusta el espacio alrededor del cuerpo */
-   /* display: flex;*/
+    padding: 20px;
     flex-direction: column;
-    justify-content: center; /* Centra verticalmente los elementos */
-    align-items: center; /* Centra horizontalmente los elementos */
-    min-height: 10vh; /* Establece la altura mínima del cuerpo para ocupar toda la altura de la ventana */
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
     text-align: center;
     max-width: none;
-
 }
 
-.chart-container {
-      width: 100%;
-      margin-bottom: 20px;
-    }
-    .chart-title {
-      font-size: 18px;
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-    .row {
-      display: flex;
-    }
-    .col-md-4 {
-      flex: 0 0 33.333%;
-      max-width: 33.333%;
-      padding: 0 1px;
-    }
+/* ============================================================
+   HEADER
+   ============================================================ */
 
 .header {
-  background-color: #005aa3;
-  color: #fff;
-  padding: 20px 0;
-  text-align: center;
+    background-color: #005aa3;
+    color: #fff;
+    padding: 20px 0;
+    text-align: center;
     width: 100%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .logo {
-  font-size: 28px;
-  font-weight: bold;
-  text-transform: uppercase;
-  letter-spacing: 2px;
+    font-size: 28px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 2px;
 }
 
+/* ============================================================
+   NAVEGACIÓN
+   ============================================================ */
+
 .navbar ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 .nav-item {
-  display: inline-block;
-  margin: 0 15px;
+    display: inline-block;
+    margin: 0 15px;
 }
 
 .nav-link {
-  color: #fff;
-  text-decoration: none;
-  font-size: 18px;
+    color: #fff;
+    text-decoration: none;
+    font-size: 18px;
+    transition: color 0.3s ease;
 }
 
 .nav-link:hover {
-  color: #ffcc00;
+    color: #ffcc00;
 }
 
 .social-icons {
-  margin-top: 20px;
+    margin-top: 20px;
 }
 
 .social-icon {
-  color: #fff;
-  font-size: 24px;
-  text-decoration: none;
-  margin: 0 10px;
+    color: #fff;
+    font-size: 24px;
+    text-decoration: none;
+    margin: 0 10px;
+    transition: color 0.3s ease;
 }
+
+.social-icon:hover {
+    color: #ffcc00;
+}
+
+/* ============================================================
+   CONTENEDORES
+   ============================================================ */
 
 .container {
-    
     display: flex;
     flex-direction: column;
-    justify-content: center; /* Centra verticalmente los elementos */
-    align-items: center; /* Centra horizontalmente los elementos */
-    min-height: 10vh; /* Establece la altura mínima del contenedor para ocupar toda la altura de la ventana */
+    justify-content: center;
+    align-items: center;
+    min-height: 10vh;
     background-color: #ffffff;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
 }
+
 .container2 {
-   
-    
-    
     background-color: #ffffff;
-   
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+/* ============================================================
+   GRÁFICOS Y TABLAS
+   ============================================================ */
 
-/* Estilo para todas las tablas */
+.chart-container {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.chart-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 -10px;
+}
+
+.col-md-4 {
+    flex: 0 0 33.333%;
+    max-width: 33.333%;
+    padding: 0 10px;
+    margin-bottom: 20px;
+}
+
+/* ============================================================
+   TABLAS - GOOGLE CHARTS
+   ============================================================ */
+
 .chart-container table,
 #table_div_aiesa,
 #table_div_deasa,
@@ -107,14 +143,16 @@ body {
 #table_div_segsa,
 #table_div_fesa,
 #table_div_tapatia,
-#table_div_vallarta {
-  font-family: Arial, sans-serif; /* Fuente */
-  border-collapse: collapse; /* Colapsar bordes de las celdas */
-  width: 100%; /* Ancho completo */
-  border-radius: 10px; /* Bordes redondeados */
-  overflow: hidden; /* Ocultar contenido que sobresale */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra */
-  margin-bottom: 20px; /* Margen inferior */
+#table_div_vallarta,
+#table_div_codi,
+#table_div_queretaro {
+    font-family: Arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
 }
 
 .chart-container th,
@@ -136,10 +174,14 @@ body {
 #table_div_tapatia th,
 #table_div_tapatia td,
 #table_div_vallarta th,
-#table_div_vallarta td {
-  border: 1px solid #dddddd; /* Borde delgado gris */
-  padding: 10px; /* Espaciado interno */
-  text-align: left; /* Alineación del texto a la izquierda */
+#table_div_vallarta td,
+#table_div_codi th,
+#table_div_codi td,
+#table_div_queretaro th,
+#table_div_queretaro td {
+    border: 1px solid #dddddd;
+    padding: 10px;
+    text-align: left;
 }
 
 .chart-container th,
@@ -151,8 +193,12 @@ body {
 #table_div_segsa th,
 #table_div_fesa th,
 #table_div_tapatia th,
-#table_div_vallarta th {
-  background-color: #ed6b1f; /* Color de fondo gris claro para las celdas de encabezado */
+#table_div_vallarta th,
+#table_div_codi th,
+#table_div_queretaro th {
+    background-color: #ed6b1f;
+    color: #ffffff;
+    font-weight: bold;
 }
 
 .chart-container tr:nth-child(even),
@@ -164,8 +210,10 @@ body {
 #table_div_segsa tr:nth-child(even),
 #table_div_fesa tr:nth-child(even),
 #table_div_tapatia tr:nth-child(even),
-#table_div_vallarta tr:nth-child(even) {
-  background-color: #f9f9f9; /* Color de fondo gris claro para filas pares */
+#table_div_vallarta tr:nth-child(even),
+#table_div_codi tr:nth-child(even),
+#table_div_queretaro tr:nth-child(even) {
+    background-color: #f9f9f9;
 }
 
 .chart-container tr:hover,
@@ -177,95 +225,403 @@ body {
 #table_div_segsa tr:hover,
 #table_div_fesa tr:hover,
 #table_div_tapatia tr:hover,
-#table_div_vallarta tr:hover {
-  background-color: #f0f0f0; /* Color de fondo gris claro al pasar el mouse */
+#table_div_vallarta tr:hover,
+#table_div_codi tr:hover,
+#table_div_queretaro tr:hover {
+    background-color: #e3f2fd;
+    transition: background-color 0.2s ease;
 }
 
+/* ============================================================
+   TABLA RESUMEN
+   ============================================================ */
 
 .summary-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
 }
 
 .summary-table th,
 .summary-table td {
     border: 1px solid #ddd;
-    padding: 12px; /* Incrementamos el padding para más espacio */
-    text-align: left;
+    padding: 14px;
+    text-align: center;
 }
 
 .summary-table th {
-    background-color: #005aa3; /* Azul oscuro para el fondo */
-    color: white; /* Letras blancas */
+    background-color: #005aa3;
+    color: white;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 14px;
 }
+
+.summary-table tr:nth-child(even) {
+    background-color: #f5f5f5;
+}
+
+.summary-table tr:hover {
+    background-color: #e3f2fd;
+    transition: background-color 0.2s ease;
+}
+
+.summary-table td {
+    font-size: 14px;
+    color: #333;
+}
+
+/* ============================================================
+   LÍNEA HORIZONTAL CON TEXTO
+   ============================================================ */
+
 .linea-horizontal {
-  width: 100%;
-  margin-top: 20px;
-  margin-bottom: 20px;
-  position: relative; /* Hace que el texto se posicione relativo a este div */
+    width: 100%;
+    margin: 30px 0 20px 0;
+    position: relative;
 }
 
 .texto-linea {
-  position: absolute; /* Posiciona el texto encima de la línea */
-  top: 50%; /* Lo sitúa en el centro vertical */
-  left: 50%; /* Lo sitúa en el centro horizontal */
-  transform: translate(-50%, -50%); /* Lo centra exactamente */
-  color: white; /* Color del texto */
-  font-size: 18px; /* Tamaño del texto */
-  font-weight: bold; /* Texto en negrita */
-  background-color: #005aa3; /* Fondo azul oscuro */
-  padding: 5px 20px; /* Espaciado horizontal y vertical */
-  border-radius: 5px; /* Bordes redondeados */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    background-color: #005aa3;
+    padding: 8px 30px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .linea-horizontal::after {
-  content: ''; /* Crea la línea */
-  display: block;
-  border-bottom: 4px solid #005aa3; /* Línea azul oscuro y gruesa */
+    content: '';
+    display: block;
+    border-bottom: 4px solid #005aa3;
 }
 
-.button {
-            background-color: #005aa3; /* Color de fondo azul oscuro */
-            color: white; /* Texto en blanco */
-            padding: 10px 20px; /* Espaciado interno */
-            border: none; /* Sin borde */
-            border-radius: 5px; /* Bordes redondeados */
-            cursor: pointer; /* Cursor al pasar sobre el botón */
-            transition: background-color 0.3s; /* Transición suave para el cambio de color de fondo */
-        }
+/* ============================================================
+   BOTONES
+   ============================================================ */
 
-        .button:hover {
-            background-color: #ed6b1f; /* Color de fondo azul más claro al pasar el cursor */
-        }
+.button,
+.print-button {
+    background-color: #005aa3;
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
 
+.button:hover,
+.print-button:hover {
+    background-color: #ed6b1f;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
 
+.button:active,
+.print-button:active {
+    transform: translateY(0);
+}
+
+/* ============================================================
+   MENSAJES DE ESTADO
+   ============================================================ */
+
+.error-message {
+    color: #d32f2f;
+    background-color: #ffebee;
+    padding: 15px;
+    border-radius: 5px;
+    text-align: center;
+    font-weight: bold;
+    border-left: 4px solid #d32f2f;
+    margin: 20px 0;
+}
+
+.info-message {
+    color: #1976d2;
+    background-color: #e3f2fd;
+    padding: 15px;
+    border-radius: 5px;
+    text-align: center;
+    border-left: 4px solid #1976d2;
+    margin: 20px 0;
+}
+
+.loading {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    font-style: italic;
+}
+
+/* ============================================================
+   ESTILOS PARA IMPRESIÓN
+   ============================================================ */
 
 @media print {
     body {
         margin: 0;
         padding: 0;
         width: 100%;
-        /* Ajusta el ancho al 100% para que se ajuste a la impresión estándar */
-         height: 100%;
-        
-        font-size: 12px; /* Ajusta el tamaño de fuente según sea necesario */
+        height: 100%;
+        font-size: 11px;
+        background-color: white;
     }
-    
-    .container {
-        width: 100%; /* Ajusta el ancho del contenedor principal según sea necesario */
+
+    .container,
+    .container2 {
+        width: 100%;
         margin: 0 auto;
-        padding: 0px;
+        padding: 10px;
+        box-shadow: none;
     }
-    #barchart {
-        width: 10% !important; /* Ajusta el ancho del gráfico de barras para que ocupe el espacio completo */
+
+    .print-button,
+    .icono-Volver,
+    .nav-link,
+    .date-filter-container,
+    .quick-filters,
+    #session-indicator {
+        display: none !important;
+    }
+
+    #time_range {
+        display: block !important;
+        margin: 10px 0 !important;
+        page-break-after: avoid;
+    }
+
+    .header {
+        page-break-after: avoid;
+    }
+
+    .chart-container {
+        page-break-inside: avoid;
+    }
+
+    .summary-table {
+        width: 100%;
+        page-break-inside: avoid;
+    }
+
+    #barchart,
+    #total_column_chart {
+        width: 100% !important;
         height: auto !important;
     }
-    .resumen-table {
-        width: 1%; /* Ajusta el ancho de la tabla de resumen para que ocupe el espacio completo */
-    }
-    #pedidos-chofer {
-        width: 1%; /* Ajusta el ancho del elemento según sea necesario */
+
+    .row {
+        page-break-inside: avoid;
     }
 }
 
+/* ============================================================
+   RESPONSIVO - TABLETS
+   ============================================================ */
+
+@media (max-width: 992px) {
+    .col-md-4 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+
+    .summary-table th,
+    .summary-table td {
+        padding: 10px;
+        font-size: 12px;
+    }
+}
+
+/* ============================================================
+   RESPONSIVO - MÓVILES
+   ============================================================ */
+
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    .col-md-4 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    .header {
+        padding: 15px 0;
+    }
+
+    .logo {
+        font-size: 20px;
+    }
+
+    .texto-linea {
+        font-size: 16px;
+        padding: 6px 20px;
+    }
+
+    .summary-table {
+        font-size: 11px;
+    }
+
+    .summary-table th,
+    .summary-table td {
+        padding: 8px;
+    }
+
+    .container,
+    .container2 {
+        padding: 15px;
+    }
+}
+
+/* ============================================================
+   ANIMACIONES
+   ============================================================ */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.chart-container,
+.summary-table {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+/* ============================================================
+   FILTROS DE FECHA
+   ============================================================ */
+
+.date-filter-container {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.date-inputs {
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+    align-items: flex-end;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.date-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.date-input-group label {
+    font-weight: bold;
+    color: #333;
+    font-size: 14px;
+}
+
+.date-input {
+    padding: 10px 15px;
+    border: 2px solid #005aa3;
+    border-radius: 5px;
+    font-size: 16px;
+    font-family: Arial, sans-serif;
+    color: #333;
+    background-color: white;
+    transition: all 0.3s ease;
+    min-width: 180px;
+}
+
+.date-input:focus {
+    outline: none;
+    border-color: #ed6b1f;
+    box-shadow: 0 0 8px rgba(237, 107, 31, 0.3);
+}
+
+.date-input:hover {
+    border-color: #0077cc;
+}
+
+.quick-filters {
+    text-align: center;
+    padding: 15px 0;
+    border-top: 2px solid #e0e0e0;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.quick-filters h4 {
+    font-size: 15px;
+}
+
+.filter-btn {
+    background-color: #f0f0f0;
+    color: #005aa3;
+    border: 2px solid #005aa3;
+    padding: 10px 20px;
+    margin: 5px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+    background-color: #005aa3;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 90, 163, 0.3);
+}
+
+.filter-btn:active {
+    transform: translateY(0);
+}
+
+/* Ocultar slider de jQuery UI si existe */
+#date_range_slider {
+    display: none;
+}
+
+/* ============================================================
+   RESPONSIVO - FILTROS DE FECHA
+   ============================================================ */
+
+@media (max-width: 768px) {
+    .date-inputs {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .date-input-group {
+        width: 100%;
+    }
+
+    .date-input {
+        width: 100%;
+        min-width: 100%;
+    }
+
+    .filter-btn {
+        display: block;
+        width: 90%;
+        margin: 8px auto;
+    }
+}
