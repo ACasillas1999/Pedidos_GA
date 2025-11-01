@@ -619,6 +619,32 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         .date-input::-webkit-calendar-picker-indicator:hover {
             opacity: 1;
         }
+
+        /* Mejoras adicionales para gráficas */
+        [id^="piechart"] {
+            min-height: 350px;
+        }
+
+        /* Contenedor de tabla con mejor separación */
+        [id^="table_div_"] {
+            margin-top: 15px;
+        }
+
+        /* Animación de carga suave */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .container, .container2, .chart-container {
+            animation: fadeInUp 0.6s ease-out;
+        }
     </style>
 </head>
 
@@ -650,7 +676,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     <!-- ============================================================ -->
     <!-- INDICADOR DE SESIÓN -->
     <!-- ============================================================ -->
-    <div class="container" style="margin-top: 20px; padding: 15px;">
+    <div class="container" style="margin-top: 20px; padding: 15px; display: none;">
         <div id="session-indicator" style="display: flex; align-items: center; justify-content: space-between; background: #f0f7ff; padding: 12px 20px; border-radius: 6px; border-left: 4px solid #005aa3;">
             <div style="display: flex; align-items: center; gap: 12px;">
                 <span style="font-size: 20px;">👤</span>

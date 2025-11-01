@@ -236,7 +236,7 @@ ul {
 }
 
 li {
-    padding: 10px;
+    padding: 19px;
 }
 
 a {
@@ -294,12 +294,86 @@ right: 20px;
 
 .corner-left-bottom {
     position: fixed;
-    left: 0px; /* Ajusta la distancia desde el borde izquierdo */
+    left: -7px; /* Ajusta la distancia desde el borde izquierdo */
     bottom: 10px; /* Ajusta la distancia desde el borde inferior */
-   
+
 }
 
+/* ============================================
+   ESTILOS PARA SISTEMA DE PRECIOS DE FACTURA
+   ============================================ */
 
+/* Precio menor a $1000 - No conveniente */
+.precio-bajo {
+    background-color: #fff3cd !important;
+    color: #856404;
+    font-weight: bold;
+}
 
+/* Precio validado por JC */
+.precio-validado {
+    color: #28a745;
+    font-weight: bold;
+}
 
+/* Precio pendiente de validación */
+.precio-pendiente {
+    color: #ffc107;
+}
+
+/* Precio corregido por JC */
+.precio-corregido {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+/* Texto de diferencia entre precios */
+.diferencia-precio {
+    font-size: 0.9em;
+    font-style: italic;
+    color: #dc3545;
+}
+
+/* Contenedor de validación de precio en formulario */
+.precio-validacion-container {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 10px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+}
+
+/* Alerta de precio bajo en formularios */
+.alerta-precio-bajo {
+    background-color: #f8d7da;
+    padding: 10px;
+    border-left: 4px solid #dc3545;
+    margin: 10px 0;
+    border-radius: 3px;
+}
+
+/* Badge para estado de validación */
+.badge-validado {
+    background-color: #28a745;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 0.85em;
+}
+
+.badge-pendiente {
+    background-color: #ffc107;
+    color: #000;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 0.85em;
+}
+
+.badge-corregido {
+    background-color: #dc3545;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 0.85em;
+}
 

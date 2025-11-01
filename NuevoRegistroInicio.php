@@ -187,6 +187,12 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         <label for="factura">Factura:</label>
         <input type="text" id="factura" name="factura" required><br><br>
 
+        <label for="precio_factura_vendedor">Precio de Factura:</label>
+        <input type="number" id="precio_factura_vendedor" name="precio_factura_vendedor" step="0.01" min="0.01" placeholder="0.00" required>
+        <span id="alerta_precio_bajo" style="display:none; color: #856404; font-weight: bold; margin-left: 10px;">
+            ⚠️ Precio menor a $1000 - Flete no conveniente
+        </span><br><br>
+
         <label for="direccion">Dirección:</label>
         <input type="text" id="direccion" name="direccion" required><br><br>
 
@@ -257,6 +263,20 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
                         });
                     })
                     .catch(error => console.error('Error al obtener los choferes:', error));
+            }
+        });
+
+        // Validación de precio en tiempo real
+        document.getElementById('precio_factura_vendedor').addEventListener('input', function() {
+            const precio = parseFloat(this.value);
+            const alerta = document.getElementById('alerta_precio_bajo');
+
+            if (!isNaN(precio) && precio > 0 && precio < 1000) {
+                alerta.style.display = 'inline';
+                this.style.backgroundColor = '#fff3cd';
+            } else {
+                alerta.style.display = 'none';
+                this.style.backgroundColor = '';
             }
         });
     </script>

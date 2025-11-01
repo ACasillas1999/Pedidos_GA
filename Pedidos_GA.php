@@ -57,6 +57,15 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 
       <?php endif; ?>
 
+      <?php if ($_SESSION["Rol"] === "Admin" || $_SESSION["Rol"] === "JC"): ?>
+      <li>
+        <a href="reporte_precios_facturas.php">
+          <img src="\Pedidos_GA\Img\Botones entregas\Pedidos_GA\ICONO_CHIDO.png" alt="Reporte Precios" class="icono-reporte-precios" style="max-width: 80%; height: auto;">
+        
+        </a>
+      </li>
+      <?php endif; ?>
+
       <?php if ($_SESSION["Rol"] === "Admin" ||$_SESSION["Rol"] === "JC"||$_SESSION["Rol"] === "MEC"): ?>
       <li>
                <a href="vehiculos.php">
@@ -86,6 +95,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
       var iconoCS = document.querySelector(".icono-CS");
       var iconoU = document.querySelector(".icono-U");
       var iconoH = document.querySelector(".icono-H");
+      var iconoReportePrecios = document.querySelector(".icono-reporte-precios");
       var iconoMaps = document.querySelector(".icono-Maps");
       var iconoHome = document.querySelector(".icono-Home");
       var iconoWP = document.querySelector(".icono-WP");
@@ -137,13 +147,26 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 
       var imgNormalH = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/H2.png";
       var imgHoverH = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/H1.png";
-      iconoH.addEventListener("mouseover", function() {
-          iconoH.src = imgHoverH;
-      });
-      iconoH.addEventListener("mouseout", function() {
-          iconoH.src = imgNormalH;
-      });
-      
+      if (iconoH) {
+          iconoH.addEventListener("mouseover", function() {
+              iconoH.src = imgHoverH;
+          });
+          iconoH.addEventListener("mouseout", function() {
+              iconoH.src = imgNormalH;
+          });
+      }
+
+      var imgNormalReportePrecios = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/ICONO_CHIDO.png";
+      var imgHoverReportePrecios = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/ESTBL2.png";
+      if (iconoReportePrecios) {
+          iconoReportePrecios.addEventListener("mouseover", function() {
+              iconoReportePrecios.src = imgHoverReportePrecios;
+          });
+          iconoReportePrecios.addEventListener("mouseout", function() {
+              iconoReportePrecios.src = imgNormalReportePrecios;
+          });
+      }
+
       var imgNormalSC = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/CERRSESBL.png";
       var imgHoverSC = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/CERRSESNA.png";
       iconoCS.addEventListener("mouseover", function() {

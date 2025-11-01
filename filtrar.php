@@ -57,6 +57,7 @@ if ($sucursalSesion === "TODAS") {
                         <th>Chofer Asignado</th>
                         <th>Vendedor</th>
                         <th>Factura</th>
+                        <th>Precio Factura</th>
                         <th>Dirección</th>
                         <th>Nombre Cliente</th>
                         <th>Contacto</th>
@@ -135,6 +136,43 @@ if ($esPaqueteria) {
                     echo "<td style='background-color: $colorChofer;'>" . $choferAsignado . "</td>";
                     echo "<td>" . $row["VENDEDOR"] . "</td>";
                     echo "<td>" . $row["FACTURA"] . "</td>";
+
+                    // Columna de Precio de Factura con señalización
+                    $precio_real = isset($row["precio_factura_real"]) ? floatval($row["precio_factura_real"]) : 0;
+                    $precio_validado = isset($row["precio_validado_jc"]) ? intval($row["precio_validado_jc"]) : 0;
+                    $precio_vendedor = isset($row["precio_factura_vendedor"]) ? floatval($row["precio_factura_vendedor"]) : 0;
+
+                    $colorPrecio = "#FFFFFF";
+                    $iconoPrecio = "";
+                    $clasePrecio = "";
+
+                    if ($precio_real > 0) {
+                        // Precio menor a $1000 = no conveniente
+                        if ($precio_real < 1000) {
+                            $colorPrecio = "#fff3cd";
+                            $iconoPrecio = "<span style='color: #856404; font-weight: bold;'>⚠️</span> ";
+                            $clasePrecio = "precio-bajo";
+                        }
+
+                        // Mostrar icono de validación
+                        if ($precio_validado == 1) {
+                            $iconoPrecio .= "<span style='color: #28a745;' title='Validado por JC'>✓</span> ";
+                        } else {
+                            $iconoPrecio .= "<span style='color: #ffc107;' title='Pendiente validación JC'>⏳</span> ";
+                        }
+
+                        // Si JC corrigió el precio, mostrar icono de edición
+                        if ($precio_vendedor != $precio_real && $precio_vendedor > 0) {
+                            $iconoPrecio .= "<span style='color: #dc3545;' title='Precio corregido por JC'>✏️</span> ";
+                        }
+
+                        $textoPrecio = "$" . number_format($precio_real, 2);
+                    } else {
+                        $textoPrecio = "-";
+                        $iconoPrecio = "<span style='color: #999;'>N/A</span>";
+                    }
+
+                    echo "<td style='background-color: $colorPrecio; text-align: right;' class='$clasePrecio'>" . $iconoPrecio . $textoPrecio . "</td>";
                     echo "<td>" . $row["DIRECCION"] . "</td>";
                     echo "<td>" . $row["NOMBRE_CLIENTE"] . "</td>";
                     echo "<td>" . $row["CONTACTO"] . "</td>";
@@ -202,6 +240,7 @@ if ($esPaqueteria) {
                         <th>Chofer Asignado</th>
                         <th>Vendedor</th>
                         <th>Factura</th>
+                        <th>Precio Factura</th>
                         <th>Dirección</th>
                         <th>Nombre Cliente</th>
                         <th>Contacto</th>
@@ -265,6 +304,43 @@ if ($esPaqueteria) {
                     echo "<td style='background-color: $colorChofer;'>" . $choferAsignado . "</td>";
                     echo "<td>" . $row["VENDEDOR"] . "</td>";
                     echo "<td>" . $row["FACTURA"] . "</td>";
+
+                    // Columna de Precio de Factura con señalización
+                    $precio_real = isset($row["precio_factura_real"]) ? floatval($row["precio_factura_real"]) : 0;
+                    $precio_validado = isset($row["precio_validado_jc"]) ? intval($row["precio_validado_jc"]) : 0;
+                    $precio_vendedor = isset($row["precio_factura_vendedor"]) ? floatval($row["precio_factura_vendedor"]) : 0;
+
+                    $colorPrecio = "#FFFFFF";
+                    $iconoPrecio = "";
+                    $clasePrecio = "";
+
+                    if ($precio_real > 0) {
+                        // Precio menor a $1000 = no conveniente
+                        if ($precio_real < 1000) {
+                            $colorPrecio = "#fff3cd";
+                            $iconoPrecio = "<span style='color: #856404; font-weight: bold;'>⚠️</span> ";
+                            $clasePrecio = "precio-bajo";
+                        }
+
+                        // Mostrar icono de validación
+                        if ($precio_validado == 1) {
+                            $iconoPrecio .= "<span style='color: #28a745;' title='Validado por JC'>✓</span> ";
+                        } else {
+                            $iconoPrecio .= "<span style='color: #ffc107;' title='Pendiente validación JC'>⏳</span> ";
+                        }
+
+                        // Si JC corrigió el precio, mostrar icono de edición
+                        if ($precio_vendedor != $precio_real && $precio_vendedor > 0) {
+                            $iconoPrecio .= "<span style='color: #dc3545;' title='Precio corregido por JC'>✏️</span> ";
+                        }
+
+                        $textoPrecio = "$" . number_format($precio_real, 2);
+                    } else {
+                        $textoPrecio = "-";
+                        $iconoPrecio = "<span style='color: #999;'>N/A</span>";
+                    }
+
+                    echo "<td style='background-color: $colorPrecio; text-align: right;' class='$clasePrecio'>" . $iconoPrecio . $textoPrecio . "</td>";
                     echo "<td>" . $row["DIRECCION"] . "</td>";
                     echo "<td>" . $row["NOMBRE_CLIENTE"] . "</td>";
                     echo "<td>" . $row["CONTACTO"] . "</td>";

@@ -350,7 +350,79 @@ document.addEventListener('DOMContentLoaded', function () {
         
         <label for="factura">Factura:</label><br>
         <input type="text" id="factura" name="factura" value="<?php echo $row['FACTURA']; ?>" required><br><br>
-        
+
+        <?php
+        $precio_vendedor = isset($row['precio_factura_vendedor']) ? $row['precio_factura_vendedor'] : 0;
+        $precio_real = isset($row['precio_factura_real']) ? $row['precio_factura_real'] : 0;
+        $precio_validado = isset($row['precio_validado_jc']) ? $row['precio_validado_jc'] : 0;
+        $diferencia = $precio_vendedor - $precio_real;
+        $hubo_correccion = ($precio_vendedor != $precio_real && $precio_real > 0);
+        ?>
+
+        <?php if ($_SESSION["Rol"] === "VR"): ?>
+            <!-- Vendedores pueden ver y editar el precio que capturaron -->
+            <label for="precio_factura_vendedor">Precio de Factura:</label><br>
+            <input type="number" id="precio_factura_vendedor" name="precio_factura_vendedor"
+                   value="<?php echo number_format($precio_vendedor, 2, '.', ''); ?>"
+                   step="0.01" min="0.01" required
+                   style="<?php echo ($precio_vendedor > 0 && $precio_vendedor < 1000) ? 'background-color: #fff3cd;' : ''; ?>">
+            <?php if ($precio_vendedor > 0 && $precio_vendedor < 1000): ?>
+                <span style="color: #856404; font-weight: bold; margin-left: 10px;">
+                    ⚠️ Precio menor a $1000 - Flete no conveniente
+                </span>
+            <?php endif; ?>
+            <br>
+            <?php if ($hubo_correccion): ?>
+                <span style="color: #dc3545; font-size: 0.9em; font-style: italic;">
+                    El Jefe de Choferes corrigió este precio a $<?php echo number_format($precio_real, 2); ?>
+                </span>
+            <?php endif; ?>
+            <br><br>
+        <?php endif; ?>
+
+        <?php if ($_SESSION["Rol"] === "JC" || $_SESSION["Rol"] === "Admin"): ?>
+            <!-- Jefe de Choferes puede ver ambos precios y validar/corregir -->
+            <div style="border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; background-color: #f9f9f9;">
+                <label style="font-weight: bold;">Precio Capturado por Vendedor:</label><br>
+                <input type="text" value="$<?php echo number_format($precio_vendedor, 2); ?>" readonly
+                       style="background-color: #e9ecef; font-weight: bold; width: 150px;">
+                <input type="hidden" name="precio_factura_vendedor_original" value="<?php echo $precio_vendedor; ?>">
+                <br><br>
+
+                <label for="precio_factura_real" style="font-weight: bold; color: #155724;">Precio Real de Factura:</label><br>
+                <input type="number" id="precio_factura_real" name="precio_factura_real"
+                       value="<?php echo number_format($precio_real, 2, '.', ''); ?>"
+                       step="0.01" min="0.01" required
+                       style="<?php echo ($precio_real > 0 && $precio_real < 1000) ? 'background-color: #fff3cd; font-weight: bold;' : 'font-weight: bold;'; ?>">
+
+                <?php if ($precio_real > 0 && $precio_real < 1000): ?>
+                    <span style="color: #856404; font-weight: bold; margin-left: 10px;">
+                        ⚠️ Precio menor a $1000 - Flete no conveniente
+                    </span>
+                <?php endif; ?>
+                <br><br>
+
+                <?php if ($hubo_correccion): ?>
+                    <div style="background-color: #f8d7da; padding: 10px; border-left: 4px solid #dc3545; margin: 10px 0;">
+                        <strong style="color: #721c24;">Diferencia detectada:</strong><br>
+                        Precio Vendedor: $<?php echo number_format($precio_vendedor, 2); ?><br>
+                        Precio Real: $<?php echo number_format($precio_real, 2); ?><br>
+                        <strong>Diferencia: $<?php echo number_format(abs($diferencia), 2); ?>
+                        <?php echo ($diferencia > 0) ? '(vendedor cobró de más)' : '(vendedor cobró de menos)'; ?></strong>
+                    </div>
+                <?php endif; ?>
+
+                <label for="precio_validado_jc">
+                    <input type="checkbox" id="precio_validado_jc" name="precio_validado_jc" value="1"
+                           <?php echo ($precio_validado == 1) ? 'checked' : ''; ?>>
+                    <strong style="color: #155724;">Precio Validado por Jefe de Choferes</strong>
+                    <?php if ($precio_validado == 1): ?>
+                        <span style="color: #28a745; margin-left: 10px;">✓ Validado</span>
+                    <?php endif; ?>
+                </label>
+            </div><br>
+        <?php endif; ?>
+
         <label for="direccion">Dirección:</label><br>
         <input type="text" id="direccion" name="direccion" value="<?php echo $row['DIRECCION']; ?>" required><br><br>
         

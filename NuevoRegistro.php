@@ -43,6 +43,7 @@ $comentarios = $_POST['comentarios'];
 $coord_origen = $_POST['coord_origen'];
 $coord_destino = $_POST['coord_destino'];
 $tipo_envio = $_POST['tipo_envio'];
+$precio_factura_vendedor = isset($_POST['precio_factura_vendedor']) ? floatval($_POST['precio_factura_vendedor']) : NULL;
 
 // Consulta SQL para insertar los datos
 $ruta = $_POST['ruta'] ?? ''; // Por si el campo no se envía
@@ -53,14 +54,18 @@ $sql = "INSERT INTO pedidos (
     FECHA_MIN_ENTREGA, FECHA_MAX_ENTREGA,
     MIN_VENTANA_HORARIA_1, MAX_VENTANA_HORARIA_1,
     NOMBRE_CLIENTE, TELEFONO, CONTACTO, COMENTARIOS,
-    Coord_Origen, Coord_Destino, tipo_envio, Ruta
+    Coord_Origen, Coord_Destino, tipo_envio, Ruta,
+    precio_factura_vendedor, precio_factura_real, precio_validado_jc
 ) VALUES (
     '$sucursal', '$estado', " . validarFecha($fecha_recepcion_factura) . ", " . validarFecha($fecha_entrega_cliente) . ",
     '$chofer_asignado', '$vendedor', '$factura', '$direccion',
     " . validarFecha($fecha_min_entrega) . ", " . validarFecha($fecha_max_entrega) . ",
     '$min_ventana_horaria_1', '$max_ventana_horaria_1',
     '$nombre_cliente', '$telefono', '$contacto', '$comentarios',
-    '$coord_origen', '$coord_destino', '$tipo_envio', '$ruta'
+    '$coord_origen', '$coord_destino', '$tipo_envio', '$ruta',
+    " . ($precio_factura_vendedor !== NULL ? $precio_factura_vendedor : "NULL") . ",
+    " . ($precio_factura_vendedor !== NULL ? $precio_factura_vendedor : "NULL") . ",
+    0
 )";
 
 if ($conn->query($sql) === TRUE) {

@@ -3,8 +3,8 @@
    ============================================================ */
 
 body {
-    font-family: 'Arial', sans-serif;
-    background-color: #f5f5f5;
+    font-family: 'Segoe UI', 'Arial', sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
     margin: 0;
     padding: 20px;
     flex-direction: column;
@@ -20,12 +20,14 @@ body {
    ============================================================ */
 
 .header {
-    background-color: #005aa3;
+    background: linear-gradient(135deg, #005aa3 0%, #0077cc 100%);
     color: #fff;
-    padding: 20px 0;
+    padding: 25px 0;
     text-align: center;
     width: 100%;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 16px rgba(0, 90, 163, 0.3);
+    border-radius: 15px;
+    margin-bottom: 20px;
 }
 
 .logo {
@@ -87,18 +89,29 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 10vh;
-    background-color: #ffffff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 20px;
+    background: white;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 30px;
+    border: 1px solid rgba(0, 90, 163, 0.1);
 }
 
 .container2 {
-    background-color: #ffffff;
+    background: white;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    margin-bottom: 30px;
+    border: 1px solid rgba(0, 90, 163, 0.1);
+}
+
+#total_column_chart {
+    background: white;
+    border-radius: 12px;
     padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    margin: 20px 0;
 }
 
 /* ============================================================
@@ -107,27 +120,40 @@ body {
 
 .chart-container {
     width: 100%;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0, 90, 163, 0.1);
+}
+
+.chart-container:hover {
+    box-shadow: 0 8px 24px rgba(0, 90, 163, 0.15);
+    transform: translateY(-2px);
 }
 
 .chart-title {
     font-size: 18px;
     font-weight: bold;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
     text-align: center;
+    padding-bottom: 10px;
+    border-bottom: 2px solid rgba(0, 90, 163, 0.1);
 }
 
 .row {
     display: flex;
     flex-wrap: wrap;
-    margin: 0 -10px;
+    margin: 0 -15px;
 }
 
 .col-md-4 {
     flex: 0 0 33.333%;
     max-width: 33.333%;
-    padding: 0 10px;
-    margin-bottom: 20px;
+    padding: 0 15px;
+    margin-bottom: 30px;
 }
 
 /* ============================================================
@@ -239,39 +265,57 @@ body {
 .summary-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 20px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
+    margin-top: 30px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    border-radius: 12px;
     overflow: hidden;
+    background: white;
 }
 
 .summary-table th,
 .summary-table td {
-    border: 1px solid #ddd;
-    padding: 14px;
+    border: none;
+    padding: 16px;
     text-align: center;
 }
 
 .summary-table th {
-    background-color: #005aa3;
+    background: linear-gradient(135deg, #005aa3 0%, #0077cc 100%);
     color: white;
-    font-weight: bold;
+    font-weight: 700;
     text-transform: uppercase;
-    font-size: 14px;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    border-bottom: 3px solid #003d73;
 }
 
 .summary-table tr:nth-child(even) {
-    background-color: #f5f5f5;
+    background-color: #f8f9fa;
 }
 
 .summary-table tr:hover {
     background-color: #e3f2fd;
     transition: background-color 0.2s ease;
+    cursor: pointer;
 }
 
 .summary-table td {
     font-size: 14px;
-    color: #333;
+    color: #2c3e50;
+    font-weight: 500;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.summary-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+#summary_container {
+    margin-top: 30px;
+    padding: 20px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 15px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
 /* ============================================================
@@ -280,7 +324,7 @@ body {
 
 .linea-horizontal {
     width: 100%;
-    margin: 30px 0 20px 0;
+    margin: 50px 0 40px 0;
     position: relative;
 }
 
@@ -290,18 +334,20 @@ body {
     left: 50%;
     transform: translate(-50%, -50%);
     color: white;
-    font-size: 20px;
-    font-weight: bold;
-    background-color: #005aa3;
-    padding: 8px 30px;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    font-size: 22px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #005aa3 0%, #0077cc 100%);
+    padding: 15px 40px;
+    border-radius: 30px;
+    box-shadow: 0 6px 20px rgba(0, 90, 163, 0.3);
+    letter-spacing: 1px;
+    text-transform: uppercase;
 }
 
 .linea-horizontal::after {
     content: '';
     display: block;
-    border-bottom: 4px solid #005aa3;
+    border-bottom: 3px solid rgba(0, 90, 163, 0.2);
 }
 
 /* ============================================================
@@ -340,23 +386,26 @@ body {
 
 .error-message {
     color: #d32f2f;
-    background-color: #ffebee;
-    padding: 15px;
-    border-radius: 5px;
+    background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+    padding: 20px;
+    border-radius: 12px;
     text-align: center;
-    font-weight: bold;
-    border-left: 4px solid #d32f2f;
+    font-weight: 600;
+    border-left: 5px solid #d32f2f;
     margin: 20px 0;
+    box-shadow: 0 4px 12px rgba(211, 47, 47, 0.15);
 }
 
 .info-message {
     color: #1976d2;
-    background-color: #e3f2fd;
-    padding: 15px;
-    border-radius: 5px;
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    padding: 20px;
+    border-radius: 12px;
     text-align: center;
-    border-left: 4px solid #1976d2;
+    border-left: 5px solid #1976d2;
     margin: 20px 0;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(25, 118, 210, 0.15);
 }
 
 .loading {
@@ -364,6 +413,7 @@ body {
     padding: 20px;
     color: #666;
     font-style: italic;
+    font-size: 16px;
 }
 
 /* ============================================================
@@ -512,87 +562,121 @@ body {
 
 .date-filter-container {
     width: 100%;
-    max-width: 900px;
+    max-width: 1000px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 30px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 15px;
+    box-shadow: 0 8px 24px rgba(0, 90, 163, 0.12);
+    border: 1px solid rgba(0, 90, 163, 0.1);
+}
+
+.date-filter-container h3 {
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 24px;
+    color: #005aa3;
+    font-weight: 700;
+    letter-spacing: 0.5px;
 }
 
 .date-inputs {
     display: flex;
-    gap: 30px;
+    gap: 40px;
     justify-content: center;
     align-items: flex-end;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
     flex-wrap: wrap;
 }
 
 .date-input-group {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
 }
 
 .date-input-group label {
-    font-weight: bold;
-    color: #333;
-    font-size: 14px;
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 15px;
+    letter-spacing: 0.3px;
 }
 
 .date-input {
-    padding: 10px 15px;
-    border: 2px solid #005aa3;
-    border-radius: 5px;
+    padding: 12px 18px;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
     font-size: 16px;
     font-family: Arial, sans-serif;
-    color: #333;
+    color: #2c3e50;
     background-color: white;
     transition: all 0.3s ease;
-    min-width: 180px;
+    min-width: 200px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .date-input:focus {
     outline: none;
-    border-color: #ed6b1f;
-    box-shadow: 0 0 8px rgba(237, 107, 31, 0.3);
+    border-color: #005aa3;
+    box-shadow: 0 0 0 3px rgba(0, 90, 163, 0.15);
+    transform: translateY(-1px);
 }
 
 .date-input:hover {
-    border-color: #0077cc;
+    border-color: #005aa3;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .quick-filters {
     text-align: center;
-    padding: 15px 0;
-    border-top: 2px solid #e0e0e0;
-    border-bottom: 2px solid #e0e0e0;
+    padding: 20px 0 10px 0;
+    margin-top: 20px;
+    border-top: 2px solid rgba(0, 90, 163, 0.1);
 }
 
 .quick-filters h4 {
-    font-size: 15px;
+    font-size: 16px;
+    color: #495057;
+    margin-bottom: 15px;
+    font-weight: 600;
 }
 
 .filter-btn {
-    background-color: #f0f0f0;
+    background: white;
     color: #005aa3;
     border: 2px solid #005aa3;
-    padding: 10px 20px;
-    margin: 5px;
-    border-radius: 25px;
+    padding: 12px 24px;
+    margin: 6px;
+    border-radius: 30px;
     cursor: pointer;
     font-size: 14px;
-    font-weight: bold;
+    font-weight: 600;
     transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0, 90, 163, 0.15);
 }
 
 .filter-btn:hover {
-    background-color: #005aa3;
+    background: linear-gradient(135deg, #005aa3 0%, #0077cc 100%);
     color: white;
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 90, 163, 0.3);
+    box-shadow: 0 6px 16px rgba(0, 90, 163, 0.3);
 }
 
 .filter-btn:active {
     transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(0, 90, 163, 0.2);
+}
+
+#time_range {
+    text-align: center;
+    padding: 15px;
+    background: linear-gradient(135deg, #005aa3 0%, #0077cc 100%);
+    color: white;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(0, 90, 163, 0.25);
+    letter-spacing: 0.5px;
 }
 
 /* Ocultar slider de jQuery UI si existe */
