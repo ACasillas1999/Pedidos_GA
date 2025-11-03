@@ -17,6 +17,7 @@ try {
                    Sucursal
             FROM vehiculos
             WHERE (id_chofer_asignado IS NULL OR id_chofer_asignado = 0)
+              AND (es_particular = 0 OR es_particular IS NULL)
               AND NOT EXISTS (
                 SELECT 1 FROM orden_servicio os
                 WHERE os.id_vehiculo = vehiculos.id_vehiculo

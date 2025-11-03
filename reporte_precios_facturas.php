@@ -44,7 +44,7 @@ $seccion = isset($_GET['seccion']) ? $_GET['seccion'] : 'resumen';
         }
 
         .reporte-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #005aa3;
             color: white;
             padding: 20px;
             border-radius: 8px 8px 0 0;

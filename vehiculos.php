@@ -355,6 +355,7 @@ while ($v = $vehiculos->fetch_assoc()) {
     'os_estatus' => $osEstatus,
     'km_srv'     => $kmSrv,
     'km_faltante' => $kmFalt,
+    'es_particular' => (int)($v['es_particular'] ?? 0),
     'stats'     => [
       // claves nuevas
       'kilometraje'     => $pctKm,
@@ -366,7 +367,7 @@ while ($v = $vehiculos->fetch_assoc()) {
       'consumo'         => $pctTo5k
     ],
     'tags'      => array_values(array_filter([
-      'GPS',
+      '',
       (isset($v['tipo']) && stripos((string)$v['tipo'], 'panel') !== false) ? 'Panel' : null,
       ($osEstatus === 'Programado' ? 'OS Programado' : null),
       ($osEstatus === 'Pendiente' ? 'OS Pendiente' : null)
@@ -1221,16 +1222,18 @@ while ($c = $choferes->fetch_assoc()) {
       const d = v.assignedDriverId ? driverById[v.assignedDriverId] : null;
       const key = d ? `${d.id}-${v.id}` : null;
       const pairColor = key ? (PAIR_COLORS[key] || '#6ae3ff') : null;
+      const esParticular = v.es_particular === 1;
       const extraBtn = d ? `<button class="btn-mini danger" data-action="quitar-vehiculo" data-vehiculo-id="${v.id}">Quitar</button>` : '';
       const title = (v.alias && v.alias.trim()) ? v.alias : (v.nombre && v.nombre.trim() ? v.nombre : 'Vehículo');
 
-      return `<article class="card vehicle-card ${d?'paired':''} ${v.en_taller ? 'is-workshop' : ''}"
+      return `<article class="card vehicle-card ${d?'paired':''} ${v.en_taller ? 'is-workshop' : ''} ${esParticular ? 'particular-vehicle' : ''}"
                    style="${pairColor?`--pair:${pairColor}`:''}"
                    data-vehiculo-id="${v.id}"
                    tabindex="0"
                    role="link"
                    aria-label="Ver detalles de ${title}">
 ${v.en_taller ? `<div class="status-badge danger">🔧 ${v.os_estatus || 'En servicio'}</div>` : ``}
+${esParticular ? `<div class="status-badge" style="left: auto; right: 12px; background: #f0f9ff; border-color: #bae6fd; color: #0c4a6e;">🏠 Particular</div>` : ''}
       ${d?`<div class="pair-badge"><span class="pair-dot"></span>
             <div class="mini-avatar">${d.img?`<img src="${d.img}" alt="">`:`<div class="avatar-initial" style="font-size:14px">${(d.initial||'?').slice(0,2)}</div>`}</div><strong>${d.nombre}</strong></div>`:''}
       <div class="head">
@@ -1248,8 +1251,8 @@ ${v.en_taller ? `<div class="status-badge danger">🔧 ${v.os_estatus || 'En ser
         ${bar('Salud general', v.stats?.salud, 100)}
       </div>
       <div class="footer">
-        <span>${d?`Chofer: ${d.nombre}`:'Sin chofer asignado'}</span>
-        <div style="display:flex; gap:8px;">${extraBtn}</div>
+        <span>${esParticular ? 'Vehículo particular' : (d ? `Chofer: ${d.nombre}` : 'Sin chofer asignado')}</span>
+        <div style="display:flex; gap:8px;">${esParticular ? '' : extraBtn}</div>
       </div>
     </article>`;
     }

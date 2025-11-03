@@ -21,6 +21,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["agregar_vehiculo"])) 
     $km_de_servicio = (int)($_POST["km_de_servicio"] ?? 5000);
     $km_total       = (int)($_POST["km_total"] ?? 0);
     $km_actual      = (int)($_POST["km_actual"] ?? 0);
+    $es_particular  = isset($_POST["es_particular"]) ? 1 : 0;
 
     // 1) Verificar número de serie duplicado
     $stmt = $conn->prepare("SELECT id_vehiculo FROM vehiculos WHERE numero_serie = ?");
@@ -84,12 +85,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["agregar_vehiculo"])) 
         }
 
         // 3) Insertar vehículo
-        $sql = "INSERT INTO vehiculos 
-                    (numero_serie, placa, tipo, Sucursal, Km_de_Servicio, Km_Total, Km_Actual, foto_path)
-                VALUES (?,?,?,?,?,?,?,?)";
+        $sql = "INSERT INTO vehiculos
+                    (numero_serie, placa, tipo, Sucursal, Km_de_Servicio, Km_Total, Km_Actual, foto_path, es_particular)
+                VALUES (?,?,?,?,?,?,?,?,?)";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param(
-            "ssssiiis",
+            "ssssiiisi",
             $numero_serie,
             $placa,
             $tipo,
@@ -97,7 +98,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["agregar_vehiculo"])) 
             $km_de_servicio,
             $km_total,
             $km_actual,
-            $foto_path
+            $foto_path,
+            $es_particular
         );
 
         if ($stmt->execute()) {
@@ -221,6 +223,15 @@ $vehiculos = $conn->query("SELECT * FROM vehiculos");
             <div class="mb-3">
                 <label>Km Actual sin servicio</label>
                 <input type="number" name="km_actual" class="form-control" required>
+            </div>
+            <div class="mb-3" style="display: flex; align-items: center; gap: 10px;">
+                <input type="checkbox" name="es_particular" id="es_particular" style="width: auto; cursor: pointer;">
+                <label for="es_particular" style="margin: 0; cursor: pointer; font-weight: 600;">
+                    🏠 Marcar como vehículo particular
+                    <span style="font-weight: normal; font-size: 0.9em; color: #666; display: block; margin-top: 4px;">
+                        (Los vehículos particulares no pueden tener chofer asignado)
+                    </span>
+                </label>
             </div>
          <div class="mb-3">
     <label>Foto del vehículo (JPG/PNG/WEBP, máx. 2 MB)</label>

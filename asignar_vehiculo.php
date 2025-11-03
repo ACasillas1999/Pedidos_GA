@@ -15,25 +15,21 @@ try {
         echo json_encode(['ok' => false, 'error' => 'Parámetros inválidos']); exit;
     }
 
-    // Opcional: verificar existencia (y activos) de chofer y vehículo
-    // (descomenta si tienes tablas/flags para validar)
-    /*
-    $stmt = $conn->prepare("SELECT 1 FROM choferes WHERE id_chofer=?");
-    $stmt->bind_param('i', $chofer_id);
-    $stmt->execute();
-    if (!$stmt->get_result()->fetch_row()) {
-        echo json_encode(['ok'=>false,'error'=>'Chofer no existe']); exit;
-    }
-    $stmt->close();
-
-    $stmt = $conn->prepare("SELECT 1 FROM vehiculos WHERE id_vehiculo=?");
+    // Verificar que el vehículo no sea particular
+    $stmt = $conn->prepare("SELECT es_particular FROM vehiculos WHERE id_vehiculo=?");
     $stmt->bind_param('i', $vehiculo_id);
     $stmt->execute();
-    if (!$stmt->get_result()->fetch_row()) {
+    $result = $stmt->get_result();
+    if (!$result || $result->num_rows === 0) {
+        $stmt->close();
         echo json_encode(['ok'=>false,'error'=>'Vehículo no existe']); exit;
     }
+    $row = $result->fetch_assoc();
+    if ((int)$row['es_particular'] === 1) {
+        $stmt->close();
+        echo json_encode(['ok'=>false,'error'=>'No se puede asignar chofer a un vehículo particular']); exit;
+    }
     $stmt->close();
-    */
 
     // ---- TRANSACCIÓN ----
     $conn->begin_transaction();

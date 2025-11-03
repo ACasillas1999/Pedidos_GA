@@ -157,7 +157,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
       }
 
       var imgNormalReportePrecios = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/ICONO_CHIDO.png";
-      var imgHoverReportePrecios = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/ESTBL2.png";
+      var imgHoverReportePrecios = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/Precios_chido_BLANCO.png";
       if (iconoReportePrecios) {
           iconoReportePrecios.addEventListener("mouseover", function() {
               iconoReportePrecios.src = imgHoverReportePrecios;

@@ -299,6 +299,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
     $idChoferNuevo = (int)($_POST['id_chofer_nuevo'] ?? 0);
     if ($idChoferNuevo > 0 && $id_vehiculo > 0) {
 
+        // Verificar que el vehículo no sea particular
+        $esParticular = (int)($vehiculo['es_particular'] ?? 0);
+        if ($esParticular === 1) {
+            echo "<script>alert('No se puede asignar chofer a un vehículo particular.'); history.back();</script>";
+            exit;
+        }
+
         // 1) Cerrar asignación anterior abierta (si existe)
         // Cerrar asignación abierta (si hay)
         $stmt = $conn->prepare("UPDATE historial_conductores
@@ -1081,32 +1088,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'desas
   <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
     <h3 style="margin:0">Historial de conductores</h3>
 
-    <!-- Form ASIGNAR -->
-    <form method="post" style="display:flex;gap:8px;align-items:center">
-      <input type="hidden" name="accion" value="asignar_chofer">
-      <label class="modal__label" for="selChoferNuevo" style="margin:0">Asignar chofer</label>
-      <select name="id_chofer_nuevo" id="selChoferNuevo" class="modal__field" required>
-        <?php
-        $sucVeh = $conn->real_escape_string($sucV);
-        $q = "SELECT ID, username, Sucursal FROM choferes WHERE Estado='ACTIVO'
-              ORDER BY (Sucursal='{$sucVeh}') DESC, Sucursal, username";
-        $chs2 = $conn->query($q);
-        while ($ch = $chs2->fetch_assoc()):
-        ?>
-          <option value="<?= (int)$ch['ID'] ?>">
-            <?= htmlspecialchars($ch['username']) ?> — <?= htmlspecialchars($ch['Sucursal']) ?>
-          </option>
-        <?php endwhile; ?>
-      </select>
-      <button class="btn alt" type="submit">Guardar</button>
-    </form>
-
-    <!-- Form DESASIGNAR (separado) -->
-    <?php if (!empty($vehiculo['id_chofer_asignado'])): ?>
-      <form method="post" onsubmit="return confirm('¿Desasignar chofer actual?');">
-        <input type="hidden" name="accion" value="desasignar_chofer">
-        <button class="btn ghost" type="submit">Desasignar chofer</button>
+    <?php
+    $esParticular = (int)($vehiculo['es_particular'] ?? 0);
+    if ($esParticular === 1):
+    ?>
+      <div style="padding:10px 14px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;color:#0c4a6e;font-weight:600;">
+        🏠 Este es un vehículo particular. No se puede asignar chofer.
+      </div>
+    <?php else: ?>
+      <!-- Form ASIGNAR -->
+      <form method="post" style="display:flex;gap:8px;align-items:center">
+        <input type="hidden" name="accion" value="asignar_chofer">
+        <label class="modal__label" for="selChoferNuevo" style="margin:0">Asignar chofer</label>
+        <select name="id_chofer_nuevo" id="selChoferNuevo" class="modal__field" required>
+          <?php
+          $sucVeh = $conn->real_escape_string($sucV);
+          $q = "SELECT ID, username, Sucursal FROM choferes WHERE Estado='ACTIVO'
+                ORDER BY (Sucursal='{$sucVeh}') DESC, Sucursal, username";
+          $chs2 = $conn->query($q);
+          while ($ch = $chs2->fetch_assoc()):
+          ?>
+            <option value="<?= (int)$ch['ID'] ?>">
+              <?= htmlspecialchars($ch['username']) ?> — <?= htmlspecialchars($ch['Sucursal']) ?>
+            </option>
+          <?php endwhile; ?>
+        </select>
+        <button class="btn alt" type="submit">Guardar</button>
       </form>
+
+      <!-- Form DESASIGNAR (separado) -->
+      <?php if (!empty($vehiculo['id_chofer_asignado'])): ?>
+        <form method="post" onsubmit="return confirm('¿Desasignar chofer actual?');">
+          <input type="hidden" name="accion" value="desasignar_chofer">
+          <button class="btn ghost" type="submit">Desasignar chofer</button>
+        </form>
+      <?php endif; ?>
     <?php endif; ?>
   </div>
 <?php
