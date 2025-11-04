@@ -393,6 +393,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'desas
     exit;
 }
 
+/* ====== POST: Asignar responsable (para vehículos particulares) ====== */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['accion'] === 'asignar_responsable') {
+    $responsable = trim($_POST['responsable'] ?? '');
+    if ($responsable !== '' && $id_vehiculo > 0) {
+        // Verificar que el vehículo sea particular
+        $esParticular = (int)($vehiculo['es_particular'] ?? 0);
+        if ($esParticular !== 1) {
+            echo "<script>alert('Solo se puede asignar responsable a vehículos particulares.'); history.back();</script>";
+            exit;
+        }
+
+        // Actualizar responsable del vehículo
+        $stmt = $conn->prepare("UPDATE vehiculos SET responsable = ? WHERE id_vehiculo = ?");
+        $stmt->bind_param("si", $responsable, $id_vehiculo);
+        $stmt->execute();
+
+        header("Location: detalles_vehiculo.php?id={$id_vehiculo}&msg=responsable-actualizado");
+        exit;
+    }
+}
+
+/* ====== POST: Desasignar responsable ====== */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'desasignar_responsable') {
+    $stmt = $conn->prepare("UPDATE vehiculos SET responsable = NULL WHERE id_vehiculo = ?");
+    $stmt->bind_param("i", $id_vehiculo);
+    $stmt->execute();
+
+    header("Location: detalles_vehiculo.php?id={$id_vehiculo}&msg=responsable-desasignado");
+    exit;
+}
+
 
 ?>
 <!DOCTYPE html>
@@ -1091,10 +1122,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'desas
     <?php
     $esParticular = (int)($vehiculo['es_particular'] ?? 0);
     if ($esParticular === 1):
+      // Para vehículos particulares, mostrar formulario de responsable
     ?>
-      <div style="padding:10px 14px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;color:#0c4a6e;font-weight:600;">
-        🏠 Este es un vehículo particular. No se puede asignar chofer.
+      <div style="margin-bottom:12px;padding:10px 14px;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;color:#0c4a6e;font-weight:600;">
+        🏠 Vehículo particular - Asignar responsable
       </div>
+
+      <!-- Form ASIGNAR RESPONSABLE -->
+      <form method="post" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <input type="hidden" name="accion" value="asignar_responsable">
+        <label class="modal__label" for="inputResponsable" style="margin:0">Responsable</label>
+        <input
+          type="text"
+          name="responsable"
+          id="inputResponsable"
+          class="modal__field"
+          style="min-width:300px"
+          placeholder="Selecciona o escribe el nombre..."
+          list="listaUsuarios"
+          value="<?= htmlspecialchars($vehiculo['responsable'] ?? '') ?>"
+          required
+          autocomplete="off">
+        <datalist id="listaUsuarios">
+          <?php
+          $qUsuarios = "SELECT username, Rol, Sucursal FROM usuarios ORDER BY username";
+          $usuarios = $conn->query($qUsuarios);
+          if ($usuarios) {
+            while ($usr = $usuarios->fetch_assoc()):
+              $display = htmlspecialchars($usr['username']);
+              $rol = htmlspecialchars($usr['Rol'] ?? '');
+              $suc = htmlspecialchars($usr['Sucursal'] ?? '');
+              $label = $display;
+              if ($rol || $suc) {
+                $label .= " — {$rol}" . ($suc ? " ({$suc})" : "");
+              }
+          ?>
+            <option value="<?= $display ?>" label="<?= $label ?>">
+          <?php
+            endwhile;
+          }
+          ?>
+        </datalist>
+        <button class="btn alt" type="submit">Guardar</button>
+
+        <?php if (!empty($vehiculo['responsable'])): ?>
+          </form>
+          <form method="post" style="display:inline;" onsubmit="return confirm('¿Desasignar responsable actual?');">
+            <input type="hidden" name="accion" value="desasignar_responsable">
+            <button class="btn ghost" type="submit">Quitar responsable</button>
+          </form>
+        <?php else: ?>
+          </form>
+        <?php endif; ?>
     <?php else: ?>
       <!-- Form ASIGNAR -->
       <form method="post" style="display:flex;gap:8px;align-items:center">

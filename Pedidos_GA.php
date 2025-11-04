@@ -35,7 +35,15 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
           <img src="\Pedidos_GA\Img\Botones entregas\Pedidos_GA\ESTNA2.png" alt="Estaditicas" class="icono-estadisticas" style="max-width: 80%; height: auto;">
         </a>
       </li>
-      
+
+      <?php if ($_SESSION["Rol"] === "Admin"): ?>
+      <li>
+        <a href="mapa_calor.php">
+          <img src="\Pedidos_GA\Img\Botones entregas\Pedidos_GA\MAPA_NA.png" alt="Mapa Calor" class="icono-mapa-calor" style="max-width: 80%; height: auto;">
+        </a>
+      </li>
+      <?php endif; ?>
+
       <li>
         <a href="Choferes.php">
           <img src="\Pedidos_GA\Img\Botones entregas\Pedidos_GA\CHOFNA2.png" alt="Choferes" class="icono-choferes" style="max-width: 80%; height: auto;">
@@ -96,6 +104,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
       var iconoU = document.querySelector(".icono-U");
       var iconoH = document.querySelector(".icono-H");
       var iconoReportePrecios = document.querySelector(".icono-reporte-precios");
+      var iconoMapaCalor = document.querySelector(".icono-mapa-calor");
       var iconoMaps = document.querySelector(".icono-Maps");
       var iconoHome = document.querySelector(".icono-Home");
       var iconoWP = document.querySelector(".icono-WP");
@@ -164,6 +173,17 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
           });
           iconoReportePrecios.addEventListener("mouseout", function() {
               iconoReportePrecios.src = imgNormalReportePrecios;
+          });
+      }
+
+      var imgNormalMapaCalor = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/MAPA_NA.png";
+      var imgHoverMapaCalor = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/MAPA_BL.png";
+      if (iconoMapaCalor) {
+          iconoMapaCalor.addEventListener("mouseover", function() {
+              iconoMapaCalor.src = imgHoverMapaCalor;
+          });
+          iconoMapaCalor.addEventListener("mouseout", function() {
+              iconoMapaCalor.src = imgNormalMapaCalor;
           });
       }
 

@@ -314,6 +314,9 @@ while ($v = $vehiculos->fetch_assoc()) {
   if (!empty($v['id_chofer_asignado'])) $assignedDriverId = (int)$v['id_chofer_asignado'];
   elseif (!empty($v['id_chofer']))       $assignedDriverId = (int)$v['id_chofer'];
 
+  // Obtener información del responsable si es vehículo particular
+  $responsableNombre = !empty($v['responsable']) ? (string)$v['responsable'] : null;
+
   $imgUrl = publicImgForVeh($v);
   $idVeh   = (int)($v['id_vehiculo'] ?? 0);
   $kmSrv   = max(1, (int)($v['Km_de_Servicio'] ?? 5000));
@@ -356,6 +359,7 @@ while ($v = $vehiculos->fetch_assoc()) {
     'km_srv'     => $kmSrv,
     'km_faltante' => $kmFalt,
     'es_particular' => (int)($v['es_particular'] ?? 0),
+    'responsable_nombre' => $responsableNombre,
     'stats'     => [
       // claves nuevas
       'kilometraje'     => $pctKm,
@@ -1226,6 +1230,14 @@ while ($c = $choferes->fetch_assoc()) {
       const extraBtn = d ? `<button class="btn-mini danger" data-action="quitar-vehiculo" data-vehiculo-id="${v.id}">Quitar</button>` : '';
       const title = (v.alias && v.alias.trim()) ? v.alias : (v.nombre && v.nombre.trim() ? v.nombre : 'Vehículo');
 
+      // Responsable para vehículos particulares
+      const tieneResponsable = esParticular && v.responsable_nombre;
+      const responsableHTML = tieneResponsable ? `
+        <div class="pair-badge" style="background:#f0f9ff;border-color:#bae6fd;">
+          <span class="pair-dot" style="background:#0c4a6e;"></span>
+          <strong style="color:#0c4a6e;">👤 ${v.responsable_nombre}</strong>
+        </div>` : '';
+
       return `<article class="card vehicle-card ${d?'paired':''} ${v.en_taller ? 'is-workshop' : ''} ${esParticular ? 'particular-vehicle' : ''}"
                    style="${pairColor?`--pair:${pairColor}`:''}"
                    data-vehiculo-id="${v.id}"
@@ -1234,8 +1246,8 @@ while ($c = $choferes->fetch_assoc()) {
                    aria-label="Ver detalles de ${title}">
 ${v.en_taller ? `<div class="status-badge danger">🔧 ${v.os_estatus || 'En servicio'}</div>` : ``}
 ${esParticular ? `<div class="status-badge" style="left: auto; right: 12px; background: #f0f9ff; border-color: #bae6fd; color: #0c4a6e;">🏠 Particular</div>` : ''}
-      ${d?`<div class="pair-badge"><span class="pair-dot"></span>
-            <div class="mini-avatar">${d.img?`<img src="${d.img}" alt="">`:`<div class="avatar-initial" style="font-size:14px">${(d.initial||'?').slice(0,2)}</div>`}</div><strong>${d.nombre}</strong></div>`:''}
+      ${esParticular ? responsableHTML : (d ? `<div class="pair-badge"><span class="pair-dot"></span>
+            <div class="mini-avatar">${d.img?`<img src="${d.img}" alt="">`:`<div class="avatar-initial" style="font-size:14px">${(d.initial||'?').slice(0,2)}</div>`}</div><strong>${d.nombre}</strong></div>` : '')}
       <div class="head">
         ${avatarHTML({img:v.img, initial:v.initial, veh:true, name:title})}
         <div class="text-block">
@@ -1251,7 +1263,7 @@ ${esParticular ? `<div class="status-badge" style="left: auto; right: 12px; back
         ${bar('Salud general', v.stats?.salud, 100)}
       </div>
       <div class="footer">
-        <span>${esParticular ? 'Vehículo particular' : (d ? `Chofer: ${d.nombre}` : 'Sin chofer asignado')}</span>
+        <span>${esParticular ? (tieneResponsable ? `Responsable: ${v.responsable_nombre}` : 'Sin responsable') : (d ? `Chofer: ${d.nombre}` : 'Sin chofer asignado')}</span>
         <div style="display:flex; gap:8px;">${esParticular ? '' : extraBtn}</div>
       </div>
     </article>`;
