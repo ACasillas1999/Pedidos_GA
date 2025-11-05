@@ -184,14 +184,29 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
             <option value="Paquetería">Paquetería</option>
         </select><br><br>
 
-        <label for="factura">Factura:</label>
-        <input type="text" id="factura" name="factura" required><br><br>
-
-        <label for="precio_factura_vendedor">Precio de Factura:</label>
-        <input type="number" id="precio_factura_vendedor" name="precio_factura_vendedor" step="0.01" min="0.01" placeholder="0.00" required>
-        <span id="alerta_precio_bajo" style="display:none; color: #856404; font-weight: bold; margin-left: 10px;">
-            ⚠️ Precio menor a $1000 - Flete no conveniente
-        </span><br><br>
+        <label>Facturas y Precios:</label>
+        <div id="facturas_container">
+            <div class="factura-item" data-index="0">
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                    <div style="flex: 1;">
+                        <label for="factura_0">Factura:</label>
+                        <input type="text" id="factura_0" name="factura[]" required>
+                    </div>
+                    <div style="flex: 1;">
+                        <label for="precio_factura_vendedor_0">Precio:</label>
+                        <input type="number" id="precio_factura_vendedor_0" name="precio_factura_vendedor[]" class="precio-input" step="0.01" min="0.01" placeholder="0.00" required>
+                        <span class="alerta_precio_bajo" style="display:none; color: #856404; font-weight: bold; margin-left: 10px;">
+                            ⚠️ Precio menor a $1000
+                        </span>
+                    </div>
+                    <div style="flex: 0;">
+                        <button type="button" class="btn-remove-factura" onclick="removeFactura(0)" style="background-color: #dc3545; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; margin-top: 20px;">-</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button type="button" onclick="addFactura()" style="background-color: #28a745; color: white; border: none; padding: 8px 15px; cursor: pointer; border-radius: 4px; margin-bottom: 15px;">+ Agregar Factura</button>
+        <br><br>
 
         <label for="direccion">Dirección:</label>
         <input type="text" id="direccion" name="direccion" required><br><br>
@@ -266,18 +281,92 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
             }
         });
 
-        // Validación de precio en tiempo real
-        document.getElementById('precio_factura_vendedor').addEventListener('input', function() {
-            const precio = parseFloat(this.value);
-            const alerta = document.getElementById('alerta_precio_bajo');
+        // Contador para los índices de facturas
+        let facturaIndex = 1;
 
-            if (!isNaN(precio) && precio > 0 && precio < 1000) {
-                alerta.style.display = 'inline';
-                this.style.backgroundColor = '#fff3cd';
-            } else {
-                alerta.style.display = 'none';
-                this.style.backgroundColor = '';
+        // Función para agregar una nueva factura
+        function addFactura() {
+            const container = document.getElementById('facturas_container');
+            const newItem = document.createElement('div');
+            newItem.className = 'factura-item';
+            newItem.setAttribute('data-index', facturaIndex);
+
+            newItem.innerHTML = `
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                    <div style="flex: 1;">
+                        <label for="factura_${facturaIndex}">Factura:</label>
+                        <input type="text" id="factura_${facturaIndex}" name="factura[]" required>
+                    </div>
+                    <div style="flex: 1;">
+                        <label for="precio_factura_vendedor_${facturaIndex}">Precio:</label>
+                        <input type="number" id="precio_factura_vendedor_${facturaIndex}" name="precio_factura_vendedor[]" class="precio-input" step="0.01" min="0.01" placeholder="0.00" required>
+                        <span class="alerta_precio_bajo" style="display:none; color: #856404; font-weight: bold; margin-left: 10px;">
+                            ⚠️ Precio menor a $1000
+                        </span>
+                    </div>
+                    <div style="flex: 0;">
+                        <button type="button" class="btn-remove-factura" onclick="removeFactura(${facturaIndex})" style="background-color: #dc3545; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px; margin-top: 20px;">-</button>
+                    </div>
+                </div>
+            `;
+
+            container.appendChild(newItem);
+
+            // Agregar event listener al nuevo campo de precio
+            const nuevoPrecioInput = document.getElementById(`precio_factura_vendedor_${facturaIndex}`);
+            agregarValidacionPrecio(nuevoPrecioInput);
+
+            facturaIndex++;
+            actualizarBotonesEliminar();
+        }
+
+        // Función para eliminar una factura
+        function removeFactura(index) {
+            const items = document.querySelectorAll('.factura-item');
+            if (items.length > 1) {
+                const item = document.querySelector(`.factura-item[data-index="${index}"]`);
+                if (item) {
+                    item.remove();
+                }
             }
+            actualizarBotonesEliminar();
+        }
+
+        // Función para actualizar la visibilidad de los botones de eliminar
+        function actualizarBotonesEliminar() {
+            const items = document.querySelectorAll('.factura-item');
+            const botones = document.querySelectorAll('.btn-remove-factura');
+
+            if (items.length === 1) {
+                botones.forEach(btn => btn.style.display = 'none');
+            } else {
+                botones.forEach(btn => btn.style.display = 'inline-block');
+            }
+        }
+
+        // Función para agregar validación de precio a un input
+        function agregarValidacionPrecio(input) {
+            input.addEventListener('input', function() {
+                const precio = parseFloat(this.value);
+                const alerta = this.parentElement.querySelector('.alerta_precio_bajo');
+
+                if (!isNaN(precio) && precio > 0 && precio < 1000) {
+                    alerta.style.display = 'inline';
+                    this.style.backgroundColor = '#fff3cd';
+                } else {
+                    alerta.style.display = 'none';
+                    this.style.backgroundColor = '';
+                }
+            });
+        }
+
+        // Inicializar validación de precios en campos existentes
+        document.addEventListener('DOMContentLoaded', function() {
+            const preciosInputs = document.querySelectorAll('.precio-input');
+            preciosInputs.forEach(input => {
+                agregarValidacionPrecio(input);
+            });
+            actualizarBotonesEliminar();
         });
     </script>
 

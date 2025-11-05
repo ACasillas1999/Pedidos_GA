@@ -25,6 +25,7 @@ try {
     $fecha_desde = isset($_GET['fecha_desde']) && $_GET['fecha_desde'] !== '' ? $_GET['fecha_desde'] : null;
     $fecha_hasta = isset($_GET['fecha_hasta']) && $_GET['fecha_hasta'] !== '' ? $_GET['fecha_hasta'] : null;
     $sucursal = isset($_GET['sucursal']) && $_GET['sucursal'] !== '' ? $_GET['sucursal'] : null;
+    $estados = isset($_GET['estados']) && $_GET['estados'] !== '' ? $_GET['estados'] : 'ENTREGADO'; // Por defecto solo ENTREGADOS
 
     // Construir consulta SQL base
     $sql = "SELECT
@@ -34,12 +35,27 @@ try {
                 tipo_envio,
                 FECHA_ENTREGA_CLIENTE,
                 SUCURSAL,
-                NOMBRE_CLIENTE
+                NOMBRE_CLIENTE,
+                FACTURA,
+                ESTADO,
+                precio_factura_real,
+                precio_validado_jc
             FROM pedidos
             WHERE (tipo_envio = 'domicilio' OR tipo_envio = 'paquetería' OR tipo_envio = 'paqueteria')";
 
     $params = [];
     $types = "";
+
+    // Agregar filtro de estados
+    if ($estados !== 'TODOS') {
+        $estadosArray = explode(',', $estados);
+        $placeholders = implode(',', array_fill(0, count($estadosArray), '?'));
+        $sql .= " AND ESTADO IN ($placeholders)";
+        foreach ($estadosArray as $estado) {
+            $params[] = trim($estado);
+            $types .= "s";
+        }
+    }
 
     // Agregar filtro de fecha solo si se proporcionan ambas fechas
     if ($fecha_desde !== null && $fecha_hasta !== null) {
@@ -74,6 +90,8 @@ try {
         $coord_destino = trim($row['Coord_Destino']);
         $tipo_envio = strtolower(trim($row['tipo_envio']));
         $sucursal_row = trim($row['SUCURSAL']);
+        $precio = isset($row['precio_factura_real']) ? floatval($row['precio_factura_real']) : 0;
+        $validado = isset($row['precio_validado_jc']) ? intval($row['precio_validado_jc']) : 0;
 
         // Normalizar tipo de envío
         if ($tipo_envio === 'paquetería') {
@@ -85,7 +103,10 @@ try {
             $stats_por_sucursal[$sucursal_row] = [
                 'total' => 0,
                 'domicilio' => 0,
-                'paqueteria' => 0
+                'paqueteria' => 0,
+                'valor_total' => 0,
+                'valor_domicilio' => 0,
+                'valor_paqueteria' => 0
             ];
         }
 
@@ -103,17 +124,24 @@ try {
                         'lat' => $lat,
                         'lng' => $lng,
                         'id' => $row['ID'],
-                        'sucursal' => $sucursal_row
+                        'sucursal' => $sucursal_row,
+                        'precio' => $precio,
+                        'validado' => $validado,
+                        'factura' => $row['FACTURA'] ?? '',
+                        'cliente' => $row['NOMBRE_CLIENTE'] ?? ''
                     ];
 
                     if ($tipo_envio === 'domicilio') {
                         $coordenadas_domicilio[] = $coordenada;
                         $stats_por_sucursal[$sucursal_row]['domicilio']++;
+                        $stats_por_sucursal[$sucursal_row]['valor_domicilio'] += $precio;
                     } else if ($tipo_envio === 'paqueteria') {
                         $coordenadas_paqueteria[] = $coordenada;
                         $stats_por_sucursal[$sucursal_row]['paqueteria']++;
+                        $stats_por_sucursal[$sucursal_row]['valor_paqueteria'] += $precio;
                     }
                     $stats_por_sucursal[$sucursal_row]['total']++;
+                    $stats_por_sucursal[$sucursal_row]['valor_total'] += $precio;
                     continue;
                 }
             }
@@ -125,7 +153,11 @@ try {
                 'id' => $row['ID'],
                 'direccion' => trim($row['DIRECCION']),
                 'tipo_envio' => $tipo_envio,
-                'sucursal' => $sucursal_row
+                'sucursal' => $sucursal_row,
+                'precio' => $precio,
+                'validado' => $validado,
+                'factura' => $row['FACTURA'] ?? '',
+                'cliente' => $row['NOMBRE_CLIENTE'] ?? ''
             ];
         }
     }
@@ -146,17 +178,24 @@ try {
                 'lat' => $coords['lat'],
                 'lng' => $coords['lng'],
                 'id' => $item['id'],
-                'sucursal' => $item['sucursal']
+                'sucursal' => $item['sucursal'],
+                'precio' => $item['precio'],
+                'validado' => $item['validado'],
+                'factura' => $item['factura'],
+                'cliente' => $item['cliente']
             ];
 
             if ($item['tipo_envio'] === 'domicilio') {
                 $coordenadas_domicilio[] = $coordenada;
                 $stats_por_sucursal[$item['sucursal']]['domicilio']++;
+                $stats_por_sucursal[$item['sucursal']]['valor_domicilio'] += $item['precio'];
             } else if ($item['tipo_envio'] === 'paqueteria') {
                 $coordenadas_paqueteria[] = $coordenada;
                 $stats_por_sucursal[$item['sucursal']]['paqueteria']++;
+                $stats_por_sucursal[$item['sucursal']]['valor_paqueteria'] += $item['precio'];
             }
             $stats_por_sucursal[$item['sucursal']]['total']++;
+            $stats_por_sucursal[$item['sucursal']]['valor_total'] += $item['precio'];
 
             $geocoded++;
 

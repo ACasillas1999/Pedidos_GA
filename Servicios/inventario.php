@@ -200,6 +200,14 @@ while ($v = $qVehiculos->fetch_assoc()) {
       </div>
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
         <input id="search" class="ga-input" placeholder="🔎 Buscar por nombre / marca / modelo / ID" style="min-width:260px;">
+        <select id="filterStock" class="ga-select" style="width:auto; min-width:150px;">
+          <option value="all">📦 Todos</option>
+          <option value="low">⚠️ Stock bajo</option>
+          <option value="ok">✓ Stock OK</option>
+        </select>
+        <select id="filterSucursal" class="ga-select" style="width:auto; min-width:150px;">
+          <option value="all">🏢 Todas las sucursales</option>
+        </select>
         <button id="btnNuevo" class="ga-btn">➕ Nuevo producto</button>
         <button id="btnExport" class="ga-btn secondary">⬇️</button>
       </div>
@@ -353,10 +361,32 @@ function vehiculosResumidos(ids){
 }
 function render(){
   const q = ($('#search').value||'').trim().toLowerCase();
+  const filterStock = $('#filterStock').value;
+  const filterSucursal = $('#filterSucursal').value;
   const tbody = $('#tbody'); tbody.innerHTML = '';
-  rows
-    .filter(r => [r.nombre, r.marca, r.modelo, String(r.id)].some(x => (x||'').toLowerCase().includes(q)))
-    .forEach(r => {
+
+  let filtered = rows
+    .filter(r => [r.nombre, r.marca, r.modelo, String(r.id)].some(x => (x||'').toLowerCase().includes(q)));
+
+  // Filtro de stock
+  if(filterStock === 'low'){
+    filtered = filtered.filter(r => Number(r.cantidad) <= Number(r.min));
+  } else if(filterStock === 'ok'){
+    filtered = filtered.filter(r => Number(r.cantidad) > Number(r.min));
+  }
+
+  // Filtro de sucursal
+  if(filterSucursal !== 'all'){
+    filtered = filtered.filter(r => {
+      if(!r.vehiculos || !r.vehiculos.length) return false;
+      return r.vehiculos.some(vehId => {
+        const v = VEHICULOS.find(x => x.id === vehId);
+        return v && v.suc === filterSucursal;
+      });
+    });
+  }
+
+  filtered.forEach(r => {
       const st = estadoRow(r);
       const tr = document.createElement('tr'); tr.className = st.cls;
       tr.innerHTML = `
@@ -412,6 +442,8 @@ function renderVehChips(){
 /* ===== Eventos ===== */
 $('#btnNuevo').addEventListener('click', ()=> openForm('Nuevo producto'));
 $('#search').addEventListener('input', render);
+$('#filterStock').addEventListener('change', render);
+$('#filterSucursal').addEventListener('change', render);
 $$('[data-close]').forEach(b => b.addEventListener('click', ()=>{ show($('#modalForm'), false); show($('#modalConfirm'), false); }));
 
 document.addEventListener('click', async (e)=>{
@@ -491,7 +523,20 @@ $('#btnExport').addEventListener('click', ()=>{
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'inventario.csv'; a.click();
 });
 
+/* ===== Poblar filtro de sucursales ===== */
+function populateSucursales(){
+  const sucursales = [...new Set(VEHICULOS.map(v => v.suc))].sort();
+  const select = $('#filterSucursal');
+  sucursales.forEach(suc => {
+    const opt = document.createElement('option');
+    opt.value = suc;
+    opt.textContent = suc;
+    select.appendChild(opt);
+  });
+}
+
 /* ===== Inicial ===== */
+populateSucursales();
 loadData();
 </script>
 </body>

@@ -350,6 +350,7 @@ while ($v = $vehiculos->fetch_assoc()) {
     'placa'     => (string)($v['placa'] ?? ''),
     'tipo'      => (string)($v['tipo'] ?? ''),
     'sucursal'  => (string)($v['Sucursal'] ?? ''),
+    'razon_social' => (string)($v['razon_social'] ?? ''),
     'ultimo'    => (string)($v['fecha_ultimo_servicio'] ?? ''),
     'img'       => $imgUrl,
     'initial'   => str_initial($titleAlias !== '' ? $titleAlias : $vehName, 'V'),
@@ -930,11 +931,18 @@ while ($c = $choferes->fetch_assoc()) {
       }
     }
 
+    /* ==== Contenedor de badges (sin solapamiento) ==== */
+    .badges-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 12px 12px 0 12px;
+      position: relative;
+      z-index: 2;
+    }
+
     /* ==== Badge de estado para vehículos (ej. En taller) ==== */
     .status-badge {
-      position: absolute;
-      left: 12px;
-      top: 12px;
       display: inline-flex;
       align-items: center;
       gap: 6px;
@@ -946,7 +954,7 @@ while ($c = $choferes->fetch_assoc()) {
       border: 1px solid #e5e7eb;
       color: #111827;
       box-shadow: 0 2px 10px rgba(0, 0, 0, .06);
-      z-index: 2;
+      white-space: nowrap;
     }
 
     .status-badge.danger {
@@ -959,6 +967,18 @@ while ($c = $choferes->fetch_assoc()) {
       background: #fffaf0;
       border-color: #fde68a;
       color: #92400e;
+    }
+
+    .status-badge.info {
+      background: #f0f9ff;
+      border-color: #bae6fd;
+      color: #0c4a6e;
+    }
+
+    .status-badge.success {
+      background: #f0fdf4;
+      border-color: #bbf7d0;
+      color: #166534;
     }
 
     /* Atenuado visual si está en taller */
@@ -1157,7 +1177,8 @@ while ($c = $choferes->fetch_assoc()) {
     const dHeader = $('#drivers-header'),
       dGrid = $('#drivers-grid');
     let vState = {
-      level: 'branches',
+      level: 'groupBy',
+      groupBy: null,
       branch: null
     };
     let dState = {
@@ -1167,21 +1188,70 @@ while ($c = $choferes->fetch_assoc()) {
 
     // Render vehículos
     function renderVehicles() {
-      if (vState.level === 'branches') {
-        vHeader.innerHTML = `<div class="crumb"><span class="muted">Vehículos</span> · Sucursales</div>`;
-        const branches = unique(VEHICLES.map(v => v.sucursal || '—')).sort();
+      if (vState.level === 'groupBy') {
+        // Vista de selección: Agrupar por Sucursal o Razón Social
+        vHeader.innerHTML = `<div class="crumb"><span class="muted">Vehículos</span> · Selecciona agrupación</div>`;
+        vGrid.innerHTML = `
+          <article class="card branch-card" data-groupby="sucursal">
+            <div class="branch-icon">📍</div>
+            <div class="branch-info">
+              <div class="name">Por Lugar de Operación</div>
+              <div class="meta">Agrupar por sucursal donde operan</div>
+            </div>
+          </article>
+          <article class="card branch-card" data-groupby="razon_social">
+            <div class="branch-icon">🏢</div>
+            <div class="branch-info">
+              <div class="name">Por Razón Social</div>
+              <div class="meta">Agrupar por empresa que compró</div>
+            </div>
+          </article>
+        `;
+      } else if (vState.level === 'branches') {
+        const groupBy = vState.groupBy || 'sucursal';
+        const icon = groupBy === 'razon_social' ? '🏢' : '📍';
+        const title = groupBy === 'razon_social' ? 'Razones Sociales' : 'Sucursales';
+
+        vHeader.innerHTML = `<div class="crumb"><span class="muted">Vehículos</span> · ${title}</div>
+                            <button class="btn-mini back" id="veh-back-group">Cambiar agrupación</button>`;
+
+        const branches = unique(VEHICLES.map(v => {
+          if (groupBy === 'razon_social') {
+            return v.razon_social || 'Sin Razón Social';
+          }
+          return v.sucursal || '—';
+        })).sort();
+
         vGrid.innerHTML = branches.map(s => {
-          const count = VEHICLES.filter(v => (v.sucursal || '—') === s).length;
+          const count = VEHICLES.filter(v => {
+            if (groupBy === 'razon_social') {
+              return (v.razon_social || 'Sin Razón Social') === s;
+            }
+            return (v.sucursal || '—') === s;
+          }).length;
           return `<article class="card branch-card" data-branch="${s}">
-          <div class="branch-icon">🚏</div>
+          <div class="branch-icon">${icon}</div>
           <div class="branch-info"><div class="name">${s}</div><div class="meta">${count} vehículo${count!==1?'s':''}</div></div>
         </article>`;
         }).join('');
+
+        $('#veh-back-group')?.addEventListener('click', () => {
+          vState = { level: 'groupBy', groupBy: null, branch: null };
+          renderVehicles();
+        });
       } else {
         const s = vState.branch;
+        const groupBy = vState.groupBy || 'sucursal';
+
         vHeader.innerHTML = `<div class="crumb"><span class="muted">Vehículos</span> · <strong>${s}</strong></div>
                            <button class="btn-mini back" id="veh-back">Regresar</button>`;
-        const list = VEHICLES.filter(v => (v.sucursal || '—') === s);
+
+        const list = VEHICLES.filter(v => {
+          if (groupBy === 'razon_social') {
+            return (v.razon_social || 'Sin Razón Social') === s;
+          }
+          return (v.sucursal || '—') === s;
+        });
         vGrid.innerHTML = list.map(vehicleCard).join('');
         // Buscador rápido para la lista de vehículos por sucursal
         (function() {
@@ -1203,7 +1273,8 @@ while ($c = $choferes->fetch_assoc()) {
         $('#veh-back')?.addEventListener('click', () => {
           vState = {
             level: 'branches',
-            branch: null
+            branch: null,
+            groupBy: vState.groupBy
           };
           renderVehicles();
           animateBars();
@@ -1211,11 +1282,27 @@ while ($c = $choferes->fetch_assoc()) {
       }
     }
     vGrid.addEventListener('click', e => {
+      // Primero verificar si es selección de agrupación
+      const groupByCard = e.target.closest('.branch-card[data-groupby]');
+      if (groupByCard) {
+        const groupBy = groupByCard.dataset.groupby;
+        vState = {
+          level: 'branches',
+          branch: null,
+          groupBy: groupBy
+        };
+        renderVehicles();
+        animateBars();
+        return;
+      }
+
+      // Luego verificar si es selección de sucursal/razón social
       const c = e.target.closest('.branch-card');
       if (!c) return;
       vState = {
         level: 'list',
-        branch: c.dataset.branch
+        branch: c.dataset.branch,
+        groupBy: vState.groupBy
       };
       renderVehicles();
       animateBars();
@@ -1238,21 +1325,33 @@ while ($c = $choferes->fetch_assoc()) {
           <strong style="color:#0c4a6e;">👤 ${v.responsable_nombre}</strong>
         </div>` : '';
 
+      // Construir array de badges
+      const badges = [];
+      if (v.en_taller) {
+        badges.push(`<div class="status-badge danger">🔧 ${v.os_estatus || 'En servicio'}</div>`);
+      }
+      if (esParticular) {
+        badges.push(`<div class="status-badge info">🏠 Particular</div>`);
+      }
+      if (v.razon_social) {
+        badges.push(`<div class="status-badge success">🏢 ${v.razon_social}</div>`);
+      }
+
       return `<article class="card vehicle-card ${d?'paired':''} ${v.en_taller ? 'is-workshop' : ''} ${esParticular ? 'particular-vehicle' : ''}"
                    style="${pairColor?`--pair:${pairColor}`:''}"
                    data-vehiculo-id="${v.id}"
                    tabindex="0"
                    role="link"
                    aria-label="Ver detalles de ${title}">
-${v.en_taller ? `<div class="status-badge danger">🔧 ${v.os_estatus || 'En servicio'}</div>` : ``}
-${esParticular ? `<div class="status-badge" style="left: auto; right: 12px; background: #f0f9ff; border-color: #bae6fd; color: #0c4a6e;">🏠 Particular</div>` : ''}
+      ${badges.length > 0 ? `<div class="badges-container">${badges.join('')}</div>` : ''}
       ${esParticular ? responsableHTML : (d ? `<div class="pair-badge"><span class="pair-dot"></span>
             <div class="mini-avatar">${d.img?`<img src="${d.img}" alt="">`:`<div class="avatar-initial" style="font-size:14px">${(d.initial||'?').slice(0,2)}</div>`}</div><strong>${d.nombre}</strong></div>` : '')}
       <div class="head">
         ${avatarHTML({img:v.img, initial:v.initial, veh:true, name:title})}
         <div class="text-block">
           <div class="name">${title}</div>
-          <div class="meta">${v.tipo||''} · Placa ${v.placa||''} · ${v.sucursal||''}</div>
+          <div class="meta">${v.tipo||''} · Placa ${v.placa||''}</div>
+          ${!v.razon_social ? `<div class="meta" style="color: #64748b; font-weight: 500; margin-top: 2px;">📍 Opera en: ${v.sucursal||''}</div>` : ''}
         </div>
       </div>
       <div class="chips">${(v.tags||[]).map(t=>`<span class="chip">${t}</span>`).join('')}</div>
@@ -1677,7 +1776,7 @@ ${esParticular ? `<div class="status-badge" style="left: auto; right: 12px; back
             level: 'list',
             branch: 'TODO'
           };
-          const list = VEHICLES.filter(v => !q || [v.placa, v.tipo, v.nombre, v.alias, v.sucursal].join(' ').toLowerCase().includes(q));
+          const list = VEHICLES.filter(v => !q || [v.placa, v.tipo, v.nombre, v.alias, v.sucursal, v.razon_social].join(' ').toLowerCase().includes(q));
           vHeader.innerHTML = `<div class="crumb"><span class="muted">Vehículos</span> → <strong>${q?('Resultados'): (vState.branch||'')}</strong></div>
                              <button class="btn-mini back" id="veh-back">Regresar</button>`;
           vGrid.innerHTML = list.map(vehicleCard).join('');
@@ -1726,7 +1825,7 @@ ${esParticular ? `<div class="status-badge" style="left: auto; right: 12px; back
         const drvView = document.getElementById('drivers-view');
         if (vehView) vehView.classList.remove('hide');
         if (drvView) drvView.classList.remove('hide');
-        const vList = VEHICLES.filter(v => [v.placa, v.tipo, v.nombre, v.alias, v.sucursal].join(' ').toLowerCase().includes(q));
+        const vList = VEHICLES.filter(v => [v.placa, v.tipo, v.nombre, v.alias, v.sucursal, v.razon_social].join(' ').toLowerCase().includes(q));
         const dList = DRIVERS.filter(d => [d.nombre, d.username, d.sucursal, d.numero].join(' ').toLowerCase().includes(q));
         vHeader.innerHTML = `<div class="crumb"><span class="muted">Vehículos</span> → <strong>Resultados</strong> <span class="muted">(${vList.length})</span></div>`;
         vGrid.innerHTML = vList.map(vehicleCard).join('');

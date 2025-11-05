@@ -3,7 +3,12 @@
     "allow": [
       "Bash(curl:*)",
       "Read(//c/xampp/mysql/bin/**)",
-      "Bash(./mysql.exe:*)"
+      "Bash(./mysql.exe:*)",
+      "Bash(\"\\192.168.60.194\\xampp\\mysql\\bin\\mysql.exe\" -u root gpoascen_pedidos_app)",
+      "Bash(\"\\192.168.60.194\\xampp\\mysql\\bin\\mysql.exe\" -u root gpoascen_pedidos_app -e \"DESCRIBE historial_cambios;\")",
+      "Bash(\"\\192.168.60.194\\xampp\\mysql\\bin\\mysql.exe\" -u root -e \"SHOW DATABASES;\")",
+      "Bash(\"\\192.168.60.194\\xampp\\mysql\\bin\\mysql.exe\" -u root -e \"USE gpoascen_pedidos_app; DESCRIBE historial_cambios;\")",
+      "Bash(test -d \"\\192.168.60.194\\xampp\\htdocs\\Pedidos_GA\\Archivos\")"
     ],
     "deny": [],
     "ask": []

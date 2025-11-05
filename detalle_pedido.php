@@ -554,8 +554,14 @@ function cargarArchivo($pedidoId) {
             // Permitir solo ciertos tipos de archivos
             $allowedExtensions = array("pdf", "doc", "docx", "txt");
             if (in_array($fileExt, $allowedExtensions)) {
-                // Ruta completa donde se guardarán los archivos
-                $uploadDirFull = __DIR__ . '/Archivos/'; // Ajusta la ruta según sea necesario
+                // Usar ruta relativa desde este archivo PHP
+                // realpath convierte la ruta relativa en absoluta correctamente
+                $uploadDirFull = realpath(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'Archivos' . DIRECTORY_SEPARATOR;
+
+                // Verificar si el directorio existe, si no, crearlo
+                if (!file_exists($uploadDirFull)) {
+                    mkdir($uploadDirFull, 0777, true);
+                }
 
                 // Ruta relativa que se guardará en la base de datos
                 $uploadDirRelative = 'Archivos/';
@@ -587,25 +593,40 @@ function cargarArchivo($pedidoId) {
                     $stmt->bind_param("si", $filePathRelative, $pedidoId);
                     $stmt->execute();
 
-                    // Convertir la primera página del PDF a una imagen
-                    if ($fileExt === 'pdf') {
-                        $thumbnailPath = $uploadDirFull . uniqid("thumbnail_" . $pedidoId . "_") . ".jpg";
-                        exec("convert -thumbnail 200x200 {$filePathFull}[0] $thumbnailPath");
-                    }
+                    // Mostrar mensaje de éxito
+                    echo '<div style="background:#e7f9e7;border:1px solid #cfeacf;padding:16px;border-radius:8px;margin:16px 0;">';
+                    echo '<h3 style="color:#217a21;margin:0 0 8px 0;">✅ Operación realizada con éxito</h3>';
+                    echo '<p style="margin:0;color:#217a21;">Archivo: <strong>' . htmlspecialchars($fileName) . '</strong></p>';
+                    echo '<p style="margin:4px 0 0 0;color:#217a21;">Guardado como: <strong>' . htmlspecialchars($uniqueName) . '</strong></p>';
 
-                    // Mostrar miniatura
-                    echo '<h3>Operación realizada con éxito:</h3>';
-                    echo '<img src="' . $thumbnailPath . '" alt="Miniatura del archivo">';
+                    // Mostrar enlace de descarga según el tipo de archivo
+                    $downloadUrl = '/Pedidos_GA/' . $filePathRelative;
+                    echo '<p style="margin:8px 0 0 0;"><a href="' . $downloadUrl . '" target="_blank" style="color:#0a66c2;text-decoration:none;font-weight:600;">📄 Ver/Descargar archivo</a></p>';
+                    echo '</div>';
 
                     // Mostrar alerta de éxito utilizando JavaScript
                     echo "<script>alert('El archivo se cargó correctamente.');</script>";
                 } else {
-                    echo "Hubo un error al cargar el archivo.";
+                    $phpError = error_get_last();
+                    echo "<script>alert('Error al mover el archivo: " . ($phpError ? addslashes($phpError['message']) : 'move_uploaded_file falló') . "');</script>";
+                    echo "Hubo un error al mover el archivo. Verifique permisos del directorio.";
                 }
             } else {
+                echo "<script>alert('Solo se permiten archivos PDF, DOC, DOCX y TXT. Extensión detectada: $fileExt');</script>";
                 echo "Solo se permiten archivos PDF, DOC, DOCX y TXT.";
             }
         } else {
+            $errorMessages = array(
+                UPLOAD_ERR_INI_SIZE => 'El archivo excede el tamaño máximo permitido en php.ini',
+                UPLOAD_ERR_FORM_SIZE => 'El archivo excede el tamaño máximo permitido en el formulario',
+                UPLOAD_ERR_PARTIAL => 'El archivo se subió parcialmente',
+                UPLOAD_ERR_NO_FILE => 'No se seleccionó ningún archivo',
+                UPLOAD_ERR_NO_TMP_DIR => 'Falta carpeta temporal',
+                UPLOAD_ERR_CANT_WRITE => 'Error al escribir en disco',
+                UPLOAD_ERR_EXTENSION => 'Una extensión de PHP detuvo la carga'
+            );
+            $errorMsg = isset($errorMessages[$file['error']]) ? $errorMessages[$file['error']] : 'Error desconocido: ' . $file['error'];
+            echo "<script>alert('Error al cargar archivo: $errorMsg');</script>";
             echo "Hubo un error al cargar el archivo.";
         }
     }
@@ -682,31 +703,70 @@ function consultarArchivo($pedidoId) {
 
     if ($result->num_rows > 0) {
         $row = $result->fetch_assoc();
-        $rutaArchivo = $row['Ruta'];
+        $rutaArchivoRelativa = $row['Ruta'];
+
+        // Si no hay archivo cargado
+        if (empty($rutaArchivoRelativa)) {
+            echo '<div style="background:#fff6d6;border:1px solid #fde9a8;padding:16px;border-radius:8px;margin:16px 0;">';
+            echo '<h3 style="color:#8a6d00;margin:0 0 8px 0;">⚠️ Sin archivo</h3>';
+            echo '<p style="margin:0;color:#8a6d00;">No hay ningún archivo cargado para este pedido.</p>';
+            echo '</div>';
+            return;
+        }
+
+        // Construir la ruta completa del archivo
+        $rutaArchivoCompleta = realpath(dirname(__FILE__)) . DIRECTORY_SEPARATOR . $rutaArchivoRelativa;
+
+        // URL para el navegador
+        $urlArchivo = '/Pedidos_GA/' . $rutaArchivoRelativa;
 
         // Verificar si el archivo existe en el servidor
-        if (!file_exists($rutaArchivo)) {
-            echo "El archivo no existe.";
+        if (!file_exists($rutaArchivoCompleta)) {
+            echo '<div style="background:#ffe4e6;border:1px solid #fecdd3;padding:16px;border-radius:8px;margin:16px 0;">';
+            echo '<h3 style="color:#9f1239;margin:0 0 8px 0;">❌ Archivo no encontrado</h3>';
+            echo '<p style="margin:0;color:#9f1239;">El archivo no existe en el servidor.</p>';
+            echo '<p style="margin:4px 0 0 0;color:#9f1239;font-size:12px;">Ruta buscada: ' . htmlspecialchars($rutaArchivoCompleta) . '</p>';
+            echo '</div>';
             return;
         }
 
         // Obtener la extensión del archivo
-        $fileExt = strtolower(pathinfo($rutaArchivo, PATHINFO_EXTENSION));
+        $fileExt = strtolower(pathinfo($rutaArchivoCompleta, PATHINFO_EXTENSION));
+        $fileName = basename($rutaArchivoCompleta);
+
+        // Mostrar información del archivo
+        echo '<div style="background:#e7f9e7;border:1px solid #cfeacf;padding:16px;border-radius:8px;margin:16px 0;">';
+        echo '<h3 style="color:#217a21;margin:0 0 8px 0;">📄 Archivo encontrado</h3>';
+        echo '<p style="margin:0;color:#217a21;"><strong>Nombre:</strong> ' . htmlspecialchars($fileName) . '</p>';
+        echo '<p style="margin:4px 0 0 0;color:#217a21;"><strong>Tipo:</strong> ' . strtoupper($fileExt) . '</p>';
+        echo '<p style="margin:8px 0 0 0;"><a href="' . htmlspecialchars($urlArchivo) . '" target="_blank" style="display:inline-block;background:#0a66c2;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:600;">📥 Descargar/Ver archivo</a></p>';
+        echo '</div>';
 
         // Mostrar vista previa según el tipo de archivo
         if ($fileExt === "pdf") {
-            // Mostrar vista previa de PDF utilizando un visor de PDF integrado
-            echo '<embed src="' . htmlspecialchars($rutaArchivo, ENT_QUOTES, 'UTF-8') . '" type="application/pdf" width="100%" height="600px" />';
-        } elseif (in_array($fileExt, array("doc", "docx", "txt"))) {
-            // Mostrar contenido de documentos de Word o archivos de texto
-            $fileContent = file_get_contents($rutaArchivo);
-            // Manejar el contenido del archivo de texto o Word (docx) de manera segura
-            echo '<textarea cols="80" rows="20" readonly>' . htmlspecialchars($fileContent, ENT_QUOTES, 'UTF-8') . '</textarea>';
+            echo '<div style="margin:16px 0;">';
+            echo '<h4 style="margin:0 0 8px 0;">Vista previa del PDF:</h4>';
+            echo '<embed src="' . htmlspecialchars($urlArchivo, ENT_QUOTES, 'UTF-8') . '" type="application/pdf" width="100%" height="600px" style="border:1px solid #e5e7eb;border-radius:8px;" />';
+            echo '</div>';
+        } elseif ($fileExt === "txt") {
+            echo '<div style="margin:16px 0;">';
+            echo '<h4 style="margin:0 0 8px 0;">Contenido del archivo:</h4>';
+            $fileContent = file_get_contents($rutaArchivoCompleta);
+            echo '<textarea style="width:100%;min-height:400px;padding:12px;border:1px solid #e5e7eb;border-radius:8px;font-family:monospace;" readonly>' . htmlspecialchars($fileContent, ENT_QUOTES, 'UTF-8') . '</textarea>';
+            echo '</div>';
+        } elseif (in_array($fileExt, array("doc", "docx"))) {
+            echo '<div style="background:#eef2ff;border:1px solid #e5e7eb;padding:16px;border-radius:8px;margin:16px 0;">';
+            echo '<p style="margin:0;color:#1e3a8a;">ℹ️ Los archivos de Word (.doc/.docx) no se pueden previsualizar. Por favor descargue el archivo para verlo.</p>';
+            echo '</div>';
         } else {
-            echo "No se puede mostrar una vista previa para este tipo de archivo.";
+            echo '<div style="background:#eef2ff;border:1px solid #e5e7eb;padding:16px;border-radius:8px;margin:16px 0;">';
+            echo '<p style="margin:0;color:#1e3a8a;">ℹ️ No se puede mostrar una vista previa para este tipo de archivo.</p>';
+            echo '</div>';
         }
     } else {
-        echo "No se encontró el pedido.";
+        echo '<div style="background:#ffe4e6;border:1px solid #fecdd3;padding:16px;border-radius:8px;margin:16px 0;">';
+        echo '<h3 style="color:#9f1239;margin:0;">❌ No se encontró el pedido</h3>';
+        echo '</div>';
     }
 
     // Cerrar la conexión a la base de datos

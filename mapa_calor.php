@@ -25,6 +25,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     <!-- Mapbox GL JS -->
     <link href='https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css' rel='stylesheet' />
     <script src='https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 </head>
 <body>
     <!-- Sidebar -->
@@ -102,6 +103,17 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         </div>
 
         <div class="filter-section">
+            <h3>Análisis por zona</h3>
+            <div style="display:flex; gap:8px; align-items:center; flex-wrap: wrap;">
+                <button id="seleccionar-centro" class="btn-secondary">Elegir centro en mapa</button>
+                <label for="radio-circulo" style="font-size:12px;">Radio (m):</label>
+                <input type="number" id="radio-circulo" value="1000" min="100" max="20000" step="100" style="width:100px;">
+                <button id="limpiar-zona" class="btn-secondary">Limpiar zona</button>
+            </div>
+            <div id="resultado-zona" style="margin-top:8px; font-size:13px; color:#333; background:#fff; padding:8px; border-radius:6px; border-left:3px solid #ed6b1f; display:none;"></div>
+        </div>
+
+        <div class="filter-section">
             <button id="aplicar-filtros" class="btn-primary">
                 Aplicar Filtros
             </button>
@@ -167,6 +179,15 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         let sucursalesActivas = new Set(); // Set de sucursales visibles en el mapa
         let todasLasSucursales = []; // Array de todas las sucursales disponibles
         let statsPorSucursal = {}; // Objeto con estadísticas por sucursal
+
+        // Variables para análisis por zona
+        let datosVisibles = [];
+        let seleccionCentroActiva = false;
+        let centroZona = null; // [lng, lat]
+        let radioZonaM = 1000; // metros
+        const idFuenteZona = 'zona-circulo';
+        const idCapaZonaRelleno = 'zona-circulo-fill';
+        const idCapaZonaBorde = 'zona-circulo-line';
 
         // Inicializar mapa
         function initMap() {
@@ -297,6 +318,11 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
             const paqueteriaFiltrado = heatmapData.paqueteria.filter(coord =>
                 sucursalesActivas.has(coord.sucursal)
             );
+            // Cache de puntos visibles para análisis por zona
+            datosVisibles = [];
+            if (mostrarDomicilio) datosVisibles = datosVisibles.concat(domicilioFiltrado);
+            if (mostrarPaqueteria) datosVisibles = datosVisibles.concat(paqueteriaFiltrado);
+            if (centroZona) { dibujarZonaYCacular(); }
 
             // Agregar capa de Domicilio
             if (mostrarDomicilio && domicilioFiltrado.length > 0) {
@@ -312,7 +338,11 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
                             },
                             properties: {
                                 tipo: 'domicilio',
-                                sucursal: coord.sucursal
+                                sucursal: coord.sucursal,
+                                precio: coord.precio || 0,
+                                validado: coord.validado || 0,
+                                factura: coord.factura || '',
+                                cliente: coord.cliente || ''
                             }
                         }))
                     }
@@ -372,7 +402,11 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
                             },
                             properties: {
                                 tipo: 'paqueteria',
-                                sucursal: coord.sucursal
+                                sucursal: coord.sucursal,
+                                precio: coord.precio || 0,
+                                validado: coord.validado || 0,
+                                factura: coord.factura || '',
+                                cliente: coord.cliente || ''
                             }
                         }))
                     }
@@ -499,7 +533,121 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         document.getElementById('toggle-paqueteria').addEventListener('change', actualizarMapa);
 
         // Inicializar al cargar la página
+        // --- Lógica Análisis por Zona ---
+        const btnSeleccionarCentro = document.getElementById('seleccionar-centro');
+        const inputRadio = document.getElementById('radio-circulo');
+        const btnLimpiarZona = document.getElementById('limpiar-zona');
+        const resultadoZona = document.getElementById('resultado-zona');
+
+        if (btnSeleccionarCentro && inputRadio && btnLimpiarZona) {
+            btnSeleccionarCentro.addEventListener('click', () => {
+                seleccionCentroActiva = true;
+                if (map && map.getCanvas) map.getCanvas().style.cursor = 'crosshair';
+                btnSeleccionarCentro.textContent = 'Click en el mapa...';
+                btnSeleccionarCentro.disabled = true;
+            });
+
+            inputRadio.addEventListener('change', () => {
+                const val = parseInt(inputRadio.value, 10);
+                if (!isNaN(val)) {
+                    radioZonaM = Math.max(100, Math.min(20000, val));
+                    inputRadio.value = radioZonaM;
+                    if (centroZona) dibujarZonaYCacular();
+                }
+            });
+
+            btnLimpiarZona.addEventListener('click', limpiarZona);
+        }
+
+        function limpiarZona() {
+            centroZona = null;
+            if (resultadoZona) resultadoZona.style.display = 'none';
+            if (map && map.getLayer && map.getSource) {
+                if (map.getLayer(idCapaZonaRelleno)) map.removeLayer(idCapaZonaRelleno);
+                if (map.getLayer(idCapaZonaBorde)) map.removeLayer(idCapaZonaBorde);
+                if (map.getSource(idFuenteZona)) map.removeSource(idFuenteZona);
+            }
+        }
+
+        function onMapClickSeleccion(e) {
+            if (!seleccionCentroActiva) return;
+            seleccionCentroActiva = false;
+            if (map && map.getCanvas) map.getCanvas().style.cursor = '';
+            if (btnSeleccionarCentro) {
+                btnSeleccionarCentro.textContent = 'Elegir centro en mapa';
+                btnSeleccionarCentro.disabled = false;
+            }
+
+            centroZona = [e.lngLat.lng, e.lngLat.lat];
+            dibujarZonaYCacular();
+        }
+
+        function dibujarZonaYCacular() {
+            if (!centroZona || typeof turf === 'undefined') return;
+            const radioKm = radioZonaM / 1000.0;
+            const circle = turf.circle(centroZona, radioKm, {steps: 64, units: 'kilometers'});
+            const geo = { type: 'FeatureCollection', features: [circle] };
+
+            if (map && map.getSource && map.getLayer) {
+                if (map.getSource(idFuenteZona)) {
+                    map.getSource(idFuenteZona).setData(geo);
+                } else {
+                    map.addSource(idFuenteZona, { type: 'geojson', data: geo });
+                    map.addLayer({
+                        id: idCapaZonaRelleno,
+                        type: 'fill',
+                        source: idFuenteZona,
+                        paint: {
+                            'fill-color': '#ed6b1f',
+                            'fill-opacity': 0.12
+                        }
+                    });
+                    map.addLayer({
+                        id: idCapaZonaBorde,
+                        type: 'line',
+                        source: idFuenteZona,
+                        paint: {
+                            'line-color': '#ed6b1f',
+                            'line-width': 2
+                        }
+                    });
+                }
+            }
+
+            calcularTotalesZona(circle);
+        }
+
+        function calcularTotalesZona(circle) {
+            let conteo = 0;
+            let total = 0;
+            let totalValidados = 0;
+
+            for (const p of (datosVisibles || [])) {
+                const pt = turf.point([p.lng, p.lat]);
+                if (turf.booleanPointInPolygon(pt, circle)) {
+                    conteo += 1;
+                    const precio = Number(p.precio || 0);
+                    total += precio;
+                    if (Number(p.validado) === 1) totalValidados += precio;
+                }
+            }
+
+            if (resultadoZona) {
+                resultadoZona.style.display = 'block';
+                resultadoZona.textContent = `Pedidos: ${conteo} | Total: $${total.toLocaleString('es-MX', {minimumFractionDigits:2, maximumFractionDigits:2})} | Validados: $${totalValidados.toLocaleString('es-MX', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+            }
+        }
+
         window.addEventListener('load', initMap);
+        // Suscribir click al mapa cuando esté listo
+        (function esperarMapaYLigarClick(){
+            if (typeof map !== 'undefined' && map && map.on) {
+                try { map.off('click', onMapClickSeleccion); } catch(e){}
+                map.on('click', onMapClickSeleccion);
+            } else {
+                setTimeout(esperarMapaYLigarClick, 300);
+            }
+        })();
     </script>
 </body>
 </html>

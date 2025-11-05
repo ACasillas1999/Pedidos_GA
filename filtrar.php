@@ -47,7 +47,13 @@ if ($sucursalSesion === "TODAS") {
         } else {
             if ($result->num_rows > 0) {
                 echo "<table class='mi-tabla' border='1'>";
+
+                // Mostrar columna de checkbox solo para Admin y JC
+                $mostrarCheckbox = in_array($rolSesion, ["Admin", "JC"]);
+                $checkboxHeader = $mostrarCheckbox ? "<th><input type='checkbox' id='selectAll' title='Seleccionar todos'></th>" : "";
+
                 echo "<tr>
+                        $checkboxHeader
                         <th>N°</th>
                         <th>Factura (caja)</th>
                         <th>Estado</th>
@@ -121,7 +127,18 @@ if ($esPaqueteria) {
                             break;
                     }
 
+                    // Columna de Precio de Factura con señalización (DEFINIR ANTES DEL CHECKBOX)
+                    $precio_real = isset($row["precio_factura_real"]) ? floatval($row["precio_factura_real"]) : 0;
+                    $precio_validado = isset($row["precio_validado_jc"]) ? intval($row["precio_validado_jc"]) : 0;
+                    $precio_vendedor = isset($row["precio_factura_vendedor"]) ? floatval($row["precio_factura_vendedor"]) : 0;
+
+                    // Determinar si el checkbox debe estar habilitado
+                    $checkboxEnabled = ($estado === 'ACTIVO' || in_array(strtolower($tipo_envio), ['programado', 'paquetería', 'paqueteria', 'domicilio']));
+                    $checkboxDisabled = $checkboxEnabled ? "" : "disabled";
+                    $checkboxCell = $mostrarCheckbox ? "<td style='text-align:center;'><input type='checkbox' class='pedido-checkbox' data-id='{$row["ID"]}' data-estado='$estado' data-tipo-envio='$tipo_envio' data-sucursal='{$row["SUCURSAL"]}' data-factura='{$row["FACTURA"]}' data-cliente='{$row["NOMBRE_CLIENTE"]}' data-direccion='{$row["DIRECCION"]}' data-precio-vendedor='$precio_vendedor' data-precio-real='$precio_real' data-validado='$precio_validado' $checkboxDisabled></td>" : "";
+
                     echo "<tr>";
+                    echo $checkboxCell;
                     echo "<td>" . $row["ID"] . "</td>";
                     echo "<td>{$badge}<div style='margin-top:6px'>{$accionHtml}</div></td>";
                     echo "<td style='background-color: $colorEstado;'>" . $estado . "</td>";
@@ -137,10 +154,7 @@ if ($esPaqueteria) {
                     echo "<td>" . $row["VENDEDOR"] . "</td>";
                     echo "<td>" . $row["FACTURA"] . "</td>";
 
-                    // Columna de Precio de Factura con señalización
-                    $precio_real = isset($row["precio_factura_real"]) ? floatval($row["precio_factura_real"]) : 0;
-                    $precio_validado = isset($row["precio_validado_jc"]) ? intval($row["precio_validado_jc"]) : 0;
-                    $precio_vendedor = isset($row["precio_factura_vendedor"]) ? floatval($row["precio_factura_vendedor"]) : 0;
+                    // Continuar con el formateo del precio
 
                     $colorPrecio = "#FFFFFF";
                     $iconoPrecio = "";
@@ -230,7 +244,13 @@ if ($esPaqueteria) {
         } else {
             if ($result->num_rows > 0) {
                 echo "<table class='mi-tabla' border='1'>";
+
+                // Mostrar columna de checkbox solo para Admin y JC
+                $mostrarCheckbox = in_array($rolSesion, ["Admin", "JC"]);
+                $checkboxHeader = $mostrarCheckbox ? "<th><input type='checkbox' id='selectAll' title='Seleccionar todos'></th>" : "";
+
                 echo "<tr>
+                        $checkboxHeader
                         <th>N°</th>
                         <th>Factura (caja)</th>
                         <th>Estado</th>
@@ -294,7 +314,18 @@ if ($esPaqueteria) {
                             break;
                     }
 
+                    // Columna de Precio de Factura con señalización (DEFINIR ANTES DEL CHECKBOX)
+                    $precio_real = isset($row["precio_factura_real"]) ? floatval($row["precio_factura_real"]) : 0;
+                    $precio_validado = isset($row["precio_validado_jc"]) ? intval($row["precio_validado_jc"]) : 0;
+                    $precio_vendedor = isset($row["precio_factura_vendedor"]) ? floatval($row["precio_factura_vendedor"]) : 0;
+
+                    // Determinar si el checkbox debe estar habilitado
+                    $checkboxEnabled = ($estado === 'ACTIVO' || in_array(strtolower($tipo_envio), ['programado', 'paquetería', 'paqueteria', 'domicilio']));
+                    $checkboxDisabled = $checkboxEnabled ? "" : "disabled";
+                    $checkboxCell = $mostrarCheckbox ? "<td style='text-align:center;'><input type='checkbox' class='pedido-checkbox' data-id='{$row["ID"]}' data-estado='$estado' data-tipo-envio='$tipo_envio' data-sucursal='{$row["SUCURSAL"]}' data-factura='{$row["FACTURA"]}' data-cliente='{$row["NOMBRE_CLIENTE"]}' data-direccion='{$row["DIRECCION"]}' data-precio-vendedor='$precio_vendedor' data-precio-real='$precio_real' data-validado='$precio_validado' $checkboxDisabled></td>" : "";
+
                     echo "<tr>";
+                    echo $checkboxCell;
                     echo "<td>" . $row["ID"] . "</td>";
                     echo "<td>{$badge}<div style='margin-top:6px'>{$accionHtml}</div></td>";
                     echo "<td style='background-color: $colorEstado;'>" . $estado . "</td>";
@@ -305,10 +336,7 @@ if ($esPaqueteria) {
                     echo "<td>" . $row["VENDEDOR"] . "</td>";
                     echo "<td>" . $row["FACTURA"] . "</td>";
 
-                    // Columna de Precio de Factura con señalización
-                    $precio_real = isset($row["precio_factura_real"]) ? floatval($row["precio_factura_real"]) : 0;
-                    $precio_validado = isset($row["precio_validado_jc"]) ? intval($row["precio_validado_jc"]) : 0;
-                    $precio_vendedor = isset($row["precio_factura_vendedor"]) ? floatval($row["precio_factura_vendedor"]) : 0;
+                    // Continuar con el formateo del precio
 
                     $colorPrecio = "#FFFFFF";
                     $iconoPrecio = "";

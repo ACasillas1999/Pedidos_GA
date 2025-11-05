@@ -325,33 +325,54 @@ session_start();
         </ul>
     </div>
 
-  <div class="container" id="os-root" style="margin-left:260px; padding:12px 16px;">
+  <div class="container" id="os-root" style="padding:12px 16px;">
     <div id="os-card"></div>
     <div id="os-sections" style="margin-top:12px"></div>
   </div>
 
   <style>
-    .os-head{display:flex;gap:12px;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:12px 16px;box-shadow:0 8px 20px rgba(15,23,42,.08)}
-    .os-title{font-weight:800;font-size:18px;margin:0}
-    .pill{display:inline-flex;align-items:center;gap:.35rem;background:#eef2ff;color:#1e3a8a;border:1px solid #e5e7eb;border-radius:999px;padding:.25rem .6rem;font-weight:700}
+    .os-head{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:16px 20px;box-shadow:0 8px 20px rgba(15,23,42,.08);flex-wrap:wrap}
+    .os-head-left{flex:1;min-width:300px}
+    .os-head-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+    .os-title{font-weight:800;font-size:20px;margin:0 0 8px 0;color:#0f172a}
+    .os-vehicle-info{color:#475569;font-size:14px;line-height:1.6}
+    .os-date-info{font-size:13px;color:#64748b;margin-top:6px}
+    .pill{display:inline-flex;align-items:center;gap:.35rem;background:#eef2ff;color:#1e3a8a;border:1px solid #e5e7eb;border-radius:999px;padding:.35rem .75rem;font-weight:700;font-size:13px}
     .pill.ok{background:#e7f9e7;color:#217a21;border-color:#cfeacf}
     .pill.warn{background:#fff6d6;color:#8a6d00;border-color:#fde9a8}
     .pill.dang{background:#ffe4e6;color:#9f1239;border-color:#fecdd3}
+    .pill.info{background:#e0f2fe;color:#0369a1;border-color:#bae6fd}
     .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
-    .card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:12px;box-shadow:0 8px 20px rgba(15,23,42,.06)}
-    .table{width:100%;border-collapse:collapse}
-    .table th,.table td{padding:8px;border-bottom:1px solid #eef2f7;text-align:left}
-    .actions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
-    .btn{border:1px solid #e5e7eb;border-radius:10px;padding:.45rem .8rem;background:#fff;cursor:pointer;font-weight:700}
+    .card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px;box-shadow:0 8px 20px rgba(15,23,42,.06)}
+    .card h3{margin:0 0 12px;font-size:16px;font-weight:700;color:#0f172a}
+    .table{width:100%;border-collapse:collapse;font-size:14px}
+    .table th,.table td{padding:10px 8px;border-bottom:1px solid #eef2f7;text-align:left}
+    .table th{font-weight:600;color:#64748b;font-size:12px;text-transform:uppercase;letter-spacing:.03em}
+    .table tbody tr:hover{background:#f8fafc}
+    .actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;padding:12px 16px;background:#f8fafc;border-radius:12px}
+    .btn{border:1px solid #cbd5e1;border-radius:10px;padding:.5rem 1rem;background:#fff;cursor:pointer;font-weight:600;font-size:14px;transition:all .2s}
+    .btn:hover:not(:disabled){background:#f1f5f9;border-color:#94a3b8}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
     .btn.primary{background:#0a66c2;border-color:#0a66c2;color:#fff}
+    .btn.primary:hover:not(:disabled){background:#085a9e}
 
     /* Modal confirmación */
-    .modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.35);display:none;align-items:center;justify-content:center;z-index:100}
-    .modal{background:#fff;border:1px solid #e5e7eb;border-radius:16px;box-shadow:0 8px 20px rgba(15,23,42,.12);padding:12px 16px;max-width:520px;width:92%}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.4);display:none;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(2px)}
+    .modal{background:#fff;border:1px solid #e5e7eb;border-radius:16px;box-shadow:0 20px 40px rgba(15,23,42,.2);padding:12px 16px;max-width:520px;width:92%}
     .modal header{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e5e7eb;margin:-12px -16px 12px;padding:12px 16px}
-    .modal .close{background:#f1f5f9;border:1px solid #e5e7eb;border-radius:10px;padding:.25rem .55rem;cursor:pointer}
-    .field label{display:block;font-size:.85rem;color:#475569;margin-bottom:4px}
-    .field input{width:100%;border:1px solid #e5e7eb;border-radius:10px;padding:.5rem .6rem;background:#fff}
+    .modal header h3{margin:0;font-size:16px;font-weight:700}
+    .modal .close{background:#f1f5f9;border:1px solid #e5e7eb;border-radius:10px;padding:.25rem .55rem;cursor:pointer;font-weight:700}
+    .modal .close:hover{background:#e2e8f0}
+    .field{margin:12px 0}
+    .field label{display:block;font-size:.85rem;color:#475569;margin-bottom:6px;font-weight:600}
+    .field input[type="text"]{width:100%;border:1px solid #cbd5e1;border-radius:10px;padding:.6rem;background:#fff;font-size:14px}
+    .field input[type="checkbox"]{margin-right:6px}
+
+    @media (max-width:768px){
+      .os-head{flex-direction:column;align-items:stretch}
+      .os-head-right{align-items:flex-start}
+      .grid2{grid-template-columns:1fr}
+    }
   </style>
 
   <script>
@@ -381,24 +402,35 @@ session_start();
 
       function render(d){
         const o = d.order||{}; const mats = d.materiales||[]; const movs = d.movimientos||[];
+        const curStatus = o.status || 'Pendiente';
+
+        // Determinar qué botones mostrar según el estatus actual
+        const statusOrder = { 'Pendiente':0,'Programado':1,'EnTaller':2,'Completado':3 };
+        const curIdx = statusOrder[curStatus] ?? 0;
+
         card.innerHTML = `
           <div class="os-head">
-            <div>
+            <div class="os-head-left">
               <h2 class="os-title">OS #${o.id} · ${o.servicio||''}</h2>
-              <div style="color:#475569">Vehículo: <b>${o.placa||''}</b> · ${o.tipo||''} · Km: ${fmt(o.km)}</div>
-            </div>
-            <div style="text-align:right">
-              <div class="${pillClass(o.status)}">${human(o.status||'Pendiente')}</div>
-              <div style="font-size:.9rem;color:#475569">Creado: ${o.fecha||''}${o.fecha_programada?` · Prog: <b id="prog-label">${o.fecha_programada}</b>`:''}
-                <button class="btn" id="btn-edit-date" style="margin-left:8px">Cambiar fecha</button>
+              <div class="os-vehicle-info">
+                <div><strong>Vehículo:</strong> ${o.placa||''} · ${o.tipo||''}</div>
+                <div><strong>Kilometraje:</strong> ${fmt(o.km)} km</div>
               </div>
+            </div>
+            <div class="os-head-right">
+              <div class="${pillClass(curStatus)}">${human(curStatus)}</div>
+              <div class="os-date-info">
+                <div>Creado: ${o.fecha||''}</div>
+                ${o.fecha_programada?`<div>Programado: <strong id="prog-label">${o.fecha_programada}</strong></div>`:''}
+              </div>
+              ${curStatus==='Programado'?`<button class="btn" id="btn-edit-date" style="margin-top:4px">Cambiar fecha</button>`:''}
             </div>
           </div>
           <div class="actions">
-            <button class="btn" data-to="Pendiente">↩ Pendiente</button>
-            <button class="btn" data-to="Programado" ${o.status!=='Pendiente'?'disabled':''}>⏳ Programado</button>
-            <button class="btn" data-to="EnTaller">🛠 En Taller</button>
-            <button class="btn primary" data-to="Completado">✅ Completado</button>
+            ${curIdx < 1 ? `<button class="btn" data-to="Programado">⏳ Marcar como Programado</button>` : ''}
+            ${curIdx < 2 ? `<button class="btn" data-to="EnTaller">🛠 Pasar a Taller</button>` : ''}
+            ${curIdx < 3 ? `<button class="btn primary" data-to="Completado">✅ Marcar como Completado</button>` : ''}
+            ${curIdx === 3 ? `<div style="padding:.5rem 1rem;color:#217a21;font-weight:600">✅ Esta orden está completada</div>` : ''}
           </div>
         `;
 
@@ -535,12 +567,29 @@ session_start();
         card.querySelectorAll('button[data-to]').forEach(btn=>{
           btn.addEventListener('click', async ()=>{
             const to = btn.getAttribute('data-to');
-            const order = { 'Pendiente':0,'Programado':1,'EnTaller':2,'Completado':3 };
-            const curS = (o.status||'Pendiente');
-            const curI = order[curS] ?? 0; const toI = order[to] ?? 0;
-            if (toI < curI) { alert('No puedes retroceder el estatus'); return; }
-            if (toI > curI + 1) { alert('Sigue la secuencia: Pendiente → Programado → En Taller → Completado'); return; }
-            if (to==='Programado' && curS!=='Pendiente' && curS!=='Programado') { alert('Solo se permite programar desde Pendiente o reprogramar cuando está Programado'); return; }
+            const statusOrder = { 'Pendiente':0,'Programado':1,'EnTaller':2,'Completado':3 };
+            const curS = curStatus;
+            const curI = statusOrder[curS] ?? 0;
+            const toI = statusOrder[to] ?? 0;
+
+            // Validación estricta: NO retroceder
+            if (toI < curI) {
+              alert('❌ No puedes retroceder el estatus de una orden de servicio');
+              return;
+            }
+
+            // Validación: no saltar pasos (excepto desde Pendiente se puede ir directo a EnTaller o Completado)
+            if (toI > curI + 1 && curS !== 'Pendiente') {
+              alert('⚠️ Debes seguir la secuencia de estados en orden');
+              return;
+            }
+
+            // Si ya está Completado, no permitir cambios
+            if (curS === 'Completado') {
+              alert('✅ Esta orden ya está completada y no puede ser modificada');
+              return;
+            }
+
             openConfirm(to, async (payload)=>{
               const res = await post('update_status', payload);
               if(!res.ok){ alert(res.msg||'No se pudo actualizar'); return; }

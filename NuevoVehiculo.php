@@ -18,10 +18,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["agregar_vehiculo"])) 
     $placa          = trim($_POST["placa"] ?? "");
     $tipo           = trim($_POST["tipo"] ?? "");
     $sucursal       = trim($_POST["sucursal"] ?? "");
+    $razon_social   = trim($_POST["razon_social"] ?? "");
     $km_de_servicio = (int)($_POST["km_de_servicio"] ?? 5000);
     $km_total       = (int)($_POST["km_total"] ?? 0);
     $km_actual      = (int)($_POST["km_actual"] ?? 0);
     $es_particular  = isset($_POST["es_particular"]) ? 1 : 0;
+
+    // Convertir string vacío a NULL para razón social (campo opcional)
+    $razon_social = $razon_social !== "" ? $razon_social : null;
 
     // 1) Verificar número de serie duplicado
     $stmt = $conn->prepare("SELECT id_vehiculo FROM vehiculos WHERE numero_serie = ?");
@@ -86,15 +90,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["agregar_vehiculo"])) 
 
         // 3) Insertar vehículo
         $sql = "INSERT INTO vehiculos
-                    (numero_serie, placa, tipo, Sucursal, Km_de_Servicio, Km_Total, Km_Actual, foto_path, es_particular)
-                VALUES (?,?,?,?,?,?,?,?,?)";
+                    (numero_serie, placa, tipo, Sucursal, razon_social, Km_de_Servicio, Km_Total, Km_Actual, foto_path, es_particular)
+                VALUES (?,?,?,?,?,?,?,?,?,?)";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param(
-            "ssssiiisi",
+            "sssssiissi",
             $numero_serie,
             $placa,
             $tipo,
             $sucursal,
+            $razon_social,
             $km_de_servicio,
             $km_total,
             $km_actual,
@@ -198,18 +203,49 @@ $vehiculos = $conn->query("SELECT * FROM vehiculos");
                 <label>Sucursal</label>
                 <select type="text" name="sucursal" class="form-control" required>
                     <option value="">Selecciona una sucursal</option>
-                    <option value="DIMEGSA">DIMEGSA</option>
-                    <option value="DEASA">DEASA</option>
                     <option value="AIESA">AIESA</option>
-                    <option value="SEGSA">SEGSA</option>
+                    <option value="BODEGA ALEMANIA">BODEGA ALEMANIA</option>
+                    <option value="BODEGA ARTESANOS">BODEGA ARTESANOS</option>
+                    <option value="BODEGA CALZADA DEL AGUILA">BODEGA CALZADA DEL AGUILA</option>
+                    <option value="BODEGA CLEMENTE OROZCO">BODEGA CLEMENTE OROZCO</option>
+                    <option value="BODEGA ESPAÑA">BODEGA ESPAÑA</option>
+                    <option value="BODEGA FEDERALISMO">BODEGA FEDERALISMO</option>
+                    <option value="CODI">CODI</option>
+                    <option value="CONEXION">CONEXION</option>
+                    <option value="CONSTITUYENTES">CONSTITUYENTES</option>
+                    <option value="CORPORATIVO">CORPORATIVO</option>
+                    <option value="DEASA">DEASA</option>
+                    <option value="DIMEGSA">DIMEGSA</option>
                     <option value="FESA">FESA</option>
-                    <option value="TAPATIA">TAPATIA</option>
                     <option value="GABSA">GABSA</option>
                     <option value="ILUMINACION">ILUMINACION</option>
-                    <option value="VALLARTA">VALLARTA</option>
-                    <option value="CODI">CODI</option>
+                    <option value="OVALO">OVALO</option>
                     <option value="QUERETARO">QUERETARO</option>
+                    <option value="SEGSA">SEGSA</option>
+                    <option value="TALLER">TALLER</option>
+                    <option value="TAPATIA">TAPATIA</option>
+                    <option value="VALLARTA">VALLARTA</option>
                 </select>
+            </div>
+            <p></p>
+            <div class="mb-3">
+                <label>Razón Social (Empresa que compra el vehículo)</label>
+                <select name="razon_social" class="form-control">
+                    <option value="">Selecciona razón social</option>
+                    <option value="AIESA">AIESA</option>
+                    <option value="DEASA">DEASA</option>
+                    <option value="DIMEGSA">DIMEGSA</option>
+                    <option value="FESA">FESA</option>
+                    <option value="GABSA">GABSA</option>
+                    <option value="ILUMINACION">ILUMINACION</option>
+                    <option value="QUERETARO">QUERETARO</option>
+                    <option value="SEGSA">SEGSA</option>
+                    <option value="TAPATIA">TAPATIA</option>
+                    <option value="VALLARTA">VALLARTA</option>
+                </select>
+                <small style="display: block; margin-top: 4px; color: #666;">
+                    Nota: El campo "Sucursal" (arriba) indica donde opera el vehículo
+                </small>
             </div>
             <p></p>
             <div class="mb-3">
