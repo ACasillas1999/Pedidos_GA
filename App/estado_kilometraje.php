@@ -37,18 +37,21 @@ try {
     }
 
     // Último registro de kilometraje del vehículo
-    $sqlLast = 'SELECT id_registro, fecha_registro, kilometraje_final
-                FROM registro_kilometraje
-                WHERE id_vehiculo = ?
-                ORDER BY fecha_registro DESC, id_registro DESC
+    $sqlLast = 'SELECT rk.id_registro, rk.fecha_registro, rk.kilometraje_final, v.Km_Total  
+                FROM registro_kilometraje rk
+                JOIN vehiculos v ON v.id_vehiculo = rk.id_vehiculo
+                WHERE rk.id_vehiculo = ?
+                ORDER BY rk.fecha_registro DESC, rk.id_registro DESC
                 LIMIT 1';
+                
     $stLast = $conn->prepare($sqlLast);
     if (!$stLast) { throw new Exception('Prepare last: ' . $conn->error); }
+    // Parametrizar con el vehículo asignado
     $stLast->bind_param('i', $idVehiculo);
     $stLast->execute();
     $stLast->store_result();
-    $idReg = null; $fecha = null; $kmFin = null;
-    $stLast->bind_result($idReg, $fecha, $kmFin);
+    $idReg = null; $fecha = null; $kmFin = null; $kmTotal = null;
+    $stLast->bind_result($idReg, $fecha, $kmFin, $kmTotal);
     $hasLast = $stLast->fetch();
     $stLast->free_result();
     $stLast->close();
@@ -89,10 +92,10 @@ try {
         'id_chofer' => is_null($idChofer) ? null : (int)$idChofer,
         'last_fecha' => $lastFecha,
         'last_km_final' => $lastKm,
+        'Km_Total' => is_null($kmTotal) ? null : (int)$kmTotal,
         'needs_km' => $needs,
     ]);
 } catch (Throwable $e) {
     http_response_code(500);
     echo json_encode(['ok' => false, 'error' => 'ERROR']);
 }
-
