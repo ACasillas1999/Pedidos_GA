@@ -27,21 +27,24 @@ try {
     $sucursal = isset($_GET['sucursal']) && $_GET['sucursal'] !== '' ? $_GET['sucursal'] : null;
     $estados = isset($_GET['estados']) && $_GET['estados'] !== '' ? $_GET['estados'] : 'ENTREGADO'; // Por defecto solo ENTREGADOS
 
-    // Construir consulta SQL base
+    // Construir consulta SQL base con JOIN a pedidos_destinatario
     $sql = "SELECT
-                ID,
-                Coord_Destino,
-                DIRECCION,
-                tipo_envio,
-                FECHA_ENTREGA_CLIENTE,
-                SUCURSAL,
-                NOMBRE_CLIENTE,
-                FACTURA,
-                ESTADO,
-                precio_factura_real,
-                precio_validado_jc
-            FROM pedidos
-            WHERE (tipo_envio = 'domicilio' OR tipo_envio = 'paquetería' OR tipo_envio = 'paqueteria')";
+                p.ID,
+                p.Coord_Destino,
+                p.DIRECCION,
+                p.tipo_envio,
+                p.FECHA_ENTREGA_CLIENTE,
+                p.SUCURSAL,
+                p.NOMBRE_CLIENTE,
+                p.FACTURA,
+                p.ESTADO,
+                p.precio_factura_real,
+                p.precio_validado_jc,
+                pd.lat as dest_lat,
+                pd.lng as dest_lng
+            FROM pedidos p
+            LEFT JOIN pedidos_destinatario pd ON p.ID = pd.pedido_id
+            WHERE (p.tipo_envio = 'domicilio' OR p.tipo_envio = 'paquetería' OR p.tipo_envio = 'paqueteria')";
 
     $params = [];
     $types = "";
@@ -50,7 +53,7 @@ try {
     if ($estados !== 'TODOS') {
         $estadosArray = explode(',', $estados);
         $placeholders = implode(',', array_fill(0, count($estadosArray), '?'));
-        $sql .= " AND ESTADO IN ($placeholders)";
+        $sql .= " AND p.ESTADO IN ($placeholders)";
         foreach ($estadosArray as $estado) {
             $params[] = trim($estado);
             $types .= "s";
@@ -59,7 +62,7 @@ try {
 
     // Agregar filtro de fecha solo si se proporcionan ambas fechas
     if ($fecha_desde !== null && $fecha_hasta !== null) {
-        $sql .= " AND FECHA_RECEPCION_FACTURA BETWEEN ? AND ?";
+        $sql .= " AND p.FECHA_RECEPCION_FACTURA BETWEEN ? AND ?";
         $params[] = $fecha_desde;
         $params[] = $fecha_hasta;
         $types .= "ss";
@@ -67,7 +70,7 @@ try {
 
     // Agregar filtro de sucursal si se proporciona
     if ($sucursal !== null) {
-        $sql .= " AND SUCURSAL = ?";
+        $sql .= " AND p.SUCURSAL = ?";
         $params[] = $sucursal;
         $types .= "s";
     }
@@ -87,7 +90,6 @@ try {
     $stats_por_sucursal = [];
 
     while ($row = $result->fetch_assoc()) {
-        $coord_destino = trim($row['Coord_Destino']);
         $tipo_envio = strtolower(trim($row['tipo_envio']));
         $sucursal_row = trim($row['SUCURSAL']);
         $precio = isset($row['precio_factura_real']) ? floatval($row['precio_factura_real']) : 0;
@@ -110,41 +112,50 @@ try {
             ];
         }
 
-        // Verificar si tiene coordenadas válidas
-        if (!empty($coord_destino) && $coord_destino !== '0' && strpos($coord_destino, ',') !== false) {
-            $coords = explode(',', $coord_destino);
+        // PRIORIDAD 1: Usar coordenadas del destinatario si existen (más precisas)
+        $lat = null;
+        $lng = null;
 
-            if (count($coords) >= 2) {
-                $lat = floatval(trim($coords[0]));
-                $lng = floatval(trim($coords[1]));
-
-                // Validar que sean coordenadas válidas (dentro de un rango razonable para Guadalajara)
-                if ($lat >= 19.0 && $lat <= 21.5 && $lng >= -104.5 && $lng <= -102.0) {
-                    $coordenada = [
-                        'lat' => $lat,
-                        'lng' => $lng,
-                        'id' => $row['ID'],
-                        'sucursal' => $sucursal_row,
-                        'precio' => $precio,
-                        'validado' => $validado,
-                        'factura' => $row['FACTURA'] ?? '',
-                        'cliente' => $row['NOMBRE_CLIENTE'] ?? ''
-                    ];
-
-                    if ($tipo_envio === 'domicilio') {
-                        $coordenadas_domicilio[] = $coordenada;
-                        $stats_por_sucursal[$sucursal_row]['domicilio']++;
-                        $stats_por_sucursal[$sucursal_row]['valor_domicilio'] += $precio;
-                    } else if ($tipo_envio === 'paqueteria') {
-                        $coordenadas_paqueteria[] = $coordenada;
-                        $stats_por_sucursal[$sucursal_row]['paqueteria']++;
-                        $stats_por_sucursal[$sucursal_row]['valor_paqueteria'] += $precio;
-                    }
-                    $stats_por_sucursal[$sucursal_row]['total']++;
-                    $stats_por_sucursal[$sucursal_row]['valor_total'] += $precio;
-                    continue;
+        if (!empty($row['dest_lat']) && !empty($row['dest_lng'])) {
+            $lat = floatval($row['dest_lat']);
+            $lng = floatval($row['dest_lng']);
+        } else {
+            // PRIORIDAD 2: Usar Coord_Destino del pedido
+            $coord_destino = trim($row['Coord_Destino']);
+            if (!empty($coord_destino) && $coord_destino !== '0' && strpos($coord_destino, ',') !== false) {
+                $coords = explode(',', $coord_destino);
+                if (count($coords) >= 2) {
+                    $lat = floatval(trim($coords[0]));
+                    $lng = floatval(trim($coords[1]));
                 }
             }
+        }
+
+        // Verificar si tiene coordenadas válidas (dentro de un rango razonable para Guadalajara)
+        if ($lat !== null && $lng !== null && $lat >= 19.0 && $lat <= 21.5 && $lng >= -104.5 && $lng <= -102.0) {
+            $coordenada = [
+                'lat' => $lat,
+                'lng' => $lng,
+                'id' => $row['ID'],
+                'sucursal' => $sucursal_row,
+                'precio' => $precio,
+                'validado' => $validado,
+                'factura' => $row['FACTURA'] ?? '',
+                'cliente' => $row['NOMBRE_CLIENTE'] ?? ''
+            ];
+
+            if ($tipo_envio === 'domicilio') {
+                $coordenadas_domicilio[] = $coordenada;
+                $stats_por_sucursal[$sucursal_row]['domicilio']++;
+                $stats_por_sucursal[$sucursal_row]['valor_domicilio'] += $precio;
+            } else if ($tipo_envio === 'paqueteria') {
+                $coordenadas_paqueteria[] = $coordenada;
+                $stats_por_sucursal[$sucursal_row]['paqueteria']++;
+                $stats_por_sucursal[$sucursal_row]['valor_paqueteria'] += $precio;
+            }
+            $stats_por_sucursal[$sucursal_row]['total']++;
+            $stats_por_sucursal[$sucursal_row]['valor_total'] += $precio;
+            continue;
         }
 
         // Si no tiene coordenadas válidas, guardar la dirección para geocodificar

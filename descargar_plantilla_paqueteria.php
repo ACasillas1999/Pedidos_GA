@@ -61,18 +61,86 @@ if (!file_exists($machote)) {
     exit;
 }
 
-// Armar datos
+// Obtener datos del destinatario si existen
+$sqlDest = "SELECT * FROM pedidos_destinatario WHERE pedido_id = ?";
+$stmtDest = $conn->prepare($sqlDest);
+$stmtDest->bind_param("i", $id);
+$stmtDest->execute();
+$resDest = $stmtDest->get_result();
+$destinatario = $resDest->num_rows > 0 ? $resDest->fetch_assoc() : null;
+$stmtDest->close();
+
+// Obtener datos del remitente desde tabla ubicaciones
+$sucursalOrigen = (string)($row['SUCURSAL'] ?? '');
+$sqlRemitente = "SELECT Ubicacion, NombreCompleto, Direccion, Telefono FROM ubicaciones WHERE Ubicacion = ?";
+$stmtRemitente = $conn->prepare($sqlRemitente);
+$stmtRemitente->bind_param("s", $sucursalOrigen);
+$stmtRemitente->execute();
+$resRemitente = $stmtRemitente->get_result();
+$remitente = $resRemitente->num_rows > 0 ? $resRemitente->fetch_assoc() : null;
+$stmtRemitente->close();
+
+// Armar datos del remitente
+$nombreRemitente = $remitente ? (string)($remitente['NombreCompleto'] ?? '') : 'DISTRIBUIDORA ELÉCTRICA ASCENCIO SA DE CV';
+$nombreSucursal  = $remitente ? (string)($remitente['Ubicacion'] ?? $sucursalOrigen) : $sucursalOrigen;
+$direccionRemitente = $remitente ? (string)($remitente['Direccion'] ?? '') : 'AV. ALEMANIA 1255 -1257, COL. MODERNA C.P. 44190 GUADALAJARA JALISCO, MEXICO';
+$telefonoRemitente = $remitente ? (string)($remitente['Telefono'] ?? '') : '36141989';
+
+// Datos generales
 $folio           = trim((string)($row['FACTURA'] ?? ''));
 $referencia      = $folio !== '' ? $folio : "PED-{$row['ID']}";
-$cliente         = (string)($row['NOMBRE_CLIENTE'] ?? '');
-$direccion       = (string)($row['DIRECCION'] ?? '');
-$telefono        = (string)($row['CONTACTO'] ?? '');
-$sucursalOrigen  = (string)($row['SUCURSAL'] ?? '');
-$estado          = (string)($row['ESTADO'] ?? '');
-$vendedor        = (string)($row['VENDEDOR'] ?? '');
-$chofer          = (string)($row['CHOFER_ASIGNADO'] ?? '');
-$fechaRecepcion  = (string)($row['FECHA_RECEPCION_FACTURA'] ?? '');
-$tipoEnvioUpper  = mb_strtoupper('paquetería', 'UTF-8'); // fijo para el doc
+$tipoEnvioUpper  = mb_strtoupper('paquetería', 'UTF-8');
+
+// Datos del destinatario (usar datos capturados si existen, sino usar datos del pedido original)
+if ($destinatario) {
+    // Usar datos del destinatario capturado
+    $nombreDestinatario = (string)($destinatario['nombre_destinatario'] ?? '');
+    $calle              = (string)($destinatario['calle'] ?? '');
+    $noExterior         = (string)($destinatario['no_exterior'] ?? '');
+    $noInterior         = (string)($destinatario['no_interior'] ?? '');
+    $entreCalles        = (string)($destinatario['entre_calles'] ?? '');
+    $colonia            = (string)($destinatario['colonia'] ?? '');
+    $codigoPostal       = (string)($destinatario['codigo_postal'] ?? '');
+    $ciudad             = (string)($destinatario['ciudad'] ?? '');
+    $estadoDestino      = (string)($destinatario['estado_destino'] ?? '');
+    $telefonoDestino    = (string)($destinatario['telefono_destino'] ?? '');
+    $contactoDestino    = (string)($destinatario['contacto_destino'] ?? '');
+
+    // Construir dirección completa
+    $direccionCompleta = $calle;
+    if ($noExterior) $direccionCompleta .= " #{$noExterior}";
+    if ($noInterior) $direccionCompleta .= " Int. {$noInterior}";
+    if ($entreCalles) $direccionCompleta .= ", {$entreCalles}";
+    $direccionCompleta .= ", Col. {$colonia}";
+    if ($codigoPostal) $direccionCompleta .= ", C.P. {$codigoPostal}";
+    $direccionCompleta .= ", {$ciudad}, {$estadoDestino}";
+
+    // Datos de paquetería
+    $nombrePaqueteria = (string)($destinatario['nombre_paqueteria'] ?? '');
+    $tipoCobro        = (string)($destinatario['tipo_cobro'] ?? '');
+    $atn              = (string)($destinatario['atn'] ?? '');
+    $numCliente       = (string)($destinatario['num_cliente'] ?? '');
+    $claveSat         = (string)($destinatario['clave_sat'] ?? '');
+} else {
+    // Fallback: usar datos del pedido original
+    $nombreDestinatario = (string)($row['NOMBRE_CLIENTE'] ?? '');
+    $direccionCompleta  = (string)($row['DIRECCION'] ?? '');
+    $telefonoDestino    = (string)($row['CONTACTO'] ?? '');
+    $contactoDestino    = '';
+    $calle              = '';
+    $noExterior         = '';
+    $noInterior         = '';
+    $entreCalles        = '';
+    $colonia            = '';
+    $codigoPostal       = '';
+    $ciudad             = '';
+    $estadoDestino      = '';
+    $nombrePaqueteria   = '';
+    $tipoCobro          = '';
+    $atn                = '';
+    $numCliente         = '';
+    $claveSat           = '';
+}
 
 // Fecha “hoy” en español
 $fechaHoyDT = new DateTime('now');
@@ -88,20 +156,43 @@ $fechaHoy = "{$dia} de {$mes} del {$anio}";
 // Crear TemplateProcessor
 $template = new TemplateProcessor($machote);
 
-// Setear marcadores
-$template->setValue('Referencia',       $referencia);
-$template->setValue('Cliente',          $cliente);
-$template->setValue('Direccion',        $direccion);
-$template->setValue('Telefono',         $telefono);
-$template->setValue('Sucursal_Origen',  $sucursalOrigen);
-$template->setValue('Tipo_Envio',       $tipoEnvioUpper);
-$template->setValue('Estado',           $estado);
-$template->setValue('Vendedor',         $vendedor);
-$template->setValue('Chofer',           $chofer);
-$template->setValue('Fecha_Recepcion',  $fechaRecepcion);
-$template->setValue('FechaHoy',         $fechaHoy);
-// Campos libres para que editen después
-$template->setValue('Observaciones',    '');
+// ========== DATOS DEL REMITENTE ==========
+$template->setValue('Nombre_Remitente',    $nombreRemitente);
+$template->setValue('Nombre_Sucursal',     $nombreSucursal);
+$template->setValue('Direccion_Remitente', $direccionRemitente);
+$template->setValue('Telefono_Remitente',  $telefonoRemitente);
+
+// ========== DATOS DEL DESTINATARIO ==========
+$template->setValue('Nombre_Destinatario', $nombreDestinatario);
+$template->setValue('Direccion_Completa',  $direccionCompleta);
+$template->setValue('Telefono_Destinatario', $telefonoDestino);
+$template->setValue('Contacto_Destinatario', $contactoDestino);
+
+// Campos individuales de dirección (por si se quieren usar separados)
+$template->setValue('Calle',               $calle);
+$template->setValue('No_Exterior',         $noExterior);
+$template->setValue('No_Interior',         $noInterior);
+$template->setValue('Entre_Calles',        $entreCalles);
+$template->setValue('Colonia',             $colonia);
+$template->setValue('Codigo_Postal',       $codigoPostal);
+$template->setValue('Ciudad',              $ciudad);
+$template->setValue('Estado_Destino',      $estadoDestino);
+
+// ========== DATOS DE PAQUETERÍA ==========
+$template->setValue('Nombre_Paqueteria',  $nombrePaqueteria);
+$template->setValue('Tipo_Cobro',         $tipoCobro);
+$template->setValue('ATN',                 $atn);
+$template->setValue('Num_Cliente',        $numCliente);
+$template->setValue('Clave_SAT',          $claveSat);
+
+// ========== OTROS DATOS ==========
+$template->setValue('Referencia',         $referencia);
+$template->setValue('FechaHoy',           $fechaHoy);
+
+// Compatibilidad con plantilla anterior
+$template->setValue('Cliente',            $nombreDestinatario);
+$template->setValue('Direccion',          $direccionCompleta);
+$template->setValue('Telefono',           $telefonoDestino);
 
 // Guardar en /Docs con nombre amigable
 $destDir = __DIR__ . "/Docs";

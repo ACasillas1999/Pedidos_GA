@@ -1,20 +1,7 @@
 <?php
-/**
- * Estadísticas Home - Dashboard de Estadísticas por Sucursal
- * Sistema de Pedidos GA - Grupo Ascencio
- *
- * Muestra estadísticas de pedidos por sucursal con:
- * - Gráficos circulares por sucursal
- * - Gráfico de barras general
- * - Tablas detalladas por chofer
- * - Filtros de fecha con slider
- */
-
-// Iniciar sesión
 session_name("GA");
 session_start();
 
-// Verificar autenticación
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: /Pedidos_GA/Sesion/login.html");
     exit;
@@ -27,417 +14,238 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Estadísticas - Pedidos GA</title>
 
-    <!-- Favicon -->
     <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
 
-    <!-- CSS -->
-    <link rel="stylesheet" href="styles4.css">
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gaBlue: '#005aa3',
+                        gaBg: '#f4f7fb',
+                        gaAccent: '#e3f2fd',
+                        gaOrange: '#ff7f0e'
+                    },
+                    boxShadow: {
+                        gaSoft: '0 10px 25px rgba(15,23,42,0.10)',
+                        gaCard: '0 8px 18px rgba(15,23,42,0.08)'
+                    },
+                    borderRadius: {
+                        '3xl': '1.5rem'
+                    }
+                }
+            }
+        }
+    </script>
 
-    <!-- JavaScript Libraries -->
+    <!-- jQuery & Google Charts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.16/jspdf.plugin.autotable.min.js"></script>
 
     <script type="text/javascript">
-        // ============================================================
-        // CONFIGURACIÓN Y CONSTANTES
-        // ============================================================
-
         const SUCURSALES = [
-            { nombre: 'AIESA', chartId: 'piechart1', tableId: 'table_div_aiesa' },
-            { nombre: 'DEASA', chartId: 'piechart2', tableId: 'table_div_deasa' },
-            { nombre: 'GABSA', chartId: 'piechart4', tableId: 'table_div_gabsa' },
-            { nombre: 'ILUMINACION', chartId: 'piechart5', tableId: 'table_div_ilu' },
-            { nombre: 'DIMEGSA', chartId: 'piechart3', tableId: 'table_div_dimegsa' },
-            { nombre: 'SEGSA', chartId: 'piechart6', tableId: 'table_div_segsa' },
-            { nombre: 'FESA', chartId: 'piechart7', tableId: 'table_div_fesa' },
-            { nombre: 'TAPATIA', chartId: 'piechart8', tableId: 'table_div_tapatia' },
-            { nombre: 'VALLARTA', chartId: 'piechart9', tableId: 'table_div_vallarta' },
-            { nombre: 'CODI', chartId: 'piechart10', tableId: 'table_div_codi' },
-            { nombre: 'QUERETARO', chartId: 'piechart11', tableId: 'table_div_queretaro' }
+            { nombre: 'AIESA',        chartId: 'piechart1',  tableId: 'table_div_aiesa' },
+            { nombre: 'DEASA',        chartId: 'piechart2',  tableId: 'table_div_deasa' },
+            { nombre: 'GABSA',        chartId: 'piechart4',  tableId: 'table_div_gabsa' },
+            { nombre: 'ILUMINACION',  chartId: 'piechart5',  tableId: 'table_div_ilu' },
+            { nombre: 'DIMEGSA',      chartId: 'piechart3',  tableId: 'table_div_dimegsa' },
+            { nombre: 'SEGSA',        chartId: 'piechart6',  tableId: 'table_div_segsa' },
+            { nombre: 'FESA',         chartId: 'piechart7',  tableId: 'table_div_fesa' },
+            { nombre: 'TAPATIA',      chartId: 'piechart8',  tableId: 'table_div_tapatia' },
+            { nombre: 'VALLARTA',     chartId: 'piechart9',  tableId: 'table_div_vallarta' },
+            { nombre: 'CODI',         chartId: 'piechart10', tableId: 'table_div_codi' },
+            { nombre: 'QUERETARO',    chartId: 'piechart11', tableId: 'table_div_queretaro' }
         ];
 
-        // ============================================================
-        // INICIALIZACIÓN DE GOOGLE CHARTS
-        // ============================================================
-
         google.charts.load('current', {'packages':['table', 'bar', 'corechart']});
-        google.charts.setOnLoadCallback(inicializarGraficas);
+        google.charts.setOnLoadCallback(() => console.log('Google Charts cargado'));
 
-        function inicializarGraficas() {
-            // Las gráficas se dibujarán después de configurar las fechas
-            console.log('Google Charts cargado exitosamente');
-        }
-
-        // ============================================================
-        // FUNCIONES PARA TABLAS POR CHOFER
-        // ============================================================
-
-        function drawTables() {
-            SUCURSALES.forEach(sucursal => {
-                drawTable(sucursal.nombre, sucursal.tableId);
-            });
-        }
-
-        function drawTable(sucursal, containerId) {
-            const startDate = $('#start_date').val();
-            const endDate = $('#end_date').val();
-
-            $.ajax({
-                url: 'facturas_por_chofer.php',
-                type: 'GET',
-                dataType: 'json',
-                data: {
-                    sucursal: sucursal,
-                    start_date: startDate,
-                    end_date: endDate
-                },
-                success: function(data) {
-                    const dataTable = new google.visualization.DataTable();
-
-                    // Definir columnas
-                    dataTable.addColumn('string', 'Chofer');
-                    dataTable.addColumn('number', 'Total Facturas');
-                    dataTable.addColumn('number', 'Kilómetros');
-                    dataTable.addColumn('number', 'Entregadas');
-                    dataTable.addColumn('number', 'Canceladas');
-                    dataTable.addColumn('number', 'En Ruta');
-                    dataTable.addColumn('number', 'En Tienda');
-                    dataTable.addColumn('number', 'Reprogramado');
-                    dataTable.addColumn('number', 'Activas');
-
-                    // Agregar filas
-                    $.each(data, function(index, row) {
-                        dataTable.addRow([
-                            row.chofer,
-                            parseInt(row.total_facturas) || 0,
-                            parseInt(row.Total_Kilometros) || 0,
-                            parseInt(row.entregadas) || 0,
-                            parseInt(row.canceladas) || 0,
-                            parseInt(row.en_ruta) || 0,
-                            parseInt(row.En_Tienda) || 0,
-                            parseInt(row.REPROGRAMADO) || 0,
-                            parseInt(row.activas) || 0
-                        ]);
-                    });
-
-                    // Dibujar tabla
-                    const table = new google.visualization.Table(document.getElementById(containerId));
-                    table.draw(dataTable, {
-                        showRowNumber: true,
-                        width: '100%',
-                        height: '100%',
-                        allowHtml: true
-                    });
-                },
-                error: function(xhr, status, error) {
-                    console.error(`Error al obtener datos de ${sucursal}:`, {
-                        status: xhr.status,
-                        statusText: xhr.statusText,
-                        responseText: xhr.responseText,
-                        error: error
-                    });
-
-                    let errorMsg = 'Error al cargar datos.';
-                    if (xhr.status === 403) {
-                        errorMsg = 'Acceso denegado (403). Verifica los permisos del servidor.';
-                    } else if (xhr.status === 404) {
-                        errorMsg = 'Archivo no encontrado (404).';
-                    } else if (xhr.status === 500) {
-                        errorMsg = 'Error en el servidor (500).';
-                    }
-
-                    $(`#${containerId}`).html(
-                        `<div class="error-message">${errorMsg}<br><small>Sucursal: ${sucursal}</small></div>`
-                    );
-                }
-            });
-        }
-
-        // ============================================================
-        // GRÁFICO DE BARRAS TOTALES POR SUCURSAL
-        // ============================================================
-
-        function drawTotalColumnChart() {
-            const startDate = $('#start_date').val();
-            const endDate = $('#end_date').val();
-
-            $.ajax({
-                url: 'total_facturas_por_sucursal.php',
-                type: 'GET',
-                dataType: 'json',
-                data: {
-                    start_date: startDate,
-                    end_date: endDate
-                },
-                success: function(data) {
-                    console.log("Datos recibidos:", data);
-
-                    if (!data || data.length <= 1) {
-                        $('#total_column_chart').html(
-                            '<div class="info-message">No hay datos disponibles para el rango seleccionado.</div>'
-                        );
-                        $('#summary_container').empty();
-                        return;
-                    }
-
-                    // Preparar datos para el gráfico (sin columna de kilómetros)
-                    const jsonData = data.map(row => row.slice(0, 7));
-                    const dataChart = google.visualization.arrayToDataTable(jsonData);
-
-                    const options = {
-                        chart: {
-                            title: 'Total de Facturas por Sucursal',
-                            subtitle: 'Distribución por Estado en el Rango Seleccionado'
-                        },
-                        bars: 'horizontal',
-                        legend: { position: 'top' },
-                        width: '100%',
-                        height: 400,
-                        colors: ['#2ca02c', '#d62728', '#1f77b4', '#bcbd22', '#ff7f0e', '#795548', '#9c27b0']
-                    };
-
-                    const chart = new google.charts.Bar(document.getElementById('total_column_chart'));
-                    chart.draw(dataChart, google.charts.Bar.convertOptions(options));
-
-                    // Crear tabla resumen
-                    crearTablaResumen(data);
-                },
-                error: function(xhr, status, error) {
-                    console.error("Error al obtener datos del gráfico:", error);
-                    $('#total_column_chart').html(
-                        '<div class="error-message">Error al cargar el gráfico. Por favor, intente nuevamente.</div>'
-                    );
-                }
-            });
-        }
-
-        function crearTablaResumen(data) {
-            const summary = $('<table>').addClass('summary-table');
-
-            // Encabezado - CORREGIDO: orden correcto según los datos
-            const headerRow = $('<tr>').append(
-                $('<th>').text('Sucursal'),
-                $('<th>').text('Entregadas'),
-                $('<th>').text('Canceladas'),
-                $('<th>').text('En Ruta'),
-                $('<th>').text('Activas'),
-                $('<th>').text('En Tienda'),
-                $('<th>').text('Reprogramado'),
-                $('<th>').text('Total Facturas'),
-                $('<th>').text('Kilómetros')
-            );
-            summary.append(headerRow);
-
-            // Filas de datos - índices correctos [0-8]
-            data.forEach(function(row, index) {
-                if (index > 0) { // Saltar el encabezado
-                    const rowElement = $('<tr>').append(
-                        $('<td>').text(row[0]),  // Sucursal
-                        $('<td>').text(row[1]),  // Entregadas
-                        $('<td>').text(row[2]),  // Canceladas
-                        $('<td>').text(row[3]),  // En Ruta
-                        $('<td>').text(row[4]),  // Activas
-                        $('<td>').text(row[5]),  // En Tienda
-                        $('<td>').text(row[6]),  // Reprogramado
-                        $('<td>').text(row[7]),  // Total Facturas
-                        $('<td>').text(parseFloat(row[8]).toFixed(2))  // Kilómetros con 2 decimales
-                    );
-                    summary.append(rowElement);
-                }
-            });
-
-            $('#summary_container').empty().append(summary);
-        }
-
-        // ============================================================
-        // GRÁFICOS CIRCULARES POR SUCURSAL
-        // ============================================================
-
-        function drawCharts() {
-            SUCURSALES.forEach(sucursal => {
-                const title = `Facturas de ${sucursal.nombre} por Estado`;
-                drawChart(sucursal.nombre, sucursal.chartId, title);
-            });
-        }
-
-        function drawChart(sucursal, chartId, chartTitle) {
-            const startDate = $('#start_date').val();
-            const endDate = $('#end_date').val();
-
-            // Actualizar texto de rango de fechas
-            $('#time_range').text(`Rango: ${formatDate(startDate)} - ${formatDate(endDate)}`);
-
-            $.ajax({
-                url: 'Estadisticas.php',
-                type: 'GET',
-                dataType: 'json',
-                data: {
-                    start_date: startDate,
-                    end_date: endDate,
-                    sucursal: sucursal
-                },
-                success: function(data) {
-                    if (!data || data.length <= 1) {
-                        $(`#${chartId}`).html(
-                            '<div class="info-message">Sin datos</div>'
-                        );
-                        return;
-                    }
-
-                    const dataChart = google.visualization.arrayToDataTable(data);
-                    const options = {
-                        title: chartTitle,
-                        chartArea: { width: '85%', height: '75%' },
-                        legend: { position: 'right' },
-                        colors: ['#2ca02c', '#d62728', '#1f77b4', '#ff7f0e', '#bcbd22', '#795548'],
-                        pieSliceText: 'value'
-                    };
-
-                    const chart = new google.visualization.PieChart(document.getElementById(chartId));
-                    chart.draw(dataChart, options);
-                },
-                error: function(xhr, status, error) {
-                    console.error(`Error en gráfico de ${sucursal}:`, {
-                        status: xhr.status,
-                        statusText: xhr.statusText,
-                        responseText: xhr.responseText,
-                        error: error,
-                        url: this.url
-                    });
-
-                    let errorMsg = 'Error al cargar gráfico';
-                    if (xhr.status === 403) {
-                        errorMsg = 'Acceso denegado (403)';
-                    }
-
-                    $(`#${chartId}`).html(
-                        `<div class="error-message" style="padding: 10px; font-size: 12px;">${errorMsg}</div>`
-                    );
-                }
-            });
-        }
-
-        // ============================================================
-        // FUNCIONES DE ACTUALIZACIÓN - UNA SOLA PETICIÓN
-        // ============================================================
-
-        // Variable global para almacenar todos los datos
         let allData = null;
 
         function actualizarTodo() {
-            // Cargar todos los datos de una sola vez
-            cargarTodosLosDatos();
-        }
-
-        function cargarTodosLosDatos() {
             const startDate = $('#start_date').val();
-            const endDate = $('#end_date').val();
+            const endDate   = $('#end_date').val();
 
-            console.log('🔄 Cargando datos de todas las sucursales...');
+            // Construir datos del request (sin fechas si están vacías)
+            const requestData = {};
+            if (startDate && endDate) {
+                requestData.start_date = startDate;
+                requestData.end_date = endDate;
+            }
 
             $.ajax({
                 url: 'estadisticas_todas_sucursales.php',
                 type: 'GET',
                 dataType: 'json',
-                data: {
-                    start_date: startDate,
-                    end_date: endDate
-                },
+                data: requestData,
                 success: function(data) {
-                    console.log('✅ Datos cargados exitosamente');
-                    allData = data;
+                    allData = data || {};
 
-                    // Actualizar rango de fechas
-                    $('#time_range').text(`Rango: ${formatDate(startDate)} - ${formatDate(endDate)}`);
+                    // Actualizar texto del rango
+                    if (startDate && endDate) {
+                        $('#time_range').text(`Rango: ${formatDate(startDate)} - ${formatDate(endDate)}`);
+                    } else {
+                        $('#time_range').text('Mostrando todos los registros');
+                    }
 
-                    // Dibujar todo con los datos cargados
+                    drawTotalColumnChartFromCache();
                     drawChartsFromCache();
                     drawTablesFromCache();
-                    drawTotalColumnChartFromCache();
                 },
-                error: function(xhr, status, error) {
-                    console.error('❌ Error al cargar datos:', {
-                        status: xhr.status,
-                        statusText: xhr.statusText,
-                        error: error
-                    });
-
-                    alert('Error al cargar datos. Por favor, recarga la página.');
+                error: function() {
+                    alert('Error al cargar datos. Intenta recargar la página.');
                 }
             });
         }
+
+        // ================= GRÁFICO GENERAL =================
+
+        function drawTotalColumnChartFromCache() {
+            if (!allData || !allData.resumen_general) return;
+
+            const data = allData.resumen_general;
+            if (!data || data.length <= 1) {
+                $('#total_column_chart').html('<div class="text-center text-sm text-sky-600 py-4">No hay datos disponibles.</div>');
+                $('#summary_container').empty();
+                return;
+            }
+
+            const jsonData  = data.map(row => row.slice(0, 7));
+            const dataChart = google.visualization.arrayToDataTable(jsonData);
+
+            const options = {
+                chart: {
+                    title: 'Total de Facturas por Sucursal',
+                    subtitle: 'Distribución por Estado en el rango seleccionado'
+                },
+                bars: 'horizontal',
+                legend: { position: 'top' },
+                width: '100%',
+                height: 320,
+                colors: ['#22c55e', '#ef4444', '#3b82f6', '#facc15', '#0ea5e9', '#8b5cf6', '#f97316']
+            };
+
+            const chart = new google.charts.Bar(document.getElementById('total_column_chart'));
+            chart.draw(dataChart, google.charts.Bar.convertOptions(options));
+
+            crearTablaResumen(data);
+        }
+
+        function crearTablaResumen(data) {
+            const $table = $('<table class="min-w-full text-[10px] border-collapse">');
+            const $thead = $('<thead class="bg-slate-100 text-gaBlue font-semibold"></thead>');
+            const $tbody = $('<tbody class="bg-white"></tbody>');
+
+            $thead.append(
+                $('<tr>').append(
+                    '<th class="px-2 py-1 border border-slate-200">Sucursal</th>',
+                    '<th class="px-2 py-1 border border-slate-200">Entregadas</th>',
+                    '<th class="px-2 py-1 border border-slate-200">Canceladas</th>',
+                    '<th class="px-2 py-1 border border-slate-200">En Ruta</th>',
+                    '<th class="px-2 py-1 border border-slate-200">Activas</th>',
+                    '<th class="px-2 py-1 border border-slate-200">En Tienda</th>',
+                    '<th class="px-2 py-1 border border-slate-200">Reprog.</th>',
+                    '<th class="px-2 py-1 border border-slate-200">Total</th>',
+                    '<th class="px-2 py-1 border border-slate-200">Km</th>'
+                )
+            );
+
+            data.forEach((row, i) => {
+                if (i === 0) return;
+                $tbody.append(
+                    $('<tr class="hover:bg-slate-50">').append(
+                        `<td class="px-2 py-1 border border-slate-100">${row[0]}</td>`,
+                        `<td class="px-2 py-1 border border-slate-100 text-center">${row[1]}</td>`,
+                        `<td class="px-2 py-1 border border-slate-100 text-center">${row[2]}</td>`,
+                        `<td class="px-2 py-1 border border-slate-100 text-center">${row[3]}</td>`,
+                        `<td class="px-2 py-1 border border-slate-100 text-center">${row[4]}</td>`,
+                        `<td class="px-2 py-1 border border-slate-100 text-center">${row[5]}</td>`,
+                        `<td class="px-2 py-1 border border-slate-100 text-center">${row[6]}</td>`,
+                        `<td class="px-2 py-1 border border-slate-100 text-center">${row[7]}</td>`,
+                        `<td class="px-2 py-1 border border-slate-100 text-center">${parseFloat(row[8]).toFixed(2)}</td>`
+                    )
+                );
+            });
+
+            $table.append($thead).append($tbody);
+            $('#summary_container').empty().append(
+                $('<div class="mt-3 overflow-x-auto rounded-2xl border border-slate-100 bg-white">').append($table)
+            );
+        }
+
+        // ================= PIE CHARTS =================
 
         function drawChartsFromCache() {
             if (!allData || !allData.sucursales) return;
 
-            SUCURSALES.forEach(sucursal => {
-                const sucursalData = allData.sucursales[sucursal.nombre];
-                if (!sucursalData) return;
+            SUCURSALES.forEach(s => {
+                const cont = document.getElementById(s.chartId);
+                if (!cont) return;
 
-                const data = sucursalData.estadisticas_por_estado;
-                const title = `Facturas de ${sucursal.nombre} por Estado`;
+                const sucursalData = allData.sucursales[s.nombre];
+                const chartData    = sucursalData && sucursalData.estadisticas_por_estado;
 
-                if (!data || data.length <= 1) {
-                    $(`#${sucursal.chartId}`).html('<div class="info-message">Sin datos</div>');
+                if (!chartData || chartData.length <= 1) {
+                    cont.innerHTML = '<div class="text-center text-xs text-sky-500">Sin datos</div>';
                     return;
                 }
 
-                const dataChart = google.visualization.arrayToDataTable(data);
+                const dataChart = google.visualization.arrayToDataTable(chartData);
                 const options = {
-                    title: title,
-                    chartArea: { width: '85%', height: '75%' },
-                    legend: { position: 'right' },
-                    colors: ['#2ca02c', '#d62728', '#1f77b4', '#ff7f0e', '#bcbd22', '#795548'],
-                    pieSliceText: 'value'
+                    chartArea: { width: '88%', height: '80%' },
+                    legend: { position: 'right', textStyle: { fontSize: 9 } },
+                    pieSliceText: 'value',
+                    colors: ['#22c55e', '#ef4444', '#3b82f6', '#f97316', '#eab308', '#8b5cf6']
                 };
 
-                const chart = new google.visualization.PieChart(document.getElementById(sucursal.chartId));
-                chart.draw(dataChart, options);
+                new google.visualization.PieChart(cont).draw(dataChart, options);
             });
         }
+
+        // ================= TABLAS CHOFERES =================
 
         function drawTablesFromCache() {
             if (!allData || !allData.sucursales) return;
 
-            SUCURSALES.forEach(sucursal => {
-                const sucursalData = allData.sucursales[sucursal.nombre];
-                if (!sucursalData) return;
+            SUCURSALES.forEach(s => {
+                const cont = document.getElementById(s.tableId);
+                if (!cont) return;
 
-                const data = sucursalData.facturas_por_chofer;
-                const dataTable = new google.visualization.DataTable();
+                const sucursalData = allData.sucursales[s.nombre];
+                const rows = (sucursalData && sucursalData.facturas_por_chofer) || [];
 
-                // Definir columnas
-                dataTable.addColumn('string', 'Chofer');
-                dataTable.addColumn('number', 'Total Facturas');
-                dataTable.addColumn('number', 'Kilómetros');
-                dataTable.addColumn('number', 'Entregadas');
-                dataTable.addColumn('number', 'Canceladas');
-                dataTable.addColumn('number', 'En Ruta');
-                dataTable.addColumn('number', 'En Tienda');
-                dataTable.addColumn('number', 'Reprogramado');
-                dataTable.addColumn('number', 'Activas');
+                const dt = new google.visualization.DataTable();
+                dt.addColumn('string', 'Chofer');
+                dt.addColumn('number', 'Total');
+                dt.addColumn('number', 'Km');
+                dt.addColumn('number', 'Entregadas');
+                dt.addColumn('number', 'Canceladas');
+                dt.addColumn('number', 'En Ruta');
+                dt.addColumn('number', 'En Tienda');
+                dt.addColumn('number', 'Reprog.');
+                dt.addColumn('number', 'Activas');
 
-                // Agregar filas
-                data.forEach(row => {
-                    dataTable.addRow([
-                        row.chofer,
-                        row.total_facturas,
-                        row.Total_Kilometros,
-                        row.entregadas,
-                        row.canceladas,
-                        row.en_ruta,
-                        row.En_Tienda,
-                        row.REPROGRAMADO,
-                        row.activas
+                rows.forEach(r => {
+                    dt.addRow([
+                        r.chofer,
+                        r.total_facturas,
+                        r.Total_Kilometros,
+                        r.entregadas,
+                        r.canceladas,
+                        r.en_ruta,
+                        r.En_Tienda,
+                        r.REPROGRAMADO,
+                        r.activas
                     ]);
                 });
 
-                // Dibujar tabla
-                const table = new google.visualization.Table(document.getElementById(sucursal.tableId));
-                table.draw(dataTable, {
-                    showRowNumber: true,
+                const table = new google.visualization.Table(cont);
+                table.draw(dt, {
+                    showRowNumber: false,
                     width: '100%',
                     height: '100%',
                     allowHtml: true
@@ -445,467 +253,352 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
             });
         }
 
-        function drawTotalColumnChartFromCache() {
-            if (!allData || !allData.resumen_general) return;
-
-            const data = allData.resumen_general;
-
-            if (!data || data.length <= 1) {
-                $('#total_column_chart').html('<div class="info-message">No hay datos disponibles.</div>');
-                $('#summary_container').empty();
-                return;
-            }
-
-            // Preparar datos para el gráfico (sin columna de kilómetros)
-            const jsonData = data.map(row => row.slice(0, 7));
-            const dataChart = google.visualization.arrayToDataTable(jsonData);
-
-            const options = {
-                chart: {
-                    title: 'Total de Facturas por Sucursal',
-                    subtitle: 'Distribución por Estado en el Rango Seleccionado'
-                },
-                bars: 'horizontal',
-                legend: { position: 'top' },
-                width: '100%',
-                height: 400,
-                colors: ['#2ca02c', '#d62728', '#1f77b4', '#bcbd22', '#ff7f0e', '#795548', '#9c27b0']
-            };
-
-            const chart = new google.charts.Bar(document.getElementById('total_column_chart'));
-            chart.draw(dataChart, google.charts.Bar.convertOptions(options));
-
-            // Crear tabla resumen
-            crearTablaResumen(data);
-        }
+        // ================= UTIL & INIT =================
 
         function formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('es-MX', {
+            const d = new Date(dateString);
+            if (isNaN(d)) return dateString || '';
+            return d.toLocaleDateString('es-MX', {
                 year: 'numeric',
                 month: 'short',
                 day: 'numeric'
             });
         }
 
-        // ============================================================
-        // INICIALIZACIÓN DE FECHAS
-        // ============================================================
+        function setRangoRapido(dias) {
+            const end = new Date();
+            const start = new Date();
+            start.setDate(start.getDate() - dias);
+            $('#start_date').val(start.toISOString().slice(0,10));
+            $('#end_date').val(end.toISOString().slice(0,10));
+            actualizarTodo();
+        }
 
-        $(function() {
-            // Establecer fechas predeterminadas (último mes)
-            const endDate = new Date();
-            const startDate = new Date(endDate);
-            startDate.setMonth(startDate.getMonth() - 1);
+        $(function () {
+            const end = new Date();
+            const start = new Date(end);
+            start.setMonth(start.getMonth() - 1);
+            $('#start_date').val(start.toISOString().slice(0,10));
+            $('#end_date').val(end.toISOString().slice(0,10));
 
-            $('#start_date').val(startDate.toISOString().slice(0, 10));
-            $('#end_date').val(endDate.toISOString().slice(0, 10));
+            actualizarTodo();
 
-            // Dibujar todas las gráficas con valores iniciales
-            setTimeout(actualizarTodo, 500);
-
-            // Event listeners para los campos de fecha
-            $('#start_date, #end_date').on('change', function() {
-                const startDateVal = $('#start_date').val();
-                const endDateVal = $('#end_date').val();
-
-                // Validar que la fecha inicial no sea mayor que la final
-                if (startDateVal && endDateVal && startDateVal > endDateVal) {
-                    alert('La fecha inicial no puede ser mayor que la fecha final');
+            $('#start_date, #end_date').on('change', function () {
+                const s = $('#start_date').val();
+                const e = $('#end_date').val();
+                if (s && e && s > e) {
+                    alert('La fecha inicial no puede ser mayor que la final');
                     return;
                 }
-
-                // Actualizar todas las gráficas
-                if (startDateVal && endDateVal) {
-                    actualizarTodo();
-                }
-            });
-
-            // Botón para aplicar filtros rápidos
-            $('#btn_ultimos_7_dias').on('click', function() {
-                const end = new Date();
-                const start = new Date();
-                start.setDate(start.getDate() - 7);
-                $('#start_date').val(start.toISOString().slice(0, 10));
-                $('#end_date').val(end.toISOString().slice(0, 10));
                 actualizarTodo();
             });
 
-            $('#btn_ultimos_30_dias').on('click', function() {
-                const end = new Date();
-                const start = new Date();
-                start.setDate(start.getDate() - 30);
-                $('#start_date').val(start.toISOString().slice(0, 10));
-                $('#end_date').val(end.toISOString().slice(0, 10));
-                actualizarTodo();
-            });
-
-            $('#btn_ultimos_90_dias').on('click', function() {
-                const end = new Date();
-                const start = new Date();
-                start.setDate(start.getDate() - 90);
-                $('#start_date').val(start.toISOString().slice(0, 10));
-                $('#end_date').val(end.toISOString().slice(0, 10));
-                actualizarTodo();
-            });
-
-            $('#btn_este_mes').on('click', function() {
+            $('#btn_ultimos_7_dias').on('click', () => setRangoRapido(7));
+            $('#btn_ultimos_30_dias').on('click', () => setRangoRapido(30));
+            $('#btn_ultimos_90_dias').on('click', () => setRangoRapido(90));
+            $('#btn_este_mes').on('click', () => {
                 const now = new Date();
-                const start = new Date(now.getFullYear(), now.getMonth(), 1);
-                const end = new Date();
-                $('#start_date').val(start.toISOString().slice(0, 10));
-                $('#end_date').val(end.toISOString().slice(0, 10));
+                const s = new Date(now.getFullYear(), now.getMonth(), 1);
+                const e = new Date();
+                $('#start_date').val(s.toISOString().slice(0,10));
+                $('#end_date').val(e.toISOString().slice(0,10));
+                actualizarTodo();
+            });
+
+            // Botón para mostrar todos los registros
+            $('#btn_todos').on('click', () => {
+                $('#start_date').val('');
+                $('#end_date').val('');
                 actualizarTodo();
             });
         });
 
-        // ============================================================
-        // EFECTOS HOVER DE BOTONES
-        // ============================================================
-
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             const iconoVolver = document.querySelector(".icono-Volver");
             const iconoImprimir = document.querySelector(".icono-Imprimir");
 
-            // Hover para botón Volver
             if (iconoVolver) {
-                const imgNormal = "/Pedidos_GA/Img/Botones%20entregas/RegistrarChofer/VOLVAZ.png";
-                const imgHover = "/Pedidos_GA/Img/Botones%20entregas/RegistrarChofer/VOLVNA.png";
-
-                iconoVolver.addEventListener("mouseover", () => iconoVolver.src = imgHover);
-                iconoVolver.addEventListener("mouseout", () => iconoVolver.src = imgNormal);
+                const normal = "/Pedidos_GA/Img/Botones%20entregas/RegistrarChofer/VOLVAZ.png";
+                const hover  = "/Pedidos_GA/Img/Botones%20entregas/RegistrarChofer/VOLVNA.png";
+                iconoVolver.addEventListener('mouseover', () => iconoVolver.src = hover);
+                iconoVolver.addEventListener('mouseout',  () => iconoVolver.src = normal);
             }
 
-            // Hover para botón Imprimir
             if (iconoImprimir) {
-                const imgNormal = "/Pedidos_GA/Img/Botones%20entregas/Estadisticas/IMPAZ.png";
-                const imgHover = "/Pedidos_GA/Img/Botones%20entregas/Estadisticas/IMPNA.png";
-
-                iconoImprimir.addEventListener("mouseover", () => iconoImprimir.src = imgHover);
-                iconoImprimir.addEventListener("mouseout", () => iconoImprimir.src = imgNormal);
+                const normal = "/Pedidos_GA/Img/Botones%20entregas/Estadisticas/IMPAZ.png";
+                const hover  = "/Pedidos_GA/Img/Botones%20entregas/Estadisticas/IMPNA.png";
+                iconoImprimir.addEventListener('mouseover', () => iconoImprimir.src = hover);
+                iconoImprimir.addEventListener('mouseout',  () => iconoImprimir.src = normal);
             }
         });
     </script>
 
     <style>
-        .error-message {
-            color: #d32f2f;
-            padding: 20px;
-            text-align: center;
-            font-weight: bold;
+        /* Sticky header dentro de la tabla generada por Google (cuando hay scroll) */
+        .chofer-table table thead tr th {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: #f97316; /* naranja GA para header tabla */
+            color: #ffffff;
+            font-size: 9px;
+        }
+        .chofer-table table tbody tr td {
+            font-size: 9px;
         }
 
-        .info-message {
-            color: #1976d2;
-            padding: 20px;
-            text-align: center;
+        /* Evitar solapamiento de componentes */
+        .card-sucursal {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 420px;
         }
 
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: #666;
+        .card-sucursal .chart-container {
+            flex: 1;
+            min-height: 0; /* Importante para flexbox */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
         }
 
-        /* Estilos adicionales para calendario nativo */
-        .date-input::-webkit-calendar-picker-indicator {
-            cursor: pointer;
-            border-radius: 4px;
-            margin-left: 5px;
-            opacity: 0.6;
-            filter: invert(28%) sepia(99%) saturate(1000%) hue-rotate(181deg);
+        .card-sucursal .table-container {
+            flex-shrink: 0;
+            max-height: 130px;
+            overflow-y: auto;
+            overflow-x: hidden;
         }
 
-        .date-input::-webkit-calendar-picker-indicator:hover {
-            opacity: 1;
-        }
-
-        /* Mejoras adicionales para gráficas */
-        [id^="piechart"] {
-            min-height: 350px;
-        }
-
-        /* Contenedor de tabla con mejor separación */
-        [id^="table_div_"] {
-            margin-top: 15px;
-        }
-
-        /* Animación de carga suave */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .container, .container2, .chart-container {
-            animation: fadeInUp 0.6s ease-out;
+        /* Asegurar que los gráficos no se salgan de su contenedor */
+        #total_column_chart {
+            min-height: 320px;
+            max-height: 320px;
+            overflow: hidden;
         }
     </style>
 </head>
 
-<body>
-    <!-- ============================================================ -->
+<body class="bg-gaBg text-slate-900">
+
     <!-- HEADER -->
-    <!-- ============================================================ -->
-    <header class="header">
-        <div class="logo">
+    <header class="sticky top-0 z-30 bg-gaBg/95 backdrop-blur flex items-center px-6 py-4 shadow-sm" style="background-color: rgba(243, 156, 43, 0.64);">
+        <div class="flex items-center gap-4">
             <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/ESTADISTICAS.png"
                  alt="Estadísticas"
-                 class="icono-registro"
-                 style="max-width: 25%; height: auto;">
+                 class="h-14 object-contain drop-shadow">
         </div>
-        <nav class="navbar">
-            <ul>
-                <li class="nav-item">
-                    <a href='Pedidos_GA.php' class="nav-link">
-                        <img src="\Pedidos_GA\Img\Botones entregas\RegistrarChofer\VOLVAZ.png"
-                             alt="Volver"
-                             class="icono-Volver"
-                             style="max-width: 5%; height: auto; position:absolute; top: 70px; left: 25px;">
-                    </a>
-                </li>
-            </ul>
+        <nav class="ml-auto">
+            <a href="Pedidos_GA.php" title="Volver">
+                <img src="/Pedidos_GA/Img/Botones%20entregas/RegistrarChofer/VOLVAZ.png"
+                     alt="Volver"
+                     class="icono-Volver h-9 w-auto hover:scale-105 transition-transform">
+            </a>
         </nav>
     </header>
 
-    <!-- ============================================================ -->
-    <!-- INDICADOR DE SESIÓN -->
-    <!-- ============================================================ -->
-    <div class="container" style="margin-top: 20px; padding: 15px; display: none;">
-        <div id="session-indicator" style="display: flex; align-items: center; justify-content: space-between; background: #f0f7ff; padding: 12px 20px; border-radius: 6px; border-left: 4px solid #005aa3;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <span style="font-size: 20px;">👤</span>
-                <div>
-                    <div style="font-weight: bold; color: #005aa3; font-size: 14px;">
-                        Usuario: <?php echo htmlspecialchars($_SESSION["username"] ?? 'Desconocido'); ?>
-                    </div>
-                    <div style="color: #666; font-size: 12px; margin-top: 2px;">
-                        <?php echo htmlspecialchars($_SESSION["Nombre"] ?? ''); ?> |
-                        Rol: <?php echo htmlspecialchars($_SESSION["Rol"] ?? ''); ?> |
-                        Sucursal: <?php echo htmlspecialchars($_SESSION["Sucursal"] ?? ''); ?>
-                    </div>
+    <!-- FILTRO DE FECHAS -->
+    <section class="max-w-6xl mx-auto px-4 mt-4">
+        <div class="bg-white rounded-3xl shadow-gaSoft px-6 py-5">
+            <h2 class="text-2xl font-extrabold text-gaBlue text-center mb-4">
+                Filtrar por Rango de Fechas
+            </h2>
+
+            <div class="flex flex-wrap justify-center gap-6">
+                <div class="flex flex-col text-sm text-slate-700">
+                    <label for="start_date" class="mb-1 font-medium">Fecha inicial</label>
+                    <input type="date" id="start_date"
+                           class="border border-slate-200 rounded-xl px-3 py-2 text-sm bg-gaBg focus:outline-none focus:ring-2 focus:ring-gaBlue/40 min-w-[170px]">
+                </div>
+                <div class="flex flex-col text-sm text-slate-700">
+                    <label for="end_date" class="mb-1 font-medium">Fecha final</label>
+                    <input type="date" id="end_date"
+                           class="border border-slate-200 rounded-xl px-3 py-2 text-sm bg-gaBg focus:outline-none focus:ring-2 focus:ring-gaBlue/40 min-w-[170px]">
                 </div>
             </div>
-            <div style="color: #999; font-size: 11px;">
-                Sesión activa ✓
+
+            <div class="flex flex-wrap justify-center items-center gap-2 mt-4">
+                <span class="text-xs text-slate-500 mr-1">Filtros rápidos:</span>
+                <button id="btn_todos"
+                        class="px-3 py-1 rounded-full bg-orange-100 text-orange-600 text-xs font-semibold hover:bg-orange-500 hover:text-white transition">
+                    Todos
+                </button>
+                <button id="btn_ultimos_7_dias"
+                        class="px-3 py-1 rounded-full bg-gaAccent text-gaBlue text-xs font-semibold hover:bg-gaBlue hover:text-white transition">
+                    Últimos 7 días
+                </button>
+                <button id="btn_ultimos_30_dias"
+                        class="px-3 py-1 rounded-full bg-gaAccent text-gaBlue text-xs font-semibold hover:bg-gaBlue hover:text-white transition">
+                    Últimos 30 días
+                </button>
+                <button id="btn_ultimos_90_dias"
+                        class="px-3 py-1 rounded-full bg-gaAccent text-gaBlue text-xs font-semibold hover:bg-gaBlue hover:text-white transition">
+                    Últimos 90 días
+                </button>
+                <button id="btn_este_mes"
+                        class="px-3 py-1 rounded-full bg-gaAccent text-gaBlue text-xs font-semibold hover:bg-gaBlue hover:text-white transition">
+                    Este mes
+                </button>
+            </div>
+
+            <div id="time_range"
+                 class="mt-3 text-center text-sm font-semibold text-gaBlue">
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- ============================================================ -->
-    <!-- SELECTOR DE RANGO DE FECHAS -->
-    <!-- ============================================================ -->
-    <div class="container" style="margin-top: 20px;">
-        <div class="date-filter-container">
-            <h3 style="color: #005aa3; margin-bottom: 20px;">Filtrar por Rango de Fechas</h3>
-
-            <div class="date-inputs">
-                <div class="date-input-group">
-                    <label for="start_date">Fecha Inicial:</label>
-                    <input type="date" id="start_date" class="date-input">
-                </div>
-
-                <div class="date-input-group">
-                    <label for="end_date">Fecha Final:</label>
-                    <input type="date" id="end_date" class="date-input">
-                </div>
-            </div>
-
-            <div class="quick-filters">
-                <h4 style="color: #666; margin: 20px 0 10px 0;">Filtros Rápidos:</h4>
-                <button id="btn_ultimos_7_dias" class="filter-btn">Últimos 7 días</button>
-                <button id="btn_ultimos_30_dias" class="filter-btn">Últimos 30 días</button>
-                <button id="btn_ultimos_90_dias" class="filter-btn">Últimos 90 días</button>
-                <button id="btn_este_mes" class="filter-btn">Este mes</button>
-            </div>
-
-            <div id="time_range" style="margin-top: 15px; font-size: 18px; color: #005aa3; font-weight: bold;"></div>
+    <!-- GRÁFICO GENERAL + RESUMEN -->
+    <section class="max-w-6xl mx-auto px-4 mt-4">
+        <div class="bg-white rounded-3xl shadow-gaSoft px-4 py-4">
+            <div id="total_column_chart" class="w-full h-[320px]"></div>
+            <div id="summary_container" class="mt-1"></div>
         </div>
-    </div>
+    </section>
 
-    <!-- ============================================================ -->
-    <!-- GRÁFICO GENERAL Y RESUMEN -->
-    <!-- ============================================================ -->
-    <div class="container">
-        <div id="total_column_chart" style="height: 400px; margin: 20px 0;"></div>
-        <div id="summary_container"></div>
-    </div>
-
-    <!-- ============================================================ -->
-    <!-- GRÁFICAS POR SUCURSAL -->
-    <!-- ============================================================ -->
-    <div class="container2">
-        <div class="linea-horizontal">
-            <div class="texto-linea">GRÁFICAS POR SUCURSAL</div>
+    <!-- GRID SUCURSALES -->
+    <section class="max-w-6xl mx-auto px-4 mt-8 pb-10">
+        <div class="flex items-center gap-3 mb-3">
+            <div class="h-[2px] w-10 bg-gaBlue rounded-full"></div>
+            <h3 class="text-lg font-bold text-gaBlue tracking-wide">
+                GRÁFICAS POR SUCURSAL
+            </h3>
         </div>
 
-        <!-- Fila 1: AIESA, DEASA, DIMEGSA -->
-        <div class="row">
-            <div class="col-md-4">
-                <div class="chart-container">
-                    <div class="chart-title">
-                        <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/aiesa.png"
-                             alt="AIESA"
-                             style="max-width: 20%; height: auto;">
-                    </div>
-                    <div id="piechart1" style="height: 300px;"></div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- AIESA -->
+            <div class="bg-white rounded-3xl shadow-gaCard p-3 card-sucursal hover:shadow-2xl hover:-translate-y-1 transition">
+                <div class="flex justify-center items-center pb-2 border-b border-slate-100 flex-shrink-0">
+                    <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/aiesa.png" alt="AIESA"
+                         class="h-9 object-contain">
                 </div>
-                <div id="table_div_aiesa"></div>
+                <div class="chart-container pt-2">
+                    <div id="piechart1" class="w-full h-full"></div>
+                </div>
+                <div id="table_div_aiesa" class="chofer-table table-container mt-2"></div>
             </div>
 
-            <div class="col-md-4">
-                <div class="chart-container">
-                    <div class="chart-title">
-                        <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/deasa.png"
-                             alt="DEASA"
-                             style="max-width: 20%; height: auto;">
-                    </div>
-                    <div id="piechart2" style="height: 300px;"></div>
+            <!-- DEASA -->
+            <div class="bg-white rounded-3xl shadow-gaCard p-3 card-sucursal hover:shadow-2xl hover:-translate-y-1 transition">
+                <div class="flex justify-center items-center pb-2 border-b border-slate-100 flex-shrink-0">
+                    <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/deasa.png" alt="DEASA" class="h-9 object-contain">
                 </div>
-                <div id="table_div_deasa"></div>
+                <div class="chart-container pt-2">
+                    <div id="piechart2" class="w-full h-full"></div>
+                </div>
+                <div id="table_div_deasa" class="chofer-table table-container mt-2"></div>
             </div>
 
-            <div class="col-md-4">
-                <div class="chart-container">
-                    <div class="chart-title">
-                        <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/dimegsa.png"
-                             alt="DIMEGSA"
-                             style="max-width: 20%; height: auto;">
-                    </div>
-                    <div id="piechart3" style="height: 300px;"></div>
+            <!-- DIMEGSA -->
+            <div class="bg-white rounded-3xl shadow-gaCard p-3 card-sucursal hover:shadow-2xl hover:-translate-y-1 transition">
+                <div class="flex justify-center items-center pb-2 border-b border-slate-100 flex-shrink-0">
+                    <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/dimegsa.png" alt="DIMEGSA" class="h-9 object-contain">
                 </div>
-                <div id="table_div_dimegsa"></div>
+                <div class="chart-container pt-2">
+                    <div id="piechart3" class="w-full h-full"></div>
+                </div>
+                <div id="table_div_dimegsa" class="chofer-table table-container mt-2"></div>
+            </div>
+
+            <!-- GABSA -->
+            <div class="bg-white rounded-3xl shadow-gaCard p-3 card-sucursal hover:shadow-2xl hover:-translate-y-1 transition">
+                <div class="flex justify-center items-center pb-2 border-b border-slate-100 flex-shrink-0">
+                    <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/gabajio.png" alt="GABSA" class="h-9 object-contain">
+                </div>
+                <div class="chart-container pt-2">
+                    <div id="piechart4" class="w-full h-full"></div>
+                </div>
+                <div id="table_div_gabsa" class="chofer-table table-container mt-2"></div>
+            </div>
+
+            <!-- ILUMINACION -->
+            <div class="bg-white rounded-3xl shadow-gaCard p-3 card-sucursal hover:shadow-2xl hover:-translate-y-1 transition">
+                <div class="flex justify-center items-center pb-2 border-b border-slate-100 flex-shrink-0">
+                    <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/iluminacion_1.png" alt="ILUMINACION" class="h-9 object-contain">
+                </div>
+                <div class="chart-container pt-2">
+                    <div id="piechart5" class="w-full h-full"></div>
+                </div>
+                <div id="table_div_ilu" class="chofer-table table-container mt-2"></div>
+            </div>
+
+            <!-- SEGSA -->
+            <div class="bg-white rounded-3xl shadow-gaCard p-3 card-sucursal hover:shadow-2xl hover:-translate-y-1 transition">
+                <div class="flex justify-center items-center pb-2 border-b border-slate-100 flex-shrink-0">
+                    <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/segsa.png" alt="SEGSA" class="h-9 object-contain">
+                </div>
+                <div class="chart-container pt-2">
+                    <div id="piechart6" class="w-full h-full"></div>
+                </div>
+                <div id="table_div_segsa" class="chofer-table table-container mt-2"></div>
+            </div>
+
+            <!-- FESA -->
+            <div class="bg-white rounded-3xl shadow-gaCard p-3 card-sucursal hover:shadow-2xl hover:-translate-y-1 transition">
+                <div class="flex justify-center items-center pb-2 border-b border-slate-100 flex-shrink-0">
+                    <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/fesa.png" alt="FESA" class="h-9 object-contain">
+                </div>
+                <div class="chart-container pt-2">
+                    <div id="piechart7" class="w-full h-full"></div>
+                </div>
+                <div id="table_div_fesa" class="chofer-table table-container mt-2"></div>
+            </div>
+
+            <!-- TAPATIA -->
+            <div class="bg-white rounded-3xl shadow-gaCard p-3 card-sucursal hover:shadow-2xl hover:-translate-y-1 transition">
+                <div class="flex justify-center items-center pb-2 border-b border-slate-100 flex-shrink-0">
+                    <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/eitsa.png" alt="TAPATIA" class="h-9 object-contain">
+                </div>
+                <div class="chart-container pt-2">
+                    <div id="piechart8" class="w-full h-full"></div>
+                </div>
+                <div id="table_div_tapatia" class="chofer-table table-container mt-2"></div>
+            </div>
+
+            <!-- VALLARTA -->
+            <div class="bg-white rounded-3xl shadow-gaCard p-3 card-sucursal hover:shadow-2xl hover:-translate-y-1 transition">
+                <div class="flex justify-center items-center pb-2 border-b border-slate-100 flex-shrink-0">
+                    <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/gavallarta.png" alt="VALLARTA" class="h-9 object-contain">
+                </div>
+                <div class="chart-container pt-2">
+                    <div id="piechart9" class="w-full h-full"></div>
+                </div>
+                <div id="table_div_vallarta" class="chofer-table table-container mt-2"></div>
+            </div>
+
+            <!-- CODI -->
+            <div class="bg-white rounded-3xl shadow-gaCard p-3 card-sucursal hover:shadow-2xl hover:-translate-y-1 transition">
+                <div class="flex justify-center items-center pb-2 border-b border-slate-100 flex-shrink-0">
+                    <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/codi.png" alt="CODI" class="h-9 object-contain">
+                </div>
+                <div class="chart-container pt-2">
+                    <div id="piechart10" class="w-full h-full"></div>
+                </div>
+                <div id="table_div_codi" class="chofer-table table-container mt-2"></div>
+            </div>
+
+            <!-- QUERETARO -->
+            <div class="bg-white rounded-3xl shadow-gaCard p-3 card-sucursal hover:shadow-2xl hover:-translate-y-1 transition">
+                <div class="flex justify-center items-center pb-2 border-b border-slate-100 flex-shrink-0">
+                    <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/QRO.png" alt="QUERÉTARO" class="h-9 object-contain">
+                </div>
+                <div class="chart-container pt-2">
+                    <div id="piechart11" class="w-full h-full"></div>
+                </div>
+                <div id="table_div_queretaro" class="chofer-table table-container mt-2"></div>
             </div>
         </div>
+    </section>
 
-        <!-- Fila 2: GABSA, ILUMINACION, SEGSA -->
-        <div class="row">
-            <div class="col-md-4">
-                <div class="chart-container">
-                    <div class="chart-title">
-                        <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/gabajio.png"
-                             alt="GABSA"
-                             style="max-width: 20%; height: auto;">
-                    </div>
-                    <div id="piechart4" style="height: 300px;"></div>
-                </div>
-                <div id="table_div_gabsa"></div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="chart-container">
-                    <div class="chart-title">
-                        <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/iluminacion_1.png"
-                             alt="ILUMINACION"
-                             style="max-width: 20%; height: auto;">
-                    </div>
-                    <div id="piechart5" style="height: 300px;"></div>
-                </div>
-                <div id="table_div_ilu"></div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="chart-container">
-                    <div class="chart-title">
-                        <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/segsa.png"
-                             alt="SEGSA"
-                             style="max-width: 20%; height: auto;">
-                    </div>
-                    <div id="piechart6" style="height: 300px;"></div>
-                </div>
-                <div id="table_div_segsa"></div>
-            </div>
-        </div>
-
-        <!-- Fila 3: FESA, TAPATIA, VALLARTA -->
-        <div class="row">
-            <div class="col-md-4">
-                <div class="chart-container">
-                    <div class="chart-title">
-                        <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/fesa.png"
-                             alt="FESA"
-                             style="max-width: 20%; height: auto;">
-                    </div>
-                    <div id="piechart7" style="height: 300px;"></div>
-                </div>
-                <div id="table_div_fesa"></div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="chart-container">
-                    <div class="chart-title">
-                        <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/eitsa.png"
-                             alt="TAPATIA"
-                             style="max-width: 20%; height: auto;">
-                    </div>
-                    <div id="piechart8" style="height: 300px;"></div>
-                </div>
-                <div id="table_div_tapatia"></div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="chart-container">
-                    <div class="chart-title">
-                        <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/gavallarta.png"
-                             alt="VALLARTA"
-                             style="max-width: 20%; height: auto;">
-                    </div>
-                    <div id="piechart9" style="height: 300px;"></div>
-                </div>
-                <div id="table_div_vallarta"></div>
-            </div>
-        </div>
-
-        <!-- Fila 4: CODI, QUERETARO -->
-        <div class="row">
-            <div class="col-md-4">
-                <div class="chart-container">
-                    <div class="chart-title">
-                        <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/codi.png"
-                             alt="CODI"
-                             style="max-width: 20%; height: auto;">
-                    </div>
-                    <div id="piechart10" style="height: 300px;"></div>
-                </div>
-                <div id="table_div_codi"></div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="chart-container">
-                    <div class="chart-title">
-                        <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/QRO.png"
-                             alt="QUERETARO"
-                             style="max-width: 20%; height: auto;">
-                    </div>
-                    <div id="piechart11" style="height: 300px;"></div>
-                </div>
-                <div id="table_div_queretaro"></div>
-            </div>
-
-            <div class="col-md-4">
-                <!-- Espacio vacío -->
-            </div>
-        </div>
-    </div>
-
-    <!-- ============================================================ -->
-    <!-- BOTÓN DE IMPRESIÓN -->
-    <!-- ============================================================ -->
-    <div class="container" style="margin: 30px auto;">
-        <button style="background: none; border: none; padding: 0; cursor: pointer;"
-                class="print-button"
-                onclick="window.print()"
-                title="Imprimir estadísticas">
+    <!-- BOTÓN IMPRIMIR -->
+    <div class="max-w-6xl mx-auto px-4 pb-10 text-center">
+        <button onclick="window.print()" title="Imprimir estadísticas"
+                class="inline-flex items-center justify-center mt-2">
             <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/IMPAZ.png"
                  alt="Imprimir"
-                 class="icono-Imprimir"
-                 style="max-width: 50%; height: auto;">
+                 class="icono-Imprimir h-12 w-auto hover:scale-105 transition-transform">
         </button>
     </div>
+
 </body>
 </html>

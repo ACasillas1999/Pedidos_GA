@@ -77,6 +77,15 @@ $hist_conductores = $conn->query("
   ORDER BY hc.id DESC
 ");
 
+// Historial de responsables (para vehículos particulares)
+$hist_responsables = $conn->query("
+  SELECT
+    hr.*,
+    TIMESTAMPDIFF(MINUTE, hr.fecha_inicio, IFNULL(hr.fecha_fin, NOW())) AS minutos_total
+  FROM historial_responsables hr
+  WHERE hr.id_vehiculo = {$id_vehiculo}
+  ORDER BY hr.id DESC
+");
 
 // Historial de sucursal del vehículo
 $hist_sucursal = $conn->query("
@@ -253,6 +262,10 @@ $tipoV = (string)($vehiculo['tipo'] ?? '');
 $sucV  = (string)($vehiculo['Sucursal'] ?? '');
 $serie = (string)($vehiculo['numero_serie'] ?? '');
 
+// Determinar si tiene foto o si debe mostrar inicial
+$tieneFoto = $rawFoto !== '';
+$inicialPlaca = $placa !== '' ? strtoupper(substr($placa, 0, 1)) : 'V';
+
 $kmAct = (int)($vehiculo['Km_Actual'] ?? 0);
 $kmTot = (int)($vehiculo['Km_Total'] ?? 0);
 $kmSrv = (int)($vehiculo['Km_de_Servicio'] ?? 5000);
@@ -303,6 +316,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
         $esParticular = (int)($vehiculo['es_particular'] ?? 0);
         if ($esParticular === 1) {
             echo "<script>alert('No se puede asignar chofer a un vehículo particular.'); history.back();</script>";
+            exit;
+        }
+
+        // Validar que el chofer no tenga otro vehículo asignado actualmente
+        $stmt = $conn->prepare("SELECT v.id_vehiculo, v.Placas, v.Tipo
+                                FROM historial_conductores hc
+                                JOIN vehiculos v ON hc.id_vehiculo = v.id_vehiculo
+                                WHERE hc.id_chofer = ?
+                                AND hc.fecha_fin IS NULL
+                                AND hc.id_vehiculo != ?");
+        $stmt->bind_param("ii", $idChoferNuevo, $id_vehiculo);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            $vehiculoConflicto = $result->fetch_assoc();
+            $placas = $vehiculoConflicto['Placas'];
+            $tipo = $vehiculoConflicto['Tipo'];
+            $idConflicto = $vehiculoConflicto['id_vehiculo'];
+            echo "<script>alert('Este chofer ya tiene asignado otro vehículo: {$tipo} ({$placas}).\\nDesasigna primero el vehículo anterior antes de asignar uno nuevo.'); history.back();</script>";
             exit;
         }
 
@@ -404,10 +437,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
             exit;
         }
 
-        // Actualizar responsable del vehículo
-        $stmt = $conn->prepare("UPDATE vehiculos SET responsable = ? WHERE id_vehiculo = ?");
+        // Validar que el responsable no tenga otro vehículo asignado actualmente
+        $stmt = $conn->prepare("SELECT v.id_vehiculo, v.Placas, v.Tipo
+                                FROM historial_responsables hr
+                                JOIN vehiculos v ON hr.id_vehiculo = v.id_vehiculo
+                                WHERE hr.nombre_responsable = ?
+                                AND hr.fecha_fin IS NULL
+                                AND hr.id_vehiculo != ?");
         $stmt->bind_param("si", $responsable, $id_vehiculo);
         $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            $vehiculoConflicto = $result->fetch_assoc();
+            $placas = $vehiculoConflicto['Placas'];
+            $tipo = $vehiculoConflicto['Tipo'];
+            $idConflicto = $vehiculoConflicto['id_vehiculo'];
+            echo "<script>alert('Esta persona ya tiene asignado otro vehículo: {$tipo} ({$placas}).\\nDesasigna primero el vehículo anterior antes de asignar uno nuevo.'); history.back();</script>";
+            exit;
+        }
+
+        // Obtener responsable anterior
+        $responsableAnterior = $vehiculo['responsable'] ?? '';
+
+        // Solo proceder si el responsable cambió
+        if ($responsableAnterior !== $responsable) {
+            // 1) Cerrar asignación anterior abierta en historial_responsables (si existe)
+            $stmt = $conn->prepare("UPDATE historial_responsables
+                            SET fecha_fin = NOW()
+                            WHERE id_vehiculo = ? AND fecha_fin IS NULL");
+            $stmt->bind_param("i", $id_vehiculo);
+            $stmt->execute();
+
+            // 2) Insertar nueva asignación en historial_responsables
+            $usuarioCreador = $_SESSION['Usuario'] ?? ($_SESSION['Rol'] ?? 'sistema');
+            $stmt = $conn->prepare("INSERT INTO historial_responsables
+                            (id_vehiculo, nombre_responsable, fecha_inicio, creado_por)
+                            VALUES (?, ?, NOW(), ?)");
+            $stmt->bind_param("iss", $id_vehiculo, $responsable, $usuarioCreador);
+            $stmt->execute();
+
+            // 3) Actualizar responsable del vehículo
+            $stmt = $conn->prepare("UPDATE vehiculos SET responsable = ? WHERE id_vehiculo = ?");
+            $stmt->bind_param("si", $responsable, $id_vehiculo);
+            $stmt->execute();
+        }
 
         header("Location: detalles_vehiculo.php?id={$id_vehiculo}&msg=responsable-actualizado");
         exit;
@@ -416,6 +490,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
 
 /* ====== POST: Desasignar responsable ====== */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'desasignar_responsable') {
+    // Cerrar asignación abierta en historial_responsables
+    $stmt = $conn->prepare("UPDATE historial_responsables
+                    SET fecha_fin = NOW()
+                    WHERE id_vehiculo = ? AND fecha_fin IS NULL");
+    $stmt->bind_param("i", $id_vehiculo);
+    $stmt->execute();
+
+    // Actualizar vehículo
     $stmt = $conn->prepare("UPDATE vehiculos SET responsable = NULL WHERE id_vehiculo = ?");
     $stmt->bind_param("i", $id_vehiculo);
     $stmt->execute();
@@ -518,7 +600,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'desas
             background: #e2e8f0;
             box-shadow: 0 8px 24px rgba(15, 23, 42, .22);
             cursor: pointer;
-            position: relative
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center
+        }
+
+        .veh-avatar-letra {
+            font-size: 48px;
+            font-weight: 900;
+            color: #005aa3;
+            user-select: none;
+            pointer-events: none
         }
 
         .veh-avatar::after {
@@ -974,7 +1067,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'desas
         <div class="veh-header">
             <!-- Avatar clickeable -->
             <div class="veh-avatar" id="veh-avatar" title="Clic para cambiar foto">
-                <img id="veh-img" src="<?= htmlspecialchars($vehImg) ?>" alt="Vehículo">
+                <?php if ($tieneFoto): ?>
+                    <img id="veh-img" src="<?= htmlspecialchars($vehImg) ?>" alt="Vehículo">
+                <?php else: ?>
+                    <div class="veh-avatar-letra" id="veh-letra"><?= htmlspecialchars($inicialPlaca) ?></div>
+                    <img id="veh-img" src="<?= htmlspecialchars($vehImg) ?>" alt="Vehículo" style="display:none">
+                <?php endif; ?>
             </div>
 
             <!-- Form oculto para subir -->
@@ -1214,32 +1312,62 @@ function fmtDuracion($min){
 }
 ?>
 <table class="mi-tabla">
-  <tr>
-    <th>Chofer</th>
-    <th>Sucursal</th>
-    <th>Desde</th>
-    <th>Hasta</th>
-    <th>Duración</th>
-    <th>Estado</th>
-  </tr>
-  <?php if ($hist_conductores && $hist_conductores->num_rows): ?>
-    <?php while ($hc = $hist_conductores->fetch_assoc()):
-      $abierto = is_null($hc['fecha_fin']);
-      $desde   = date('d/m/Y H:i', strtotime($hc['fecha_inicio']));
-      $hasta   = $abierto ? '—' : date('d/m/Y H:i', strtotime($hc['fecha_fin']));
-      $dur     = fmtDuracion($hc['minutos_total']);
-    ?>
-      <tr>
-        <td><?= htmlspecialchars($hc['chofer_nombre']) ?></td>
-        <td><?= htmlspecialchars($hc['sucursal_chofer'] ?? '—') ?></td>
-        <td><?= $desde ?></td>
-        <td><?= $hasta ?></td>
-        <td><?= $dur ?></td>
-        <td><?= $abierto ? '<span class="pill pill-info">Actual</span>' : 'Cerrado' ?></td>
-      </tr>
-    <?php endwhile; ?>
+  <?php if ($esParticular === 1): ?>
+    <!-- Historial de responsables para vehículos particulares -->
+    <tr>
+      <th>Responsable</th>
+      <th>Desde</th>
+      <th>Hasta</th>
+      <th>Duración</th>
+      <th>Estado</th>
+    </tr>
+    <?php if ($hist_responsables && $hist_responsables->num_rows): ?>
+      <?php while ($hr = $hist_responsables->fetch_assoc()):
+        $abierto = is_null($hr['fecha_fin']);
+        $desde   = date('d/m/Y H:i', strtotime($hr['fecha_inicio']));
+        $hasta   = $abierto ? '—' : date('d/m/Y H:i', strtotime($hr['fecha_fin']));
+        $dur     = fmtDuracion($hr['minutos_total']);
+      ?>
+        <tr>
+          <td><?= htmlspecialchars($hr['nombre_responsable']) ?></td>
+          <td><?= $desde ?></td>
+          <td><?= $hasta ?></td>
+          <td><?= $dur ?></td>
+          <td><?= $abierto ? '<span class="pill pill-info">Actual</span>' : 'Cerrado' ?></td>
+        </tr>
+      <?php endwhile; ?>
+    <?php else: ?>
+      <tr><td colspan="5" style="text-align:center;color:#64748b">Sin registros aún</td></tr>
+    <?php endif; ?>
   <?php else: ?>
-    <tr><td colspan="6" style="text-align:center;color:#64748b">Sin registros aún</td></tr>
+    <!-- Historial de conductores para vehículos normales -->
+    <tr>
+      <th>Chofer</th>
+      <th>Sucursal</th>
+      <th>Desde</th>
+      <th>Hasta</th>
+      <th>Duración</th>
+      <th>Estado</th>
+    </tr>
+    <?php if ($hist_conductores && $hist_conductores->num_rows): ?>
+      <?php while ($hc = $hist_conductores->fetch_assoc()):
+        $abierto = is_null($hc['fecha_fin']);
+        $desde   = date('d/m/Y H:i', strtotime($hc['fecha_inicio']));
+        $hasta   = $abierto ? '—' : date('d/m/Y H:i', strtotime($hc['fecha_fin']));
+        $dur     = fmtDuracion($hc['minutos_total']);
+      ?>
+        <tr>
+          <td><?= htmlspecialchars($hc['chofer_nombre']) ?></td>
+          <td><?= htmlspecialchars($hc['sucursal_chofer'] ?? '—') ?></td>
+          <td><?= $desde ?></td>
+          <td><?= $hasta ?></td>
+          <td><?= $dur ?></td>
+          <td><?= $abierto ? '<span class="pill pill-info">Actual</span>' : 'Cerrado' ?></td>
+        </tr>
+      <?php endwhile; ?>
+    <?php else: ?>
+      <tr><td colspan="6" style="text-align:center;color:#64748b">Sin registros aún</td></tr>
+    <?php endif; ?>
   <?php endif; ?>
 </table>
 
@@ -1586,6 +1714,7 @@ function fmtDuracion($min){
         // Subida de foto (igual)
         const avatar = document.getElementById('veh-avatar');
         const img = document.getElementById('veh-img');
+        const letra = document.getElementById('veh-letra');
         const fileInp = document.getElementById('veh-file');
         const form = document.getElementById('form-foto-veh');
         if (avatar && fileInp && form) {
@@ -1602,6 +1731,8 @@ function fmtDuracion($min){
                     const j = await r.json();
                     if (j.ok) {
                         img.src = j.url + '?t=' + Date.now();
+                        img.style.display = 'block';
+                        if (letra) letra.style.display = 'none';
                     } else {
                         alert(j.error || 'No se pudo subir la foto.');
                     }

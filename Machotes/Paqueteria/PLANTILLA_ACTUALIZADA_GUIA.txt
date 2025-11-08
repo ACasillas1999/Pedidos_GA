@@ -1,0 +1,45 @@
+═══════════════════════════════════════════════════════════════════════════
+                              GUÍA DE ENVÍO PAQUETERÍA
+                        DISTRIBUIDORA ELÉCTRICA ASCENCIO SA DE CV
+═══════════════════════════════════════════════════════════════════════════
+
+Referencia: ${Referencia}
+Fecha: ${FechaHoy}
+
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                              REMITENTE                                    ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+Nombre:     ${Nombre_Remitente}
+Sucursal:   ${Nombre_Sucursal}
+Dirección:  ${Direccion_Remitente}
+Teléfono:   ${Telefono_Remitente}
+
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                             DESTINATARIO                                  ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+Nombre:     ${Nombre_Destinatario}
+Dirección:  ${Direccion_Completa}
+Teléfono:   ${Telefono_Destinatario}
+Contacto:   ${Contacto_Destinatario}
+
+
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                         DATOS DE PAQUETERÍA                               ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+Paquetería:              ${Nombre_Paqueteria}
+Tipo de Cobro:           ${Tipo_Cobro}
+ATN (Atención a):        ${ATN}
+Contacto:                ${Contacto_Destinatario}
+Número de Cliente:       ${Num_Cliente}
+Clave SAT:               ${Clave_SAT}
+
+
+═══════════════════════════════════════════════════════════════════════════
+                            DATOS DEL SISTEMA
+          Los campos con ${...} se reemplazan automáticamente
+═══════════════════════════════════════════════════════════════════════════

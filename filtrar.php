@@ -91,14 +91,22 @@ if ($sucursalSesion === "TODAS") {
                     }
 
                     $esPaqueteria = in_array(mb_strtolower($tipo_envio, 'UTF-8'), ['paquetería','paqueteria']);
-$btnPaqueteria = '';
-if ($esPaqueteria) {
-    $btnPaqueteria = "<div style='margin-top:6px'>
-                        <a class='btn btn-sm btn-secondary' href='descargar_plantilla_paqueteria.php?id={$row["ID"]}' target='_blank'>
-                          Plantilla
-                        </a>
-                      </div>";
-}
+                    $btnPaqueteria = '';
+                    if ($esPaqueteria) {
+                        // Verificar si ya tiene destinatario capturado
+                        $tieneDestinatario = intval($row["tiene_destinatario_capturado"] ?? 0);
+                        $btnClass = $tieneDestinatario ? 'btn-success' : 'btn-secondary';
+                        $btnIcon = $tieneDestinatario ? '✓ ' : '';
+                        $btnText = $tieneDestinatario ? 'Plantilla' : 'Capturar Destino';
+
+                        $btnPaqueteria = "<div style='margin-top:6px'>
+                            <button type='button' class='btn btn-sm {$btnClass} btn-capturar-destino'
+                                data-pedido-id='{$row["ID"]}'
+                                data-tiene-destinatario='{$tieneDestinatario}'>
+                                {$btnIcon}{$btnText}
+                            </button>
+                          </div>";
+                    }
 
 
                     $choferAsignado = $row["CHOFER_ASIGNADO"];
@@ -286,7 +294,24 @@ if ($esPaqueteria) {
                         case "paqueteria":  $colorEnvio = "#edc6ffff"; break;
                         case "domicilio":   $colorEnvio = "#e0ffd9ff"; break;
                     }
-                    
+
+                    // Botón de paquetería para usuarios no admin
+                    $esPaqueteria2 = in_array(mb_strtolower($tipo_envio, 'UTF-8'), ['paquetería','paqueteria']);
+                    $btnPaqueteria2 = '';
+                    if ($esPaqueteria2) {
+                        $tieneDestinatario2 = intval($row["tiene_destinatario_capturado"] ?? 0);
+                        $btnClass2 = $tieneDestinatario2 ? 'btn-success' : 'btn-secondary';
+                        $btnIcon2 = $tieneDestinatario2 ? '✓ ' : '';
+                        $btnText2 = $tieneDestinatario2 ? 'Plantilla' : 'Capturar Destino';
+
+                        $btnPaqueteria2 = "<div style='margin-top:6px'>
+                            <button type='button' class='btn btn-sm {$btnClass2} btn-capturar-destino'
+                                data-pedido-id='{$row["ID"]}'
+                                data-tiene-destinatario='{$tieneDestinatario2}'>
+                                {$btnIcon2}{$btnText2}
+                            </button>
+                          </div>";
+                    }
 
                     $choferAsignado = $row["CHOFER_ASIGNADO"];
                     $colorChofer = empty($choferAsignado) ? "#FFCCCC" : "#FFFFFF";
@@ -329,7 +354,10 @@ if ($esPaqueteria) {
                     echo "<td>" . $row["ID"] . "</td>";
                     echo "<td>{$badge}<div style='margin-top:6px'>{$accionHtml}</div></td>";
                     echo "<td style='background-color: $colorEstado;'>" . $estado . "</td>";
-                    echo "<td style='background-color: $colorEnvio;'>" . strtoupper(htmlspecialchars($tipo_envio)) . "</td>";
+                    echo "<td style='background-color: $colorEnvio; text-align:center;'>
+                            " . strtoupper(htmlspecialchars($tipo_envio)) . "
+                            {$btnPaqueteria2}
+                          </td>";
                     echo "<td>" . $row["SUCURSAL"] . "</td>";
                     echo "<td>" . $row["FECHA_RECEPCION_FACTURA"] . "</td>";
                     echo "<td style='background-color: $colorChofer;'>" . $choferAsignado . "</td>";
@@ -453,7 +481,86 @@ $conn->close();
   background:#4b5563;
 }
 
+/* Estilos para el modal de destinatario */
+.mapboxgl-map {
+  border-radius: 8px;
+  margin-top: 10px;
+}
+
+.form-destinatario {
+  max-height: 70vh;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.form-destinatario .form-section {
+  margin-bottom: 20px;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 15px;
+}
+
+.form-destinatario .form-section:last-child {
+  border-bottom: none;
+}
+
+.form-destinatario h4 {
+  margin: 0 0 15px 0;
+  color: #1f2937;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.form-destinatario .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.form-destinatario .form-row.full {
+  grid-template-columns: 1fr;
+}
+
+.form-destinatario label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: #374151;
+}
+
+.form-destinatario input,
+.form-destinatario textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.form-destinatario input:focus,
+.form-destinatario textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.mapbox-search-wrapper {
+  position: relative;
+  margin-bottom: 10px;
+}
+
+#map-destinatario {
+  width: 100%;
+  height: 250px;
+}
+
+.coordenadas-info {
+  font-size: 11px;
+  color: #6b7280;
+  margin-top: 5px;
+  text-align: center;
+}
 
 </style>
-
-

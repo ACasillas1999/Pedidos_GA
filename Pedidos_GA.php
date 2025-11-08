@@ -22,6 +22,96 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
   <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
   <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <!-- Mapbox GL JS para modal de destinatario -->
+  <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+  <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+  <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js'></script>
+  <link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.css' type='text/css' />
+
+  <!-- Estilos para modal de destinatario -->
+  <style>
+    .mapboxgl-map {
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+
+    .form-destinatario {
+      max-height: 70vh;
+      overflow-y: auto;
+      padding: 10px;
+    }
+
+    .form-destinatario .form-section {
+      margin-bottom: 20px;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 15px;
+    }
+
+    .form-destinatario .form-section:last-child {
+      border-bottom: none;
+    }
+
+    .form-destinatario h4 {
+      margin: 0 0 15px 0;
+      color: #1f2937;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .form-destinatario .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .form-destinatario .form-row.full {
+      grid-template-columns: 1fr;
+    }
+
+    .form-destinatario label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 4px;
+      color: #374151;
+    }
+
+    .form-destinatario input,
+    .form-destinatario textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 13px;
+      box-sizing: border-box;
+    }
+
+    .form-destinatario input:focus,
+    .form-destinatario textarea:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .mapbox-search-wrapper {
+      position: relative;
+      margin-bottom: 10px;
+    }
+
+    #map-destinatario {
+      width: 100%;
+      height: 250px;
+    }
+
+    .coordenadas-info {
+      font-size: 11px;
+      color: #6b7280;
+      margin-top: 5px;
+      text-align: center;
+    }
+  </style>
 </head>
     
 <body>
@@ -1055,3 +1145,6 @@ async function procesarPedidosMasivamente(pedidos) {
 }
 
 </style>
+
+<!-- Script para modal de destinatario -->
+<script src="js/modal_destinatario.js"></script>
