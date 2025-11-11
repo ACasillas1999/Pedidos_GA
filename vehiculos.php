@@ -1757,81 +1757,81 @@ while ($c = $choferes->fetch_assoc()) {
 
     // ===== Buscador global (vehículos y choferes) =====
     (function() {
-      const topbar = document.querySelector('.topbar .tabs');
-      if (!topbar) return;
-      if (!document.getElementById('global-q')) {
-        const wrap = document.createElement('div');
-        wrap.style.marginLeft = 'auto';
-        wrap.innerHTML = "<input id='global-q' type='search' placeholder='Buscar vehículos y choferes...' style='padding:8px 12px;border:1px solid #e5e7eb;border-radius:12px;min-width:260px'>";
-        topbar.parentElement.appendChild(wrap);
-      }
       const gq = document.getElementById('global-q');
       if (!gq) return;
-      gq.addEventListener('input', () => {
-        const q = (gq.value || '').trim().toLowerCase();
-        // Vehículos
-        if (document.querySelector('#vehicles-view:not(.hide)')) {
-          // Forzar vista de lista con todos para filtrar
-          vState = {
-            level: 'list',
-            branch: 'TODO'
-          };
-          const list = VEHICLES.filter(v => !q || [v.placa, v.tipo, v.nombre, v.alias, v.sucursal, v.razon_social].join(' ').toLowerCase().includes(q));
-          vHeader.innerHTML = `<div class="crumb"><span class="muted">Vehículos</span> → <strong>${q?('Resultados'): (vState.branch||'')}</strong></div>
-                             <button class="btn-mini back" id="veh-back">Regresar</button>`;
-          vGrid.innerHTML = list.map(vehicleCard).join('');
-          document.getElementById('veh-back')?.addEventListener('click', () => {
-            vState = {
-              level: 'branches',
-              branch: null
-            };
-            renderVehicles();
-            animateBars();
-          });
-          animateBars();
-          // return desactivado: busqueda combinada
-        }
-        // Choferes
-        if (document.querySelector('#drivers-view:not(.hide)')) {
-          dState = {
-            level: 'list',
-            branch: 'TODO'
-          };
-          const list = DRIVERS.filter(d => !q || [d.nombre, d.username, d.sucursal, d.numero].join(' ').toLowerCase().includes(q));
-          dHeader.innerHTML = `<div class="crumb"><span class="muted">Choferes</span> → <strong>${q?('Resultados'): (dState.branch||'')}</strong></div>
-                             <button class="btn-mini back" id="drv-back">Regresar</button>`;
-          dGrid.innerHTML = list.map(driverCard).join('');
-          document.getElementById('drv-back')?.addEventListener('click', () => {
-            dState = {
-              level: 'branches',
-              branch: null
-            };
-            renderDrivers();
-            animateBars();
-          });
-          animateBars();
-        }
-      });
-    })();
 
-    // Render combinado de resultados para búsqueda global (vehículos + choferes)
-    (function() {
-      const gq = document.getElementById('global-q');
-      if (!gq) return;
+      // Estado del buscador para controlar restauración
+      let wasSearching = false;
+
       gq.addEventListener('input', () => {
         const q = (gq.value || '').trim().toLowerCase();
-        if (!q) return; // la restauración ya la maneja el listener anterior
-        const vehView = document.getElementById('vehicles-view');
-        const drvView = document.getElementById('drivers-view');
-        if (vehView) vehView.classList.remove('hide');
-        if (drvView) drvView.classList.remove('hide');
-        const vList = VEHICLES.filter(v => [v.placa, v.tipo, v.nombre, v.alias, v.sucursal, v.razon_social].join(' ').toLowerCase().includes(q));
-        const dList = DRIVERS.filter(d => [d.nombre, d.username, d.sucursal, d.numero].join(' ').toLowerCase().includes(q));
-        vHeader.innerHTML = `<div class="crumb"><span class="muted">Vehículos</span> → <strong>Resultados</strong> <span class="muted">(${vList.length})</span></div>`;
-        vGrid.innerHTML = vList.map(vehicleCard).join('');
-        dHeader.innerHTML = `<div class="crumb"><span class="muted">Choferes</span> → <strong>Resultados</strong> <span class="muted">(${dList.length})</span></div>`;
-        dGrid.innerHTML = dList.map(driverCard).join('');
-        animateBars();
+
+        // Si está vacío y antes estaba buscando, restaurar las vistas
+        if (!q && wasSearching) {
+          wasSearching = false;
+
+          // Restaurar la pestaña activa
+          const activeTab = document.querySelector('.tab.active');
+          if (activeTab) {
+            const tab = activeTab.dataset.tab;
+            if (tab === 'vehicles') {
+              // Restaurar vista de vehículos al inicio
+              vState = { level: 'groupBy', groupBy: null, branch: null };
+              $('#vehicles-view').classList.remove('hide');
+              $('#drivers-view').classList.add('hide');
+              renderVehicles();
+            } else {
+              // Restaurar vista de choferes al inicio
+              dState = { level: 'branches', branch: null };
+              $('#drivers-view').classList.remove('hide');
+              $('#vehicles-view').classList.add('hide');
+              renderDrivers();
+            }
+            animateBars();
+          }
+          return;
+        }
+
+        // Si hay búsqueda activa
+        if (q) {
+          wasSearching = true;
+
+          // Mostrar ambas secciones con resultados
+          const vehView = document.getElementById('vehicles-view');
+          const drvView = document.getElementById('drivers-view');
+          if (vehView) vehView.classList.remove('hide');
+          if (drvView) drvView.classList.remove('hide');
+
+          // Filtrar vehículos
+          const vList = VEHICLES.filter(v =>
+            [v.placa, v.tipo, v.nombre, v.alias, v.sucursal, v.razon_social]
+              .join(' ')
+              .toLowerCase()
+              .includes(q)
+          );
+
+          // Filtrar choferes
+          const dList = DRIVERS.filter(d =>
+            [d.nombre, d.username, d.sucursal, d.numero]
+              .join(' ')
+              .toLowerCase()
+              .includes(q)
+          );
+
+          // Renderizar resultados de vehículos
+          vHeader.innerHTML = `<div class="crumb"><span class="muted">Vehículos</span> → <strong>Resultados</strong> <span class="muted">(${vList.length})</span></div>`;
+          vGrid.innerHTML = vList.length > 0
+            ? vList.map(vehicleCard).join('')
+            : '<div style="padding:20px;text-align:center;color:#64748b;">No se encontraron vehículos</div>';
+
+          // Renderizar resultados de choferes
+          dHeader.innerHTML = `<div class="crumb"><span class="muted">Choferes</span> → <strong>Resultados</strong> <span class="muted">(${dList.length})</span></div>`;
+          dGrid.innerHTML = dList.length > 0
+            ? dList.map(driverCard).join('')
+            : '<div style="padding:20px;text-align:center;color:#64748b;">No se encontraron choferes</div>';
+
+          animateBars();
+        }
       });
     })();
   </script>

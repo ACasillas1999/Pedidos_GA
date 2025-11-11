@@ -245,12 +245,21 @@ document.addEventListener('DOMContentLoaded', function () {
   const choferSelect   = document.getElementById('chofer_asignado'); // destino
   const choferPrevio   = choferSelect ? choferSelect.value : '';
 
+  // Verificar si el precio está validado (del PHP)
+  const precioValidado = <?php echo isset($row['precio_validado_jc']) && $row['precio_validado_jc'] == 1 ? 'true' : 'false'; ?>;
+
   function etiquetaAuto(item) {
     return item.placa || item.numero_serie || (item.id_vehiculo ? ('vehículo #' + item.id_vehiculo) : 'sin vehículo');
   }
 
   function poblarChoferes(sucursal) {
     if (!choferSelect) return;
+
+    // Si el precio no está validado, no cargar choferes
+    if (!precioValidado) {
+      choferSelect.innerHTML = '<option value="">Valida el precio primero</option>';
+      return;
+    }
 
     choferSelect.innerHTML = '<option value="">Cargando choferes…</option>';
 
@@ -330,10 +339,22 @@ document.addEventListener('DOMContentLoaded', function () {
 <?php if (($_SESSION["Rol"] === "JC") OR ($_SESSION["Rol"] === "Admin")): ?>
 <label for="chofer_asignado">Chofer Asignado:</label><br>
 
-<select id="chofer_asignado" name="chofer_asignado">
+<?php
+// Verificar si el precio está validado
+$precio_esta_validado = isset($row['precio_validado_jc']) && $row['precio_validado_jc'] == 1;
+?>
+
+<select id="chofer_asignado" name="chofer_asignado" <?php echo !$precio_esta_validado ? 'disabled' : ''; ?>>
     <option value="<?php echo $row['CHOFER_ASIGNADO']; ?>" selected><?php echo $row['CHOFER_ASIGNADO']; ?></option>
     <!-- Las opciones se cargarán dinámicamente -->
-</select><br><br>
+</select>
+
+<?php if (!$precio_esta_validado): ?>
+<br><span style="color: #dc3545; font-weight: bold; font-size: 0.9em;">
+    ⚠️ Debes validar el precio antes de asignar un chofer
+</span>
+<?php endif; ?>
+<br><br>
 <?php endif; ?>
 
 

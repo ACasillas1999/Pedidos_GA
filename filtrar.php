@@ -31,13 +31,19 @@ if ($sucursalSesion === "TODAS") {
         foreach ($estados as $estado) {
             $estadoConditions[] = "ESTADO='" . $conn->real_escape_string($estado) . "'";
         }
-        $estadoFilter = implode(" OR ", $estadoConditions);
+
+        // Si no hay estados seleccionados, usar una condición que siempre sea verdadera (1=1)
+        if (empty($estadoConditions)) {
+            $estadoFilter = "1=1";
+        } else {
+            $estadoFilter = "(" . implode(" OR ", $estadoConditions) . ")";
+        }
 
         // Condición para la sucursal (si no es TODAS)
         $sucursalCondition = ($sucursalSelect != 'TODAS') ? "AND SUCURSAL='" . $conn->real_escape_string($sucursalSelect) . "'" : "";
 
         // Consulta con LIMIT para paginación (100 por página)
-        $sql = "SELECT * FROM pedidos WHERE ($estadoFilter) $sucursalCondition
+        $sql = "SELECT * FROM pedidos WHERE $estadoFilter $sucursalCondition
                 ORDER BY FECHA_RECEPCION_FACTURA DESC
                 LIMIT $offset, 100";
         $result = $conn->query($sql);
@@ -228,7 +234,13 @@ if ($sucursalSesion === "TODAS") {
         foreach ($estados as $estado) {
             $estadoConditions[] = "ESTADO='" . $conn->real_escape_string($estado) . "'";
         }
-        $estadoFilter = implode(" OR ", $estadoConditions);
+
+        // Si no hay estados seleccionados, usar una condición que siempre sea verdadera (1=1)
+        if (empty($estadoConditions)) {
+            $estadoFilter = "1=1";
+        } else {
+            $estadoFilter = "(" . implode(" OR ", $estadoConditions) . ")";
+        }
 
         // ---- AQUI LA MAGIA: sucursales visibles para JC TAPATIA ----
         $sucursalCondition = "";
@@ -242,7 +254,7 @@ if ($sucursalSesion === "TODAS") {
         }
 
         $sql = "SELECT * FROM pedidos
-                WHERE ($estadoFilter) $sucursalCondition
+                WHERE $estadoFilter $sucursalCondition
                 ORDER BY FECHA_RECEPCION_FACTURA DESC
                 LIMIT $offset, 100";
         $result = $conn->query($sql);

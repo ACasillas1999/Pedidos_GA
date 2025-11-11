@@ -45,6 +45,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $nuevo_valor = isset($_POST[$campo_post]) ? trim($_POST[$campo_post]) : '';
         $valor_actual = isset($pedido_actual[$campo]) ? trim($pedido_actual[$campo]) : '';
 
+        // VALIDACIÓN CRÍTICA: Verificar que el precio esté validado antes de permitir cambiar el chofer
+        if ($campo === 'CHOFER_ASIGNADO' && $nuevo_valor !== $valor_actual && !empty($nuevo_valor)) {
+            // Verificar si el precio está validado
+            $precio_validado = isset($pedido_actual['precio_validado_jc']) ? intval($pedido_actual['precio_validado_jc']) : 0;
+
+            if ($precio_validado != 1) {
+                // Si el precio no está validado, no permitir el cambio de chofer
+                echo '<script>alert("ERROR: No puedes asignar un chofer sin antes validar el precio de la factura."); window.history.back();</script>';
+                exit;
+            }
+        }
+
         if($valor_actual !== $nuevo_valor){
             $cambios_realizados[] = "$campo: '$valor_actual' → '$nuevo_valor'";
         }

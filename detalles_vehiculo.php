@@ -320,7 +320,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
         }
 
         // Validar que el chofer no tenga otro vehículo asignado actualmente
-        $stmt = $conn->prepare("SELECT v.id_vehiculo, v.Placas, v.Tipo
+        $stmt = $conn->prepare("SELECT v.id_vehiculo, v.placa, v.Tipo
                                 FROM historial_conductores hc
                                 JOIN vehiculos v ON hc.id_vehiculo = v.id_vehiculo
                                 WHERE hc.id_chofer = ?
@@ -332,7 +332,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
 
         if ($result->num_rows > 0) {
             $vehiculoConflicto = $result->fetch_assoc();
-            $placas = $vehiculoConflicto['Placas'];
+            $placas = $vehiculoConflicto['placa'];
             $tipo = $vehiculoConflicto['Tipo'];
             $idConflicto = $vehiculoConflicto['id_vehiculo'];
             echo "<script>alert('Este chofer ya tiene asignado otro vehículo: {$tipo} ({$placas}).\\nDesasigna primero el vehículo anterior antes de asignar uno nuevo.'); history.back();</script>";
@@ -438,7 +438,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
         }
 
         // Validar que el responsable no tenga otro vehículo asignado actualmente
-        $stmt = $conn->prepare("SELECT v.id_vehiculo, v.Placas, v.Tipo
+        $stmt = $conn->prepare("SELECT v.id_vehiculo, v.placa, v.Tipo
                                 FROM historial_responsables hr
                                 JOIN vehiculos v ON hr.id_vehiculo = v.id_vehiculo
                                 WHERE hr.nombre_responsable = ?
@@ -450,7 +450,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['accion']) && $_POST['
 
         if ($result->num_rows > 0) {
             $vehiculoConflicto = $result->fetch_assoc();
-            $placas = $vehiculoConflicto['Placas'];
+            $placas = $vehiculoConflicto['placa'];
             $tipo = $vehiculoConflicto['Tipo'];
             $idConflicto = $vehiculoConflicto['id_vehiculo'];
             echo "<script>alert('Esta persona ya tiene asignado otro vehículo: {$tipo} ({$placas}).\\nDesasigna primero el vehículo anterior antes de asignar uno nuevo.'); history.back();</script>";

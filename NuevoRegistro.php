@@ -50,15 +50,29 @@ $precios = isset($_POST['precio_factura_vendedor']) ? $_POST['precio_factura_ven
 
 // Validar que ambos arrays tengan la misma cantidad de elementos
 if (count($facturas) !== count($precios)) {
-    echo '<script>alert("Error: La cantidad de facturas no coincide con la cantidad de precios.");';
-    echo 'window.history.back();</script>';
+    echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>';
+    echo '<script>';
+    echo 'Swal.fire({';
+    echo '  icon: "error",';
+    echo '  title: "Error de validación",';
+    echo '  text: "La cantidad de facturas no coincide con la cantidad de precios.",';
+    echo '  confirmButtonColor: "#005aa3"';
+    echo '}).then(() => window.history.back());';
+    echo '</script>';
     exit;
 }
 
 // Validar que haya al menos una factura
 if (count($facturas) === 0) {
-    echo '<script>alert("Error: Debe agregar al menos una factura.");';
-    echo 'window.history.back();</script>';
+    echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>';
+    echo '<script>';
+    echo 'Swal.fire({';
+    echo '  icon: "warning",';
+    echo '  title: "Factura requerida",';
+    echo '  text: "Debe agregar al menos una factura.",';
+    echo '  confirmButtonColor: "#005aa3"';
+    echo '}).then(() => window.history.back());';
+    echo '</script>';
     exit;
 }
 
@@ -113,16 +127,48 @@ for ($i = 0; $i < count($facturas); $i++) {
 $conn->close();
 
 // Mostrar resultado
+?>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Procesando pedidos...</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+<script>
+<?php
 if ($pedidos_creados > 0) {
     $mensaje = "Se crearon $pedidos_creados pedido(s) correctamente.";
+    $mensajeHTML = "Se crearon <strong>$pedidos_creados</strong> pedido(s) correctamente.";
+
     if (count($errores) > 0) {
-        $mensaje .= "\\n\\nErrores encontrados:\\n" . implode("\\n", $errores);
+        $erroresHTML = "<br><br><strong>Errores encontrados:</strong><br>" . implode("<br>", array_map('htmlspecialchars', $errores));
+        $mensajeHTML .= $erroresHTML;
+        $icono = 'warning';
+    } else {
+        $icono = 'success';
     }
-    echo '<script>alert("' . $mensaje . '");';
-    echo 'window.location.href = "/Pedidos_GA/Mensajes_WP/Mensaje_WP_Notificacion.php?pedido_id=' . $primer_pedido_id . '";</script>';
+
+    echo 'Swal.fire({';
+    echo '  icon: "' . $icono . '",';
+    echo '  title: "Pedidos creados",';
+    echo '  html: "' . addslashes($mensajeHTML) . '",';
+    echo '  confirmButtonColor: "#005aa3"';
+    echo '}).then(() => {';
+    echo '  window.location.href = "/Pedidos_GA/Mensajes_WP/Mensaje_WP_Notificacion.php?pedido_id=' . $primer_pedido_id . '";';
+    echo '});';
 } else {
-    echo '<script>alert("Error: No se pudo crear ningún pedido.\\n' . implode("\\n", $errores) . '");';
-    echo 'window.history.back();</script>';
+    $erroresTexto = implode("<br>", array_map('htmlspecialchars', $errores));
+    echo 'Swal.fire({';
+    echo '  icon: "error",';
+    echo '  title: "Error al crear pedidos",';
+    echo '  html: "No se pudo crear ningún pedido.<br><br><strong>Errores:</strong><br>' . addslashes($erroresTexto) . '",';
+    echo '  confirmButtonColor: "#005aa3"';
+    echo '}).then(() => window.history.back());';
 }
 ?>
-
+</script>
+</body>
+</html>

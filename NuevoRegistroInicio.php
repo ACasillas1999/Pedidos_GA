@@ -25,6 +25,13 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
     <link rel="stylesheet" href="styles3.css">
     <title>Pedidos GA</title>
+
+    <!-- Mapbox CSS -->
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.css" type="text/css">
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
     
      <script>
@@ -82,7 +89,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 
     <p></p>
     
-    <form action="NuevoRegistro.php" method="POST">
+    <form action="NuevoRegistro.php" method="POST" id="form-nuevo-pedido">
         
         <label for="sucursal">Sucursal:</label><br>
 
@@ -252,7 +259,14 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         </select><br><br>
 
         <label for="coord_destino">Coordenadas de Destino:</label>
-        <input type="text" id="coord_destino" name="coord_destino"><br><br>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <input type="text" id="coord_destino" name="coord_destino" readonly required placeholder="Haz clic en el botón del mapa" style="flex: 1;">
+            <button type="button" id="btn_abrir_mapa" style="background-color: #005aa3; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 4px; font-weight: bold;">
+                📍 Seleccionar en Mapa
+            </button>
+        </div>
+        <small style="color: #666;">Usa el mapa para buscar y seleccionar la ubicación de entrega</small>
+        <br><br>
 
         
         <button type="submit" class="icono-FAP" style="background: none; border: none; padding: 0;">
@@ -367,6 +381,244 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
                 agregarValidacionPrecio(input);
             });
             actualizarBotonesEliminar();
+        });
+    </script>
+
+    <!-- Modal para seleccionar coordenadas -->
+    <div id="modal_mapa" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); z-index: 9999; overflow: auto;">
+        <div style="background-color: white; margin: 2% auto; padding: 20px; width: 90%; max-width: 900px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0; color: #005aa3;">📍 Seleccionar Ubicación de Entrega</h2>
+                <button type="button" id="btn_cerrar_mapa" style="background-color: #dc3545; color: white; border: none; padding: 8px 15px; cursor: pointer; border-radius: 4px; font-weight: bold;">
+                    ✕ Cerrar
+                </button>
+            </div>
+
+            <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
+                <p style="margin: 0; font-size: 14px; color: #666;">
+                    <strong>Instrucciones:</strong> Usa el buscador para encontrar la dirección o haz clic directamente en el mapa para seleccionar la ubicación.
+                </p>
+            </div>
+
+            <!-- Buscador de Mapbox -->
+            <div id="geocoder_mapa" style="margin-bottom: 10px;"></div>
+
+            <!-- Contenedor del mapa -->
+            <div id="mapa_coordenadas" style="width: 100%; height: 500px; border-radius: 8px; border: 2px solid #005aa3;"></div>
+
+            <!-- Mostrar coordenadas seleccionadas -->
+            <div style="margin-top: 15px; padding: 15px; background-color: #e7f3ff; border-radius: 5px; border-left: 4px solid #005aa3;">
+                <p style="margin: 0; font-weight: bold; color: #005aa3;">Coordenadas seleccionadas:</p>
+                <p id="coordenadas_display" style="margin: 5px 0 0 0; font-family: monospace; font-size: 16px; color: #333;">
+                    Sin seleccionar
+                </p>
+            </div>
+
+            <!-- Botón para confirmar -->
+            <div style="text-align: center; margin-top: 20px;">
+                <button type="button" id="btn_confirmar_coords" style="background-color: #28a745; color: white; border: none; padding: 12px 30px; cursor: pointer; border-radius: 4px; font-weight: bold; font-size: 16px;">
+                    ✓ Confirmar Ubicación
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mapbox Scripts -->
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js"></script>
+
+    <script>
+        // Variables globales para el mapa
+        let map = null;
+        let marker = null;
+        let coordenadasSeleccionadas = null;
+
+        // Verificar que Mapbox esté cargado
+        if (typeof mapboxgl === 'undefined') {
+            console.error('❌ Mapbox GL JS no está cargado');
+        } else {
+            console.log('✅ Mapbox GL JS cargado correctamente');
+        }
+
+        // Botón para abrir el modal
+        document.getElementById('btn_abrir_mapa').addEventListener('click', function() {
+            // Verificar que Mapbox esté disponible
+            if (typeof mapboxgl === 'undefined') {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error al cargar el mapa',
+                    text: 'Las librerías de mapas no se han cargado correctamente. Por favor, recarga la página.',
+                    confirmButtonColor: '#005aa3'
+                });
+                return;
+            }
+            document.getElementById('modal_mapa').style.display = 'block';
+
+            // Inicializar el mapa solo la primera vez
+            if (!map) {
+                // Esperar un momento para que el modal se renderice
+                setTimeout(() => {
+                    inicializarMapa();
+                }, 100);
+            } else {
+                // Si el mapa ya existe, forzar redimensionamiento
+                map.resize();
+            }
+        });
+
+        // Botón para cerrar el modal
+        document.getElementById('btn_cerrar_mapa').addEventListener('click', function() {
+            document.getElementById('modal_mapa').style.display = 'none';
+        });
+
+        // Cerrar modal al hacer clic fuera
+        document.getElementById('modal_mapa').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.style.display = 'none';
+            }
+        });
+
+        // Función para inicializar el mapa
+        function inicializarMapa() {
+            console.log('🗺️ Inicializando mapa...');
+
+            try {
+                mapboxgl.accessToken = 'pk.eyJ1IjoiYWNhc2lsbGFzNzY2IiwiYSI6ImNsdW12cTZyMjB4NnMya213MDdseXp6ZGgifQ.t7-l1lQfd8mgHILM5YrdNw';
+
+                // Crear mapa centrado en Guadalajara
+                map = new mapboxgl.Map({
+                    container: 'mapa_coordenadas',
+                    style: 'mapbox://styles/mapbox/streets-v12',
+                    center: [-103.3494, 20.6597], // Guadalajara
+                    zoom: 12
+                });
+
+                console.log('✅ Mapa creado');
+
+                // Esperar a que el mapa cargue antes de agregar controles
+                map.on('load', () => {
+                    console.log('✅ Mapa cargado completamente');
+                });
+
+                // Agregar controles de navegación
+                map.addControl(new mapboxgl.NavigationControl());
+
+            // Inicializar geocoder (buscador)
+            const geocoder = new MapboxGeocoder({
+                accessToken: mapboxgl.accessToken,
+                mapboxgl: mapboxgl,
+                marker: false,
+                placeholder: 'Buscar dirección...',
+                countries: 'mx'
+            });
+
+            document.getElementById('geocoder_mapa').appendChild(geocoder.onAdd(map));
+
+            // Cuando se selecciona una dirección del geocoder
+            geocoder.on('result', (e) => {
+                const coords = e.result.geometry.coordinates;
+                agregarMarcador(coords);
+            });
+
+                // Click en el mapa para seleccionar ubicación
+                map.on('click', (e) => {
+                    const coords = [e.lngLat.lng, e.lngLat.lat];
+                    agregarMarcador(coords);
+                });
+
+            } catch (error) {
+                console.error('❌ Error al inicializar mapa:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error al cargar el mapa',
+                    text: 'No se pudo cargar el mapa. Por favor, recarga la página e intenta de nuevo.',
+                    confirmButtonColor: '#005aa3'
+                });
+            }
+        }
+
+        // Función para agregar o mover el marcador
+        function agregarMarcador(coords) {
+            // Remover marcador anterior si existe
+            if (marker) {
+                marker.remove();
+            }
+
+            // Crear nuevo marcador
+            marker = new mapboxgl.Marker({
+                draggable: true,
+                color: '#005aa3'
+            })
+            .setLngLat(coords)
+            .addTo(map);
+
+            // Actualizar coordenadas cuando se arrastra el marcador
+            marker.on('dragend', () => {
+                const lngLat = marker.getLngLat();
+                actualizarCoordenadasDisplay(lngLat.lat, lngLat.lng);
+            });
+
+            // Actualizar display
+            actualizarCoordenadasDisplay(coords[1], coords[0]);
+        }
+
+        // Función para actualizar el display de coordenadas
+        function actualizarCoordenadasDisplay(lat, lng) {
+            coordenadasSeleccionadas = { lat, lng };
+            document.getElementById('coordenadas_display').textContent =
+                `Latitud: ${lat.toFixed(8)}, Longitud: ${lng.toFixed(8)}`;
+        }
+
+        // Botón para confirmar coordenadas
+        document.getElementById('btn_confirmar_coords').addEventListener('click', function() {
+            if (coordenadasSeleccionadas) {
+                // Formato: "lat, lng" como esperaba el sistema
+                const coordsTexto = `${coordenadasSeleccionadas.lat.toFixed(8)}, ${coordenadasSeleccionadas.lng.toFixed(8)}`;
+                document.getElementById('coord_destino').value = coordsTexto;
+
+                // Cerrar modal
+                document.getElementById('modal_mapa').style.display = 'none';
+
+                // Mostrar confirmación
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Coordenadas guardadas',
+                    text: 'Las coordenadas se han guardado correctamente',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } else {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Ubicación no seleccionada',
+                    text: 'Por favor, selecciona una ubicación en el mapa primero',
+                    confirmButtonColor: '#005aa3'
+                });
+            }
+        });
+    </script>
+
+    <!-- Validación del formulario -->
+    <script>
+        document.getElementById('form-nuevo-pedido').addEventListener('submit', function(e) {
+            const coordDestino = document.getElementById('coord_destino').value.trim();
+
+            if (coordDestino === '') {
+                e.preventDefault();
+
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Campo obligatorio',
+                    html: 'El campo <strong>"Coordenadas de Destino"</strong> es obligatorio.<br><br>Por favor, haz clic en el botón <strong>"📍 Seleccionar en Mapa"</strong> para elegir la ubicación de entrega.',
+                    confirmButtonColor: '#005aa3',
+                    confirmButtonText: 'Entendido'
+                }).then(() => {
+                    // Hacer scroll al campo
+                    document.getElementById('coord_destino').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                });
+
+                return false;
+            }
         });
     </script>
 

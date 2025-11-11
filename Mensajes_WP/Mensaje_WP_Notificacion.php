@@ -69,8 +69,18 @@ if ($pedido_id) {
             curl_close($curl);
 
 
-            echo '<script>alert("Agregado correctamente.");';
-            echo 'window.location.href = "/Pedidos_GA/Inicio.php?id=' . $pedido_id . '";</script>';
+            echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>';
+            echo '<script>';
+            echo 'Swal.fire({';
+            echo '  icon: "success",';
+            echo '  title: "Pedido creado",';
+            echo '  text: "El pedido se ha agregado correctamente y se han enviado las notificaciones.",';
+            echo '  timer: 2000,';
+            echo '  showConfirmButton: false';
+            echo '}).then(() => {';
+            echo '  window.location.href = "/Pedidos_GA/Inicio.php?id=' . $pedido_id . '";';
+            echo '});';
+            echo '</script>';
         }
     } else {
         echo "No se encontraron usuarios con el rol de 'JC' en la sucursal del pedido.";

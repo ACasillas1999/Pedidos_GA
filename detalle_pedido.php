@@ -150,7 +150,39 @@ $tipoEnvioTexto = strtoupper($tipoEnvio);
                       <th>Factura</th>
                             <td><span><?php echo $row["FACTURA"]; ?></span></td>
                         </tr>
-                       
+
+                        <tr>
+                            <th>Precio Factura</th>
+                            <td colspan="3">
+                                <?php
+                                $precio_vendedor = isset($row['precio_factura_vendedor']) ? floatval($row['precio_factura_vendedor']) : 0;
+                                $precio_real = isset($row['precio_factura_real']) ? floatval($row['precio_factura_real']) : 0;
+                                $precio_validado = isset($row['precio_validado_jc']) ? intval($row['precio_validado_jc']) : 0;
+                                $hubo_correccion = ($precio_vendedor != $precio_real && $precio_real > 0 && $precio_vendedor > 0);
+
+                                // Mostrar precio real
+                                echo '<span style="font-weight: bold; font-size: 1.1em;">$' . number_format($precio_real, 2) . '</span>';
+
+                                // Si hubo corrección, mostrar precio original del vendedor
+                                if ($hubo_correccion) {
+                                    echo ' <span style="color: #dc3545; font-size: 0.85em; text-decoration: line-through;">($' . number_format($precio_vendedor, 2) . ' original)</span>';
+                                }
+
+                                // Mostrar estado de validación
+                                if ($precio_validado == 1) {
+                                    echo ' <span style="color: #28a745; font-weight: bold; margin-left: 10px;">✓ Validado</span>';
+                                } else {
+                                    echo ' <span style="color: #dc3545; font-weight: bold; margin-left: 10px;">⚠️ Sin validar</span>';
+                                }
+
+                                // Alerta si es menor a $1000
+                                if ($precio_real > 0 && $precio_real < 1000) {
+                                    echo '<br><span style="color: #856404; font-weight: bold; font-size: 0.9em;">⚠️ Precio menor a $1000 - Flete no conveniente</span>';
+                                }
+                                ?>
+                            </td>
+                        </tr>
+
                         <tr>
                             <th>Fecha Recepción</th>
                             <td><span><?php echo $row["FECHA_RECEPCION_FACTURA"]; ?></span></td>
