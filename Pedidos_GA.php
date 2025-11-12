@@ -497,7 +497,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     
     <!-- Formulario para selección de sucursal -->
     <?php if ($_SESSION["Rol"] === "Admin"): ?>
-      <form id="consultaForm" class="formulario">
+      <form id="consultaForm" class="formulario" style="margin-bottom: 10px;">
         <label for="sucursal" class="label">Sucursal:</label>
         <select id="sucursal" name="sucursal">
           <option value="TODAS">TODAS</option>
@@ -517,7 +517,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
       </form>
     <?php endif; ?>
     <?php if (($_SESSION["Rol"] === "JC") OR ($_SESSION["Rol"] === "VR")): ?>
-      <form id="consultaForm" class="formulario">
+      <form id="consultaForm" class="formulario" style="margin-bottom: 10px;">
         <label for="sucursal" class="label">Sucursal:</label>
         <select id="sucursal" name="sucursal" disabled>
           <option value="TODAS">TODAS</option>
@@ -538,26 +538,77 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     <?php endif; ?>
     
     <!-- Formulario de filtrado: Checkboxes y búsqueda -->
-    <form id="filtroEstadoForm">
-      <label class="label">Filtrar por Estado:</label><br>
-      <input type="checkbox" id="estadoCancelado" name="estado" value="CANCELADO">
-      <label for="estadoCancelado">CANCELADO</label><br>
-      <input type="checkbox" id="estadoEnTienda" name="estado" value="EN TIENDA" checked>
-      <label for="estadoEnTienda">EN TIENDA</label><br>
-      <input type="checkbox" id="estadoReprogramado" name="estado" value="REPROGRAMADO" checked>
-      <label for="estadoReprogramado">REPROGRAMADO</label><br>
-      <input type="checkbox" id="estadoActivo" name="estado" value="ACTIVO" checked>
-      <label for="estadoActivo">ACTIVO</label><br>
-      <input type="checkbox" id="estadoEnRuta" name="estado" value="EN RUTA" checked>
-      <label for="estadoEnRuta">EN RUTA</label><br>
-      <input type="checkbox" id="estadoEntregado" name="estado" value="ENTREGADO">
-      <label for="estadoEntregado">ENTREGADO</label><br>
-      <!-- Botón "Filtrar" se conserva como respaldo -->
-      <button type="submit" class="boton-consultar">Filtrar</button>
-      <!-- Campo de búsqueda -->
-      <p></p>
-      <input type="text" id="busqueda" name="busqueda" placeholder="Buscar...">
-      <button type="button" id="boton-buscar" class="boton-consultar">Buscar</button>
+    <form id="filtroEstadoForm" style="background: #e8ebed; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+
+      
+
+      <!-- 1. Filtrar por Estado -->
+      <div style="margin-bottom: 15px; padding-bottom: 12px; border-bottom: 1px solid #dee2e6;">
+        <label class="label" style="font-weight: bold; font-size: 13px; margin-bottom: 8px; display: block; color: #495057;">Filtrar por Estado:</label>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">
+          <div style="display: flex; align-items: center;">
+            <input type="checkbox" id="estadoCancelado" name="estado" value="CANCELADO" style="margin: 0;">
+            <label for="estadoCancelado" style="font-size: 12px; margin-left: 4px; cursor: pointer;">CANCELADO</label>
+          </div>
+          <div style="display: flex; align-items: center;">
+            <input type="checkbox" id="estadoEnTienda" name="estado" value="EN TIENDA" checked style="margin: 0;">
+            <label for="estadoEnTienda" style="font-size: 12px; margin-left: 4px; cursor: pointer;">EN TIENDA</label>
+          </div>
+          <div style="display: flex; align-items: center;">
+            <input type="checkbox" id="estadoReprogramado" name="estado" value="REPROGRAMADO" checked style="margin: 0;">
+            <label for="estadoReprogramado" style="font-size: 12px; margin-left: 4px; cursor: pointer;">REPROGRAMADO</label>
+          </div>
+          <div style="display: flex; align-items: center;">
+            <input type="checkbox" id="estadoActivo" name="estado" value="ACTIVO" checked style="margin: 0;">
+            <label for="estadoActivo" style="font-size: 12px; margin-left: 4px; cursor: pointer;">ACTIVO</label>
+          </div>
+          <div style="display: flex; align-items: center;">
+            <input type="checkbox" id="estadoEnRuta" name="estado" value="EN RUTA" checked style="margin: 0;">
+            <label for="estadoEnRuta" style="font-size: 12px; margin-left: 4px; cursor: pointer;">EN RUTA</label>
+          </div>
+          <div style="display: flex; align-items: center;">
+            <input type="checkbox" id="estadoEntregado" name="estado" value="ENTREGADO" style="margin: 0;">
+            <label for="estadoEntregado" style="font-size: 12px; margin-left: 4px; cursor: pointer;">ENTREGADO</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Filtrar por Grupo -->
+      <div style="margin-bottom: 15px; padding-bottom: 12px; border-bottom: 1px solid #dee2e6;">
+        <label class="label" style="font-weight: bold; font-size: 13px; margin-bottom: 8px; display: block; color: #495057;">Filtrar por Grupo:</label>
+        <select id="filtroGrupo" name="filtroGrupo" style="width: 32%; padding: 8px; margin-bottom: 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 13px; box-sizing: border-box;">
+          <option value="">Todos los pedidos</option>
+          <option value="SIN_GRUPO">Sin grupo asignado</option>
+          <option value="CON_GRUPO">Con grupo asignado</option>
+        </select>
+        <input type="text" id="buscarGrupo" name="buscarGrupo" placeholder="Buscar por nombre de grupo..." style="width: 32%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 13px; box-sizing: border-box;">
+      </div>
+
+      <!-- 3. Rango de Fechas -->
+      <div style="margin-bottom: 15px; padding-bottom: 12px; border-bottom: 1px solid #dee2e6;     padding-right: 79px;">
+        <label class="label" style="font-weight: bold; font-size: 13px; margin-bottom: 8px; display: block; color: #495057;">Rango de Fechas:</label>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+          <div>
+            <label for="fechaInicio" style="font-size: 11px; display: block; margin-bottom: 4px; color: #666;">Desde:</label>
+            <input type="date" id="fechaInicio" name="fechaInicio" style="width: 100%; padding: 6px; border: 1px solid #ced4da; border-radius: 4px; font-size: 12px; box-sizing: border-box;">
+          </div>
+          <div>
+            <label for="fechaFin" style="font-size: 11px; display: block; margin-bottom: 4px; color: #666;">Hasta:</label>
+            <input type="date" id="fechaFin" name="fechaFin" style="width: 100%; padding: 6px; border: 1px solid #ced4da; border-radius: 4px; font-size: 12px; box-sizing: border-box;">
+          </div>
+        </div>
+        <button type="button" id="limpiarFechas" class="boton-consultar" style="background-color: #6c757d; width: 100%; padding: 8px; font-size: 12px; box-sizing: border-box;">Limpiar fechas</button>
+      </div>
+
+      <!-- 4. Búsqueda General -->
+      <div>
+        <label class="label" style="font-weight: bold; font-size: 13px; margin-bottom: 8px; display: block; color: #495057;">Búsqueda General:</label>
+        <div style="display: flex; gap: 8px; align-items: stretch;">
+          <input type="text" id="busqueda" name="busqueda" placeholder="Buscar pedido..." style="flex: 1; padding: 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 13px; box-sizing: border-box;">
+          <button type="button" id="boton-buscar" class="boton-consultar" style="padding: 8px 16px; font-size: 13px; white-space: nowrap; box-sizing: border-box;">Buscar</button>
+        </div>
+      </div>
+
     </form>
     
     <p></p>
@@ -589,6 +640,13 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         checkboxes.forEach(function(checkbox) {
           estadosSeleccionados.push(checkbox.value);
         });
+
+        // Nuevos filtros
+        var filtroGrupo = document.getElementById("filtroGrupo").value;
+        var buscarGrupo = document.getElementById("buscarGrupo").value;
+        var fechaInicio = document.getElementById("fechaInicio").value;
+        var fechaFin = document.getElementById("fechaFin").value;
+
         var xhr = new XMLHttpRequest();
         xhr.open("POST", "filtrar.php", true);
         xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
@@ -607,8 +665,15 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
             document.getElementById("currentPage").textContent = "Página " + currentPage;
           }
         };
-        // Enviamos sucursal, estados y offset
-        xhr.send("sucursal=" + encodeURIComponent(sucursal) + "&estados=" + encodeURIComponent(JSON.stringify(estadosSeleccionados)) + "&offset=" + offset);
+        // Enviamos todos los parámetros
+        var params = "sucursal=" + encodeURIComponent(sucursal) +
+                     "&estados=" + encodeURIComponent(JSON.stringify(estadosSeleccionados)) +
+                     "&offset=" + offset +
+                     "&filtro_grupo=" + encodeURIComponent(filtroGrupo) +
+                     "&buscar_grupo=" + encodeURIComponent(buscarGrupo) +
+                     "&fecha_inicio=" + encodeURIComponent(fechaInicio) +
+                     "&fecha_fin=" + encodeURIComponent(fechaFin);
+        xhr.send(params);
       }
       
       // Eventos para el filtrado dinámico
@@ -625,7 +690,61 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         currentPage = 1;
         filterData();
       });
-      
+
+      // Eventos para los nuevos filtros
+      document.getElementById("filtroGrupo").addEventListener("change", function() {
+        offset = 0;
+        currentPage = 1;
+        filterData();
+      });
+      document.getElementById("buscarGrupo").addEventListener("input", function() {
+        offset = 0;
+        currentPage = 1;
+        filterData();
+      });
+      document.getElementById("fechaInicio").addEventListener("change", function() {
+        offset = 0;
+        currentPage = 1;
+        filterData();
+      });
+      document.getElementById("fechaFin").addEventListener("change", function() {
+        offset = 0;
+        currentPage = 1;
+        filterData();
+      });
+      document.getElementById("limpiarFechas").addEventListener("click", function() {
+        document.getElementById("fechaInicio").value = "";
+        document.getElementById("fechaFin").value = "";
+        offset = 0;
+        currentPage = 1;
+        filterData();
+      });
+
+      // Cargar grupos activos en el selector al iniciar
+      function cargarGruposActivos() {
+        fetch('obtener_grupos.php?accion=listar')
+          .then(response => response.json())
+          .then(data => {
+            if (data.success && data.grupos) {
+              const select = document.getElementById('filtroGrupo');
+              // Mantener las opciones predeterminadas
+              const opcionesDefault = select.innerHTML;
+
+              // Agregar cada grupo como opción
+              data.grupos.forEach(grupo => {
+                const option = document.createElement('option');
+                option.value = 'GRUPO_' + grupo.id;
+                option.textContent = grupo.nombre_grupo + ' (' + grupo.chofer_asignado + ') - ' + grupo.total_pedidos + ' pedidos';
+                select.appendChild(option);
+              });
+            }
+          })
+          .catch(err => console.error('Error cargando grupos:', err));
+      }
+
+      // Cargar grupos al inicio
+      cargarGruposActivos();
+
       // Dispara el filtrado al cargar la página
       filterData();
       
@@ -1912,7 +2031,7 @@ async function crearGrupoRuta(datos, moverDesdeOtrosGrupos = false) {
 }
 
 .badge-grupo {
-  display: inline-flex;
+  display: inherit;
   align-items: center;
   gap: 5px;
   color: white;

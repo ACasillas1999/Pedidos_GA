@@ -204,6 +204,93 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         $stmt_chofer->close();
                     }
                 }
+
+                // Mantener coherencia con grupos/rutas si el pedido pertenece a un grupo activo
+                // Regla: si el nuevo chofer difiere del chofer del grupo activo, por defecto se remueve el pedido del grupo.
+                // Si se envía accion_grupo_chofer=actualizar_grupo y el usuario es Admin/JC, se actualiza el chofer de todo el grupo.
+                try {
+                    // Buscar grupo activo del pedido
+                    $sqlGrupo = "SELECT pg.grupo_id, gr.nombre_grupo, gr.chofer_asignado
+                                  FROM pedidos_grupos pg
+                                  INNER JOIN grupos_rutas gr ON pg.grupo_id = gr.id AND gr.estado = 'ACTIVO'
+                                  WHERE pg.pedido_id = ?
+                                  LIMIT 1";
+                    if ($stmtG = $conn->prepare($sqlGrupo)) {
+                        $stmtG->bind_param("i", $id_pedido);
+                        $stmtG->execute();
+                        $resG = $stmtG->get_result();
+                        if ($grp = $resG->fetch_assoc()) {
+                            $grupoId = (int)$grp['grupo_id'];
+                            $grupoChofer = $grp['chofer_asignado'];
+                            $grupoNombre = $grp['nombre_grupo'];
+
+                            if (!empty($nuevo_chofer) && $nuevo_chofer !== $grupoChofer) {
+                                $accionGrupo = isset($_POST['accion_grupo_chofer']) ? $_POST['accion_grupo_chofer'] : '';
+                                $rolUsuario = $_SESSION['Rol'] ?? '';
+
+                                if ($accionGrupo === 'actualizar_grupo' && ($rolUsuario === 'Admin' || $rolUsuario === 'JC')) {
+                                    // Actualizar chofer del grupo y de todos los pedidos del grupo
+                                    $conn->begin_transaction();
+                                    try {
+                                        $sqlUG = "UPDATE grupos_rutas SET chofer_asignado = ? WHERE id = ?";
+                                        $stmtUG = $conn->prepare($sqlUG);
+                                        $stmtUG->bind_param("si", $nuevo_chofer, $grupoId);
+                                        $stmtUG->execute();
+                                        $stmtUG->close();
+
+                                        $sqlUP = "UPDATE pedidos p
+                                                  INNER JOIN pedidos_grupos pg ON p.ID = pg.pedido_id
+                                                  SET p.CHOFER_ASIGNADO = ?
+                                                  WHERE pg.grupo_id = ?";
+                                        $stmtUP = $conn->prepare($sqlUP);
+                                        $stmtUP->bind_param("si", $nuevo_chofer, $grupoId);
+                                        $stmtUP->execute();
+                                        $stmtUP->close();
+
+                                        // Registrar historial para el pedido actual
+                                        $desc = "Chofer del grupo '$grupoNombre' actualizado a '$nuevo_chofer' por cambio individual";
+                                        $sqlH = "INSERT INTO historial_cambios (Usuario_ID, Pedido_ID, Cambio, Fecha_Hora) VALUES (?, ?, ?, ?)";
+                                        if ($stmtH = $conn->prepare($sqlH)) {
+                                            $stmtH->bind_param("siss", $Usuario_ID, $id_pedido, $desc, $Fecha_Hora);
+                                            $stmtH->execute();
+                                            $stmtH->close();
+                                        }
+
+                                        $conn->commit();
+                                    } catch (Exception $e) {
+                                        $conn->rollback();
+                                        // En caso de error, como fallback, remover del grupo
+                                        $sqlDel = "DELETE FROM pedidos_grupos WHERE pedido_id = ? AND grupo_id = ?";
+                                        $stmtDel = $conn->prepare($sqlDel);
+                                        $stmtDel->bind_param("ii", $id_pedido, $grupoId);
+                                        $stmtDel->execute();
+                                        $stmtDel->close();
+                                    }
+                                } else {
+                                    // Remover el pedido del grupo para evitar inconsistencia
+                                    $sqlDel = "DELETE FROM pedidos_grupos WHERE pedido_id = ? AND grupo_id = ?";
+                                    if ($stmtDel = $conn->prepare($sqlDel)) {
+                                        $stmtDel->bind_param("ii", $id_pedido, $grupoId);
+                                        $stmtDel->execute();
+                                        $stmtDel->close();
+                                    }
+
+                                    // Registrar en historial
+                                    $desc = "Removido del grupo '$grupoNombre' por cambio de chofer a '$nuevo_chofer'";
+                                    $sqlH = "INSERT INTO historial_cambios (Usuario_ID, Pedido_ID, Cambio, Fecha_Hora) VALUES (?, ?, ?, ?)";
+                                    if ($stmtH = $conn->prepare($sqlH)) {
+                                        $stmtH->bind_param("siss", $Usuario_ID, $id_pedido, $desc, $Fecha_Hora);
+                                        $stmtH->execute();
+                                        $stmtH->close();
+                                    }
+                                }
+                            }
+                        }
+                        $stmtG->close();
+                    }
+                } catch (Exception $e) {
+                    // silencioso: no romper el flujo de actualización si algo falla en este suplemento
+                }
             }
         }
 

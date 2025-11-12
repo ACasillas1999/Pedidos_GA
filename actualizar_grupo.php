@@ -291,6 +291,126 @@ try {
             $stmtUpdate->close();
             break;
 
+        case 'mover_pedido':
+            // Mover un pedido de un grupo a otro
+            $pedidoId = intval($input['pedido_id'] ?? 0);
+            $grupoDestino = intval($input['grupo_id_destino'] ?? 0);
+            $grupoOrigen = $grupoId; // alias más claro
+
+            if ($pedidoId <= 0 || $grupoDestino <= 0 || $grupoOrigen <= 0) {
+                echo json_encode(["success" => false, "message" => "Datos inválidos para mover pedido"]);
+                exit;
+            }
+
+            // Validar que ambos grupos existan y estén activos
+            $sqlG = "SELECT id, nombre_grupo, sucursal, chofer_asignado FROM grupos_rutas WHERE id = ? AND estado = 'ACTIVO'";
+            $stmtGO = $conn->prepare($sqlG);
+            $stmtGO->bind_param("i", $grupoOrigen);
+            $stmtGO->execute();
+            $resGO = $stmtGO->get_result();
+            $orig = $resGO->fetch_assoc();
+            $stmtGO->close();
+
+            $stmtGD = $conn->prepare($sqlG);
+            $stmtGD->bind_param("i", $grupoDestino);
+            $stmtGD->execute();
+            $resGD = $stmtGD->get_result();
+            $dest = $resGD->fetch_assoc();
+            $stmtGD->close();
+
+            if (!$orig || !$dest) {
+                echo json_encode(["success" => false, "message" => "Grupo de origen o destino no válido/activo"]);
+                exit;
+            }
+
+            // Validar compatibilidad de sucursales: misma sucursal o ILUMINACION<->TAPATIA
+            $okSucursal = ($orig['sucursal'] === $dest['sucursal']) ||
+                          (in_array($orig['sucursal'], ['ILUMINACION','TAPATIA']) && in_array($dest['sucursal'], ['ILUMINACION','TAPATIA']));
+            if (!$okSucursal) {
+                echo json_encode(["success" => false, "message" => "Sucursales incompatibles entre grupos"]);
+                exit;
+            }
+
+            // Obtener nuevo orden en destino
+            $sqlOrden = "SELECT COALESCE(MAX(orden_entrega),0) as max_orden FROM pedidos_grupos WHERE grupo_id = ?";
+            $stmtOrden = $conn->prepare($sqlOrden);
+            $stmtOrden->bind_param("i", $grupoDestino);
+            $stmtOrden->execute();
+            $rOrd = $stmtOrden->get_result()->fetch_assoc();
+            $stmtOrden->close();
+            $nuevoOrden = intval($rOrd['max_orden']) + 1;
+
+            $conn->begin_transaction();
+            try {
+                // Quitar del grupo origen
+                $sqlDel = "DELETE FROM pedidos_grupos WHERE pedido_id = ? AND grupo_id = ?";
+                $stmtDel = $conn->prepare($sqlDel);
+                $stmtDel->bind_param("ii", $pedidoId, $grupoOrigen);
+                $stmtDel->execute();
+                $stmtDel->close();
+
+                // Asociar al grupo destino con nuevo orden
+                $sqlIns = "INSERT INTO pedidos_grupos (pedido_id, grupo_id, orden_entrega) VALUES (?, ?, ?)";
+                $stmtIns = $conn->prepare($sqlIns);
+                $stmtIns->bind_param("iii", $pedidoId, $grupoDestino, $nuevoOrden);
+                $stmtIns->execute();
+                $stmtIns->close();
+
+                // Actualizar chofer del pedido al chofer del grupo destino
+                $sqlUpd = "UPDATE pedidos SET CHOFER_ASIGNADO = ? WHERE ID = ?";
+                $stmtUpd = $conn->prepare($sqlUpd);
+                $stmtUpd->bind_param("si", $dest['chofer_asignado'], $pedidoId);
+                $stmtUpd->execute();
+                $stmtUpd->close();
+
+                // Historial
+                $sqlH = "INSERT INTO historial_cambios (Pedido_ID, Usuario_ID, Cambio, Fecha_Hora) VALUES (?, ?, ?, NOW())";
+                $desc = "Movido del grupo '".$orig['nombre_grupo']."' al grupo '".$dest['nombre_grupo']."'";
+                $stmtH = $conn->prepare($sqlH);
+                $stmtH->bind_param("iss", $pedidoId, $usuarioSesion, $desc);
+                $stmtH->execute();
+                $stmtH->close();
+
+                $conn->commit();
+                echo json_encode(["success" => true, "message" => "Pedido movido correctamente"]);
+            } catch (Exception $e) {
+                $conn->rollback();
+                echo json_encode(["success" => false, "message" => "Error al mover pedido: ".$e->getMessage()]);
+            }
+            break;
+
+        case 'listar_grupos_activos':
+            // Listar grupos activos, opcionalmente compatibles con una sucursal indicada
+            $suc = trim($input['sucursal'] ?? '');
+            $excluirId = intval($input['excluir_id'] ?? 0);
+            $params = [];
+            $types = '';
+            $where = "WHERE estado = 'ACTIVO'";
+            if ($excluirId > 0) {
+                $where .= " AND id <> ?";
+                $types .= 'i';
+                $params[] = $excluirId;
+            }
+
+            $sqlList = "SELECT id, nombre_grupo, sucursal, chofer_asignado FROM grupos_rutas $where ORDER BY fecha_creacion DESC";
+            $stmtL = $conn->prepare($sqlList);
+            if (!empty($types)) {
+                $stmtL->bind_param($types, ...$params);
+            }
+            $stmtL->execute();
+            $resL = $stmtL->get_result();
+            $grupos = [];
+            while ($g = $resL->fetch_assoc()) {
+                if ($suc !== '') {
+                    $compatible = ($g['sucursal'] === $suc) || (in_array($g['sucursal'], ['ILUMINACION','TAPATIA']) && in_array($suc, ['ILUMINACION','TAPATIA']));
+                    if (!$compatible) continue;
+                }
+                $grupos[] = $g;
+            }
+            $stmtL->close();
+            echo json_encode(["success" => true, "grupos" => $grupos]);
+            break;
+
         default:
             echo json_encode(["success" => false, "message" => "Acción no válida"]);
     }

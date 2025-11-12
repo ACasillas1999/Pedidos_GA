@@ -95,6 +95,33 @@ $hist_sucursal = $conn->query("
   ORDER BY id DESC
 ");
 
+// Checklist vehicular (observaciones por vehículo)
+$checklist_obs = $conn->query("
+  SELECT id, fecha_inspeccion, kilometraje, seccion, item, calificacion, observaciones_rotulado
+  FROM checklist_vehicular
+  WHERE id_vehiculo = {$id_vehiculo}
+  ORDER BY fecha_inspeccion DESC, seccion ASC, id ASC
+");
+
+// Agrupar por fecha y sección para acordeón
+$obs_group = [];
+if ($checklist_obs && $checklist_obs instanceof mysqli_result) {
+    while ($r = $checklist_obs->fetch_assoc()) {
+        $fecha = (string)($r['fecha_inspeccion'] ?? '');
+        $sec   = strtoupper((string)($r['seccion'] ?? ''));
+        if (!isset($obs_group[$fecha])) {
+            $obs_group[$fecha] = [
+                'km' => $r['kilometraje'] ?? null,
+                'secciones' => []
+            ];
+        }
+        if (!isset($obs_group[$fecha]['secciones'][$sec])) {
+            $obs_group[$fecha]['secciones'][$sec] = [];
+        }
+        $obs_group[$fecha]['secciones'][$sec][] = $r;
+    }
+}
+
 // Lista de sucursales disponibles (para cambiar sucursal)
 $lista_sucursales = $conn->query("SELECT DISTINCT Sucursal AS suc FROM choferes WHERE Sucursal IS NOT NULL AND Sucursal<>'' ORDER BY Sucursal");
 
@@ -805,6 +832,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'desas
             padding: 16px
         }
 
+        /* Acordeón simple con <details> */
+        .acc,
+        .acc-sub { margin: 8px 0; }
+        .acc > summary,
+        .acc-sub > summary {
+            list-style: none;
+            cursor: pointer;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+        .acc > summary::marker,
+        .acc-sub > summary::marker { display: none; }
+        .acc[open] > summary { background: #eaf3ff; border-color: #cfe4ff; }
+        .acc-sub[open] > summary { background: #f7fbff; }
+
         /* Tabla */
         .mi-tabla {
             width: 100%;
@@ -1132,6 +1178,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'desas
             <a href="#info" class="tab active" data-tab="info">Información</a>
             <a href="#hist" class="tab" data-tab="hist">Historial de kilometraje</a>
             <a href="#cond" class="tab" data-tab="cond">Historial de Conductores</a> <!-- NUEVO -->
+            <a href="#obs" class="tab" data-tab="obs">Observaciones</a>
 
             <a href="#gas" class="tab" data-tab="gas">Gasolina</a>
             <a href="#ext" class="tab" data-tab="ext">MAPA GPS</a>
@@ -1399,6 +1446,35 @@ function fmtDuracion($min){
         </table>
     </section>
 
+    <section id="pane-obs" class="tab-pane" style="display:none">
+        <?php if (empty($obs_group)): ?>
+            <div style="padding:8px 4px;color:#64748b">Sin registros de checklist.</div>
+        <?php else: $i=0; foreach ($obs_group as $fecha => $data): $i++; $kmG = isset($data['km']) ? (int)$data['km'] : 0; ?>
+            <details class="acc">
+                <summary>Checklist <?= htmlspecialchars($fecha) ?> — Kilometraje: <?= number_format($kmG) ?> km</summary>
+                <?php foreach ($data['secciones'] as $sec => $items): $cnt = count($items); ?>
+                    <details class="acc-sub">
+                        <summary><?= htmlspecialchars($sec) ?> (<?= (int)$cnt ?>)</summary>
+                        <table class="mi-tabla">
+                            <tr>
+                                <th>Ítem</th>
+                                <th>Calificación</th>
+                                <th>Observaciones</th>
+                            </tr>
+                            <?php foreach ($items as $cl): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($cl['item']) ?></td>
+                                    <td><?= htmlspecialchars($cl['calificacion']) ?></td>
+                                    <td><?= htmlspecialchars((string)($cl['observaciones_rotulado'] ?? '')) ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </table>
+                    </details>
+                <?php endforeach; ?>
+            </details>
+        <?php endforeach; endif; ?>
+    </section>
+
     <section id="pane-gas" class="tab-pane" style="display:none">
         <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
             <button class="btn alt" onclick="abrirModalGasolina()">Agregar carga</button>
@@ -1446,6 +1522,8 @@ function fmtDuracion($min){
             <a class="btn ghost" id="ext-open-new" target="_blank" rel="noopener" style="margin-left:8px">Abrir en nueva pestaña</a>
         </p>
     </section>
+
+    
 
 
     <!-- ================= MODALES ================= -->
@@ -1674,14 +1752,16 @@ function fmtDuracion($min){
         }
 
         // Tabs (tus tabs)
+                // Tabs (tus tabs)
         const tabs = document.querySelectorAll('.veh-tabs .tab');
         const panes = {
             info: document.getElementById('pane-info'),
             hist: document.getElementById('pane-hist'),
-            cond: document.getElementById('pane-cond'), // ← ¡AQUÍ!
-
+            cond: document.getElementById('pane-cond'),
+            obs: document.getElementById('pane-obs'),
             gas: document.getElementById('pane-gas'),
-            ext: document.getElementById('pane-ext') // ← nuevo
+            ext: document.getElementById('pane-ext'),
+            
         };
         tabs.forEach(btn => {
             btn.addEventListener('click', e => {
@@ -1690,10 +1770,8 @@ function fmtDuracion($min){
                 btn.classList.add('active');
                 const k = btn.dataset.tab;
                 Object.keys(panes).forEach(id => panes[id].style.display = (id === k) ? 'block' : 'none');
-                panes[k].scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
+                panes[k].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
             });
         });
 
@@ -2133,6 +2211,16 @@ function fmtDuracion($min){
     </style>
 
 
-</body>
 
+
+
+
+
+
+</body>
 </html>
+
+
+
+
+

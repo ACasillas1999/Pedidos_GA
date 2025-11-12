@@ -273,12 +273,6 @@ $color = $colores[$colorIndex];
       background: rgba(255, 255, 255, 0.3);
     }
 
-    .drag-handle {
-      color: #999;
-      font-size: 18px;
-      margin-right: 10px;
-    }
-
     .map-legend {
       position: absolute;
       bottom: 30px;
@@ -368,7 +362,6 @@ $color = $colores[$colorIndex];
           <?php foreach ($pedidos as $pedido): ?>
           <div class="pedido-item" data-pedido-id="<?php echo $pedido['ID']; ?>" data-orden="<?php echo $pedido['orden_entrega']; ?>">
             <div class="pedido-header">
-              <span class="drag-handle">⋮⋮</span>
               <span class="pedido-orden"><?php echo $pedido['orden_entrega']; ?></span>
               <span class="pedido-factura"><?php echo htmlspecialchars($pedido['FACTURA']); ?></span>
             </div>
@@ -686,8 +679,8 @@ $color = $colores[$colorIndex];
 
       const sortable = new Sortable(elemento, {
         animation: 150,
-        handle: '.drag-handle',
         ghostClass: 'sortable-ghost',
+        cursor: 'move',
         onStart: function(evt) {
           console.log('Comenzó el arrastre');
         },

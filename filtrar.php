@@ -14,6 +14,59 @@ require_once __DIR__ . "/Conexiones/Conexion.php";
 $sucursalSesion = strtoupper($_SESSION["Sucursal"] ?? "");
 $rolSesion      = $_SESSION["Rol"] ?? "";
 
+// Filtros opcionales por grupo
+$grupoIdFilter = 0;
+if (isset($_POST['grupo_id'])) {
+    $grupoIdFilter = intval($_POST['grupo_id']);
+}
+$buscarGrupo = '';
+if (isset($_POST['buscar_grupo'])) {
+    $buscarGrupo = trim($_POST['buscar_grupo']);
+}
+$filtroGrupo = '';
+if (isset($_POST['filtro_grupo'])) {
+    $filtroGrupo = trim($_POST['filtro_grupo']);
+}
+
+// Filtros de fecha
+$fechaInicio = '';
+$fechaFin = '';
+if (isset($_POST['fecha_inicio']) && !empty($_POST['fecha_inicio'])) {
+    $fechaInicio = $conn->real_escape_string($_POST['fecha_inicio']);
+}
+if (isset($_POST['fecha_fin']) && !empty($_POST['fecha_fin'])) {
+    $fechaFin = $conn->real_escape_string($_POST['fecha_fin']);
+}
+
+// Construir condición global por grupo (usa alias 'gr')
+$grupoConditionGlobal = "";
+if ($grupoIdFilter > 0) {
+    $grupoConditionGlobal = " AND gr.id = " . $grupoIdFilter . " ";
+} elseif ($buscarGrupo !== '') {
+    $like = "%" . $conn->real_escape_string($buscarGrupo) . "%";
+    $grupoConditionGlobal = " AND gr.nombre_grupo LIKE '" . $like . "' ";
+} elseif ($filtroGrupo === 'SIN_GRUPO') {
+    $grupoConditionGlobal = " AND pg.grupo_id IS NULL ";
+} elseif ($filtroGrupo === 'CON_GRUPO') {
+    $grupoConditionGlobal = " AND pg.grupo_id IS NOT NULL ";
+} elseif (strpos($filtroGrupo, 'GRUPO_') === 0) {
+    // Si viene un ID específico de grupo como "GRUPO_123"
+    $grupoIdEspecifico = intval(str_replace('GRUPO_', '', $filtroGrupo));
+    if ($grupoIdEspecifico > 0) {
+        $grupoConditionGlobal = " AND gr.id = " . $grupoIdEspecifico . " ";
+    }
+}
+
+// Construir condición para fechas
+$fechaCondition = "";
+if (!empty($fechaInicio) && !empty($fechaFin)) {
+    $fechaCondition = " AND DATE(p.FECHA_RECEPCION_FACTURA) BETWEEN '$fechaInicio' AND '$fechaFin' ";
+} elseif (!empty($fechaInicio)) {
+    $fechaCondition = " AND DATE(p.FECHA_RECEPCION_FACTURA) >= '$fechaInicio' ";
+} elseif (!empty($fechaFin)) {
+    $fechaCondition = " AND DATE(p.FECHA_RECEPCION_FACTURA) <= '$fechaFin' ";
+}
+
 // Obtener el offset para la paginación (por defecto 0)
 $offset = 0;
 if (isset($_POST['offset'])) {
@@ -53,7 +106,7 @@ if ($sucursalSesion === "TODAS") {
                 FROM pedidos p
                 LEFT JOIN pedidos_grupos pg ON p.ID = pg.pedido_id
                 LEFT JOIN grupos_rutas gr ON pg.grupo_id = gr.id AND gr.estado = 'ACTIVO'
-                WHERE $estadoFilter $sucursalCondition
+                WHERE $estadoFilter $sucursalCondition $grupoConditionGlobal $fechaCondition
                 ORDER BY p.FECHA_RECEPCION_FACTURA DESC
                 LIMIT $offset, 100";
         $result = $conn->query($sql);
@@ -252,8 +305,11 @@ if ($sucursalSesion === "TODAS") {
                 }
                 echo "</table>";
 
-                // COUNT (mismas condiciones) - usar alias 'p' para consistencia
-                $sql_count = "SELECT COUNT(*) as total FROM pedidos p WHERE ($estadoFilter) $sucursalCondition";
+                // COUNT (mismas condiciones) - incluir joins cuando se filtra por grupo
+                $sql_count = "SELECT COUNT(*) as total FROM pedidos p
+                               LEFT JOIN pedidos_grupos pg ON p.ID = pg.pedido_id
+                               LEFT JOIN grupos_rutas gr ON pg.grupo_id = gr.id AND gr.estado = 'ACTIVO'
+                               WHERE ($estadoFilter) $sucursalCondition $grupoConditionGlobal $fechaCondition";
                 $result_count = $conn->query($sql_count);
                 $total_rows = 0;
                 if ($result_count && $row_count = $result_count->fetch_assoc()) {
@@ -306,7 +362,7 @@ if ($sucursalSesion === "TODAS") {
                 FROM pedidos p
                 LEFT JOIN pedidos_grupos pg ON p.ID = pg.pedido_id
                 LEFT JOIN grupos_rutas gr ON pg.grupo_id = gr.id AND gr.estado = 'ACTIVO'
-                WHERE $estadoFilter $sucursalCondition
+                WHERE $estadoFilter $sucursalCondition $grupoConditionGlobal $fechaCondition
                 ORDER BY p.FECHA_RECEPCION_FACTURA DESC
                 LIMIT $offset, 100";
         $result = $conn->query($sql);
@@ -502,8 +558,11 @@ if ($sucursalSesion === "TODAS") {
                 }
                 echo "</table>";
 
-                // COUNT (mismas condiciones) - usar alias 'p' para consistencia
-                $sql_count = "SELECT COUNT(*) as total FROM pedidos p WHERE ($estadoFilter) $sucursalCondition";
+                // COUNT (mismas condiciones) - incluir joins cuando se filtra por grupo
+                $sql_count = "SELECT COUNT(*) as total FROM pedidos p
+                               LEFT JOIN pedidos_grupos pg ON p.ID = pg.pedido_id
+                               LEFT JOIN grupos_rutas gr ON pg.grupo_id = gr.id AND gr.estado = 'ACTIVO'
+                               WHERE ($estadoFilter) $sucursalCondition $grupoConditionGlobal $fechaCondition";
                 $result_count = $conn->query($sql_count);
                 $total_rows = 0;
                 if ($result_count && $row_count = $result_count->fetch_assoc()) {
@@ -542,7 +601,8 @@ $conn->close();
 .mi-tabla td:has(.badge-azul),
 .mi-tabla td:has(.badge-amarillo),
 .mi-tabla td:has(.badge-verde){
-  padding:10px 12px;
+  padding:6px 8px;
+  vertical-align:middle;
 }
 
 /* El badge ya no pinta fondo: solo texto (para que se vea el color de la celda) */
@@ -552,10 +612,23 @@ $conn->close();
 }
 
 /* Separación entre etiqueta y botón */
-.mi-tabla td .badge + div{ margin-top:8px; }
+.mi-tabla td .badge + div{ margin-top:6px; }
 
 /* Botones legibles sobre fondos claros */
-.btn{ border:0; padding:6px 10px; border-radius:8px; cursor:pointer; font-weight:600; }
+.btn{
+  border:0;
+  padding:4px 8px;
+  border-radius:4px;
+  cursor:pointer;
+  font-weight:500;
+  font-size:11px;
+  white-space:nowrap;
+  display:inline-block;
+}
+.btn-sm {
+  padding:3px 6px;
+  font-size:10px;
+}
 .btn-primary{ background:#2d6cdf; color:#fff; }
 .btn-success{ background:#22a06b; color:#fff; }
 .btn:disabled{ opacity:.6; cursor:not-allowed; }

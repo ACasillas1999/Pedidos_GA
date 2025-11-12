@@ -1,0 +1,11 @@
+        </p>
+
+        <div id="pedidos-sortable">
+          <?php foreach ($pedidos as $pedido): ?>
+          <div class="pedido-item" data-pedido-id="<?php echo $pedido['ID']; ?>" data-orden="<?php echo $pedido['orden_entrega']; ?>">
+            <div class="pedido-header">
+              <span class="drag-handle">⋮⋮</span>
+              <span class="pedido-orden"><?php echo $pedido['orden_entrega']; ?></span>
+              <span class="pedido-factura"><?php echo htmlspecialchars($pedido['FACTURA']); ?></span>
+            </div>
+            <div class="pedido-details">
