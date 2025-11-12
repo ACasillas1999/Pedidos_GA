@@ -29,7 +29,7 @@ if ($sucursalSesion === "TODAS") {
         // Construir la condición para los estados
         $estadoConditions = [];
         foreach ($estados as $estado) {
-            $estadoConditions[] = "ESTADO='" . $conn->real_escape_string($estado) . "'";
+            $estadoConditions[] = "p.ESTADO='" . $conn->real_escape_string($estado) . "'";
         }
 
         // Si no hay estados seleccionados, usar una condición que siempre sea verdadera (1=1)
@@ -40,11 +40,21 @@ if ($sucursalSesion === "TODAS") {
         }
 
         // Condición para la sucursal (si no es TODAS)
-        $sucursalCondition = ($sucursalSelect != 'TODAS') ? "AND SUCURSAL='" . $conn->real_escape_string($sucursalSelect) . "'" : "";
+        $sucursalCondition = ($sucursalSelect != 'TODAS') ? "AND p.SUCURSAL='" . $conn->real_escape_string($sucursalSelect) . "'" : "";
 
         // Consulta con LIMIT para paginación (100 por página)
-        $sql = "SELECT * FROM pedidos WHERE $estadoFilter $sucursalCondition
-                ORDER BY FECHA_RECEPCION_FACTURA DESC
+        // Incluir información del grupo si el pedido pertenece a uno
+        $sql = "SELECT p.*,
+                       pg.grupo_id,
+                       pg.orden_entrega,
+                       gr.nombre_grupo,
+                       gr.chofer_asignado as grupo_chofer,
+                       (SELECT COUNT(*) FROM pedidos_grupos WHERE grupo_id = pg.grupo_id) as total_en_grupo
+                FROM pedidos p
+                LEFT JOIN pedidos_grupos pg ON p.ID = pg.pedido_id
+                LEFT JOIN grupos_rutas gr ON pg.grupo_id = gr.id AND gr.estado = 'ACTIVO'
+                WHERE $estadoFilter $sucursalCondition
+                ORDER BY p.FECHA_RECEPCION_FACTURA DESC
                 LIMIT $offset, 100";
         $result = $conn->query($sql);
 
@@ -118,6 +128,38 @@ if ($sucursalSesion === "TODAS") {
                     $choferAsignado = $row["CHOFER_ASIGNADO"];
                     $colorChofer = empty($choferAsignado) ? "#FFCCCC" : "#FFFFFF";
 
+                    // Verificar si el pedido pertenece a un grupo
+                    $grupoId = $row["grupo_id"] ?? null;
+                    $nombreGrupo = $row["nombre_grupo"] ?? '';
+                    $ordenEntrega = $row["orden_entrega"] ?? '';
+                    $totalEnGrupo = $row["total_en_grupo"] ?? 0;
+
+                    $badgeGrupo = '';
+                    if ($grupoId && $nombreGrupo) {
+                        // Generar color único basado en el ID del grupo
+                        $colores = [
+                            ['bg' => '#28a745', 'border' => '#20c997'],
+                            ['bg' => '#007bff', 'border' => '#0056b3'],
+                            ['bg' => '#ffc107', 'border' => '#ff9800'],
+                            ['bg' => '#dc3545', 'border' => '#c82333'],
+                            ['bg' => '#6f42c1', 'border' => '#5a32a3'],
+                            ['bg' => '#fd7e14', 'border' => '#e8590c'],
+                            ['bg' => '#20c997', 'border' => '#17a2b8'],
+                            ['bg' => '#e83e8c', 'border' => '#d63384']
+                        ];
+                        $colorIndex = $grupoId % count($colores);
+                        $color = $colores[$colorIndex];
+
+                        $badgeGrupo = "<a href='detalle_ruta.php?grupo_id=$grupoId' class='badge-grupo-link' style='text-decoration: none; display: block; margin-top: 4px;'>
+                                        <div class='badge-grupo' data-grupo-id='$grupoId' title='Click para ver detalles de la ruta: $nombreGrupo ($totalEnGrupo pedidos)'
+                                             style='background: linear-gradient(135deg, {$color['bg']} 0%, {$color['border']} 100%);'>
+                                          <span class='grupo-icono'>🚚</span>
+                                          <span class='grupo-nombre'>$nombreGrupo</span>
+                                          <span class='grupo-orden'>#$ordenEntrega/$totalEnGrupo</span>
+                                        </div>
+                                      </a>";
+                    }
+
                     $estadoFactura = intval($row["estado_factura_caja"] ?? 0);
                     $badge = '';
                     $accionHtml = '';
@@ -149,7 +191,8 @@ if ($sucursalSesion === "TODAS") {
                     // Determinar si el checkbox debe estar habilitado
                     $checkboxEnabled = ($estado === 'ACTIVO' || in_array(strtolower($tipo_envio), ['programado', 'paquetería', 'paqueteria', 'domicilio']));
                     $checkboxDisabled = $checkboxEnabled ? "" : "disabled";
-                    $checkboxCell = $mostrarCheckbox ? "<td style='text-align:center;'><input type='checkbox' class='pedido-checkbox' data-id='{$row["ID"]}' data-estado='$estado' data-tipo-envio='$tipo_envio' data-sucursal='{$row["SUCURSAL"]}' data-factura='{$row["FACTURA"]}' data-cliente='{$row["NOMBRE_CLIENTE"]}' data-direccion='{$row["DIRECCION"]}' data-precio-vendedor='$precio_vendedor' data-precio-real='$precio_real' data-validado='$precio_validado' $checkboxDisabled></td>" : "";
+                    $coordenadas = isset($row["Coord_Destino"]) ? htmlspecialchars($row["Coord_Destino"]) : '';
+                    $checkboxCell = $mostrarCheckbox ? "<td style='text-align:center;'><input type='checkbox' class='pedido-checkbox' data-id='{$row["ID"]}' data-estado='$estado' data-tipo-envio='$tipo_envio' data-sucursal='{$row["SUCURSAL"]}' data-factura='{$row["FACTURA"]}' data-cliente='{$row["NOMBRE_CLIENTE"]}' data-direccion='{$row["DIRECCION"]}' data-precio-vendedor='$precio_vendedor' data-precio-real='$precio_real' data-validado='$precio_validado' data-coordenadas='$coordenadas' $checkboxDisabled></td>" : "";
 
                     echo "<tr>";
                     echo $checkboxCell;
@@ -164,7 +207,7 @@ if ($sucursalSesion === "TODAS") {
 
                     echo "<td>" . $row["SUCURSAL"] . "</td>";
                     echo "<td>" . $row["FECHA_RECEPCION_FACTURA"] . "</td>";
-                    echo "<td style='background-color: $colorChofer;'>" . $choferAsignado . "</td>";
+                    echo "<td style='background-color: $colorChofer;'>" . $choferAsignado . $badgeGrupo . "</td>";
                     echo "<td>" . $row["VENDEDOR"] . "</td>";
                     echo "<td>" . $row["FACTURA"] . "</td>";
 
@@ -209,8 +252,8 @@ if ($sucursalSesion === "TODAS") {
                 }
                 echo "</table>";
 
-                // COUNT (mismas condiciones)
-                $sql_count = "SELECT COUNT(*) as total FROM pedidos WHERE ($estadoFilter) $sucursalCondition";
+                // COUNT (mismas condiciones) - usar alias 'p' para consistencia
+                $sql_count = "SELECT COUNT(*) as total FROM pedidos p WHERE ($estadoFilter) $sucursalCondition";
                 $result_count = $conn->query($sql_count);
                 $total_rows = 0;
                 if ($result_count && $row_count = $result_count->fetch_assoc()) {
@@ -232,7 +275,7 @@ if ($sucursalSesion === "TODAS") {
 
         $estadoConditions = [];
         foreach ($estados as $estado) {
-            $estadoConditions[] = "ESTADO='" . $conn->real_escape_string($estado) . "'";
+            $estadoConditions[] = "p.ESTADO='" . $conn->real_escape_string($estado) . "'";
         }
 
         // Si no hay estados seleccionados, usar una condición que siempre sea verdadera (1=1)
@@ -245,17 +288,26 @@ if ($sucursalSesion === "TODAS") {
         // ---- AQUI LA MAGIA: sucursales visibles para JC TAPATIA ----
         $sucursalCondition = "";
         if (strtoupper($rolSesion) === 'JC' && $sucursalSesion === 'TAPATIA') {
-            $sucursalCondition = "AND SUCURSAL IN ('TAPATIA','ILUMINACION')";
+            $sucursalCondition = "AND p.SUCURSAL IN ('TAPATIA','ILUMINACION')";
         } else {
             // comportamiento normal (una sola sucursal de sesión)
             if ($sucursalSesion != 'TODAS' && $sucursalSesion != '') {
-                $sucursalCondition = "AND SUCURSAL='" . $conn->real_escape_string($sucursalSesion) . "'";
+                $sucursalCondition = "AND p.SUCURSAL='" . $conn->real_escape_string($sucursalSesion) . "'";
             }
         }
 
-        $sql = "SELECT * FROM pedidos
+        // Incluir información del grupo si el pedido pertenece a uno
+        $sql = "SELECT p.*,
+                       pg.grupo_id,
+                       pg.orden_entrega,
+                       gr.nombre_grupo,
+                       gr.chofer_asignado as grupo_chofer,
+                       (SELECT COUNT(*) FROM pedidos_grupos WHERE grupo_id = pg.grupo_id) as total_en_grupo
+                FROM pedidos p
+                LEFT JOIN pedidos_grupos pg ON p.ID = pg.pedido_id
+                LEFT JOIN grupos_rutas gr ON pg.grupo_id = gr.id AND gr.estado = 'ACTIVO'
                 WHERE $estadoFilter $sucursalCondition
-                ORDER BY FECHA_RECEPCION_FACTURA DESC
+                ORDER BY p.FECHA_RECEPCION_FACTURA DESC
                 LIMIT $offset, 100";
         $result = $conn->query($sql);
 
@@ -328,6 +380,38 @@ if ($sucursalSesion === "TODAS") {
                     $choferAsignado = $row["CHOFER_ASIGNADO"];
                     $colorChofer = empty($choferAsignado) ? "#FFCCCC" : "#FFFFFF";
 
+                    // Verificar si el pedido pertenece a un grupo
+                    $grupoId = $row["grupo_id"] ?? null;
+                    $nombreGrupo = $row["nombre_grupo"] ?? '';
+                    $ordenEntrega = $row["orden_entrega"] ?? '';
+                    $totalEnGrupo = $row["total_en_grupo"] ?? 0;
+
+                    $badgeGrupo = '';
+                    if ($grupoId && $nombreGrupo) {
+                        // Generar color único basado en el ID del grupo
+                        $colores = [
+                            ['bg' => '#28a745', 'border' => '#20c997'],
+                            ['bg' => '#007bff', 'border' => '#0056b3'],
+                            ['bg' => '#ffc107', 'border' => '#ff9800'],
+                            ['bg' => '#dc3545', 'border' => '#c82333'],
+                            ['bg' => '#6f42c1', 'border' => '#5a32a3'],
+                            ['bg' => '#fd7e14', 'border' => '#e8590c'],
+                            ['bg' => '#20c997', 'border' => '#17a2b8'],
+                            ['bg' => '#e83e8c', 'border' => '#d63384']
+                        ];
+                        $colorIndex = $grupoId % count($colores);
+                        $color = $colores[$colorIndex];
+
+                        $badgeGrupo = "<a href='detalle_ruta.php?grupo_id=$grupoId' class='badge-grupo-link' style='text-decoration: none; display: block; margin-top: 4px;'>
+                                        <div class='badge-grupo' data-grupo-id='$grupoId' title='Click para ver detalles de la ruta: $nombreGrupo ($totalEnGrupo pedidos)'
+                                             style='background: linear-gradient(135deg, {$color['bg']} 0%, {$color['border']} 100%);'>
+                                          <span class='grupo-icono'>🚚</span>
+                                          <span class='grupo-nombre'>$nombreGrupo</span>
+                                          <span class='grupo-orden'>#$ordenEntrega/$totalEnGrupo</span>
+                                        </div>
+                                      </a>";
+                    }
+
                     $estadoFactura = intval($row["estado_factura_caja"] ?? 0);
                     $badge = '';
                     $accionHtml = '';
@@ -359,7 +443,8 @@ if ($sucursalSesion === "TODAS") {
                     // Determinar si el checkbox debe estar habilitado
                     $checkboxEnabled = ($estado === 'ACTIVO' || in_array(strtolower($tipo_envio), ['programado', 'paquetería', 'paqueteria', 'domicilio']));
                     $checkboxDisabled = $checkboxEnabled ? "" : "disabled";
-                    $checkboxCell = $mostrarCheckbox ? "<td style='text-align:center;'><input type='checkbox' class='pedido-checkbox' data-id='{$row["ID"]}' data-estado='$estado' data-tipo-envio='$tipo_envio' data-sucursal='{$row["SUCURSAL"]}' data-factura='{$row["FACTURA"]}' data-cliente='{$row["NOMBRE_CLIENTE"]}' data-direccion='{$row["DIRECCION"]}' data-precio-vendedor='$precio_vendedor' data-precio-real='$precio_real' data-validado='$precio_validado' $checkboxDisabled></td>" : "";
+                    $coordenadas = isset($row["Coord_Destino"]) ? htmlspecialchars($row["Coord_Destino"]) : '';
+                    $checkboxCell = $mostrarCheckbox ? "<td style='text-align:center;'><input type='checkbox' class='pedido-checkbox' data-id='{$row["ID"]}' data-estado='$estado' data-tipo-envio='$tipo_envio' data-sucursal='{$row["SUCURSAL"]}' data-factura='{$row["FACTURA"]}' data-cliente='{$row["NOMBRE_CLIENTE"]}' data-direccion='{$row["DIRECCION"]}' data-precio-vendedor='$precio_vendedor' data-precio-real='$precio_real' data-validado='$precio_validado' data-coordenadas='$coordenadas' $checkboxDisabled></td>" : "";
 
                     echo "<tr>";
                     echo $checkboxCell;
@@ -372,7 +457,7 @@ if ($sucursalSesion === "TODAS") {
                           </td>";
                     echo "<td>" . $row["SUCURSAL"] . "</td>";
                     echo "<td>" . $row["FECHA_RECEPCION_FACTURA"] . "</td>";
-                    echo "<td style='background-color: $colorChofer;'>" . $choferAsignado . "</td>";
+                    echo "<td style='background-color: $colorChofer;'>" . $choferAsignado . $badgeGrupo . "</td>";
                     echo "<td>" . $row["VENDEDOR"] . "</td>";
                     echo "<td>" . $row["FACTURA"] . "</td>";
 
@@ -417,8 +502,8 @@ if ($sucursalSesion === "TODAS") {
                 }
                 echo "</table>";
 
-                // COUNT (mismas condiciones)
-                $sql_count = "SELECT COUNT(*) as total FROM pedidos WHERE ($estadoFilter) $sucursalCondition";
+                // COUNT (mismas condiciones) - usar alias 'p' para consistencia
+                $sql_count = "SELECT COUNT(*) as total FROM pedidos p WHERE ($estadoFilter) $sucursalCondition";
                 $result_count = $conn->query($sql_count);
                 $total_rows = 0;
                 if ($result_count && $row_count = $result_count->fetch_assoc()) {

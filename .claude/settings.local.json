@@ -10,7 +10,20 @@
       "Bash(\"\\192.168.60.194\\xampp\\mysql\\bin\\mysql.exe\" -u root -e \"USE gpoascen_pedidos_app; DESCRIBE historial_cambios;\")",
       "Bash(test -d \"\\192.168.60.194\\xampp\\htdocs\\Pedidos_GA\\Archivos\")",
       "Bash(dir:*)",
-      "Bash(\"\\192.168.60.194\\xampp\\mysql\\bin\\mysql.exe\" -u root gpoascen_pedidos_app -e \"SELECT id, precio_verificado FROM pedidos WHERE id = 3801;\")"
+      "Bash(\"\\192.168.60.194\\xampp\\mysql\\bin\\mysql.exe\" -u root gpoascen_pedidos_app -e \"SELECT id, precio_verificado FROM pedidos WHERE id = 3801;\")",
+      "Bash(find:*)",
+      "Bash(\"\\192.168.60.194\\xampp\\mysql\\bin\\mysql.exe\" -u root -e \"USE ext; SHOW TABLES;\")",
+      "Bash(\"\\\\192.168.60.194\\xampp\\mysql\\bin\\mysql.exe\":*)",
+      "Bash(\"\\192.168.60.194\\xampp\\mysql\\bin\\mysql.exe\" -u root gpoascen_pedidos_app -e \"CREATE TABLE IF NOT EXISTS grupos_rutas (id INT AUTO_INCREMENT PRIMARY KEY, nombre_grupo VARCHAR(100), sucursal VARCHAR(30), chofer_asignado VARCHAR(100), fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP, usuario_creo VARCHAR(100), estado VARCHAR(20) DEFAULT ''ACTIVO'', notas TEXT, INDEX idx_chofer (chofer_asignado), INDEX idx_sucursal (sucursal), INDEX idx_estado (estado)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;\")",
+      "Bash(\"\\192.168.60.194\\xampp\\mysql\\bin\\mysql.exe\" -u root gpoascen_pedidos_app -e \"SHOW TABLES LIKE ''pedidos'';\")",
+      "Bash(for db in agenda_web ext)",
+      "Bash(do echo '=== Database: $db ===')",
+      "Bash(192.168.60.194xamppmysqlbinmysql.exe -u root -e \"USE $db; SHOW TABLES;\")",
+      "Bash(done)",
+      "Bash(\"\\192.168.60.194\\xampp\\mysql\\bin\\mysql.exe\" -u root gpoascen_pedidos_app -e \"DESCRIBE pedidos;\")",
+      "Bash(php -r:*)",
+      "Bash(\"\\192.168.60.194\\xampp\\mysql\\bin\\mysql.exe\" -u root gpoascen_pedidos_app -e \"CREATE TABLE IF NOT EXISTS pedidos_grupos (id INT AUTO_INCREMENT PRIMARY KEY, pedido_id INT NOT NULL, grupo_id INT NOT NULL, orden_entrega INT DEFAULT NULL, fecha_asignacion DATETIME DEFAULT CURRENT_TIMESTAMP, INDEX idx_pedido (pedido_id), INDEX idx_grupo (grupo_id), UNIQUE KEY unique_pedido_grupo (pedido_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;\")",
+      "Bash(\"C:\\xampp\\mysql\\bin\\mysql.exe\":*)"
     ],
     "deny": [],
     "ask": []

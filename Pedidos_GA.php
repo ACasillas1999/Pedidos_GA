@@ -31,6 +31,68 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 
   <!-- Estilos para modal de destinatario -->
   <style>
+    /* ========== ESTILOS PARA BOTONES ========== */
+    .btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 1.42857143;
+      text-align: center;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      transition: all 0.15s ease-in-out;
+    }
+
+    .btn-sm {
+      padding: 5px 10px;
+      font-size: 12px;
+      line-height: 1.5;
+      border-radius: 3px;
+    }
+
+    .btn-primary {
+      color: #fff;
+      background-color: #007bff;
+      border-color: #007bff;
+    }
+
+    .btn-primary:hover {
+      background-color: #0056b3;
+      border-color: #004085;
+    }
+
+    .btn-success {
+      color: #fff;
+      background-color: #28a745;
+      border-color: #28a745;
+    }
+
+    .btn-success:hover {
+      background-color: #218838;
+      border-color: #1e7e34;
+    }
+
+    .btn-secondary {
+      color: #fff;
+      background-color: #6c757d;
+      border-color: #6c757d;
+    }
+
+    .btn-secondary:hover {
+      background-color: #5a6268;
+      border-color: #545b62;
+    }
+
+    .btn:focus,
+    .btn:active {
+      outline: 0;
+      box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
     .mapboxgl-map {
       border-radius: 8px;
       margin-top: 10px;
@@ -138,11 +200,17 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         </a>
         <ul class="dropdown-menu" id="menu-admin">
           <?php if ($_SESSION["Rol"] === "Admin"): ?>
-          <li>
-            <a href="mapa_calor.php" title="Mapa de Calor">
-              <img src="\Pedidos_GA\Img\Botones entregas\Pedidos_GA\MAPA_NA.png" alt="Mapa Calor" class="icono-mapa-calor" style="max-width: 60%; height: auto;">
+            <li>
+            <a href="mapa_calor.php" title="Mapa de Calor" style="display:flex; align-items:center; justify-content:center;">
+              <!-- SVG provisional como icono de "Mapa de Calor" -->
+              <svg class="icono-mapa-calor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="48" height="48" role="img" aria-label="Mapa de Calor" style="max-width:60%; height:auto;">
+              <!-- Círculos concéntricos para simular un punto de calor -->
+              <circle cx="12" cy="12" r="8" fill="#ffffffff"/>
+              <circle cx="12" cy="12" r="5" fill="#ffffffff"/>
+              <circle cx="12" cy="12" r="2" fill="#ffffffff"/>
+              </svg>
             </a>
-          </li>
+            </li>
           <?php endif; ?>
           <?php if ($_SESSION["Rol"] === "Admin" || $_SESSION["Rol"] === "JC" || $_SESSION["Rol"] === "MEC"): ?>
           <li>
@@ -306,9 +374,11 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
           });
       }
 
-      var imgNormalReportePrecios = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/ICONO_CHIDO.png";
-      var imgHoverReportePrecios = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/Precios_chido_BLANCO.png";
+    
       if (iconoReportePrecios) {
+          var imgNormalReportePrecios = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/ICONO_CHIDO.png";
+      var imgHoverReportePrecios = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/ICONO_CHIDO2_BLANCO.png";
+      
           iconoReportePrecios.addEventListener("mouseover", function() {
               iconoReportePrecios.src = imgHoverReportePrecios;
           });
@@ -761,7 +831,8 @@ document.addEventListener('DOMContentLoaded', function() {
       direccion: cb.dataset.direccion,
       precioVendedor: parseFloat(cb.dataset.precioVendedor) || 0,
       precioReal: parseFloat(cb.dataset.precioReal) || 0,
-      validado: parseInt(cb.dataset.validado) || 0
+      validado: parseInt(cb.dataset.validado) || 0,
+      coordenadas: cb.dataset.coordenadas || ''
     }));
 
     const count = pedidosSeleccionados.length;
@@ -886,18 +957,24 @@ async function abrirModalGestionMasiva(pedidos) {
     `;
   });
 
-  const { value: confirmado } = await Swal.fire({
+  const resultado = await Swal.fire({
     title: 'Gestión Masiva de Pedidos',
     html: `
       <div style="max-height: 60vh; overflow-y: auto; text-align: left;">
+        <div style="margin-bottom: 15px; padding: 10px; background: #e7f3ff; border-radius: 8px; border-left: 4px solid #006996;">
+          <strong>💡 Tip:</strong> Si deseas agrupar estos pedidos en una misma ruta, usa el botón "Crear Grupo/Ruta" para asignarles el mismo chofer a todos.
+        </div>
         ${pedidosHTML}
       </div>
     `,
     width: '90%',
     showCancelButton: true,
-    confirmButtonText: 'Guardar Todo',
+    showDenyButton: true,
+    confirmButtonText: 'Asignar Individualmente',
+    denyButtonText: '🚚 Crear Grupo/Ruta',
     cancelButtonText: 'Cancelar',
     confirmButtonColor: '#006996',
+    denyButtonColor: '#28a745',
     cancelButtonColor: '#6c757d',
     didOpen: () => {
       // Event listener para cambio de sucursal
@@ -1027,8 +1104,13 @@ async function abrirModalGestionMasiva(pedidos) {
     }
   });
 
-  if (confirmado) {
-    await procesarPedidosMasivamente(confirmado);
+  // Manejar la respuesta del modal
+  if (resultado.isConfirmed && resultado.value) {
+    // Asignación individual (comportamiento original)
+    await procesarPedidosMasivamente(resultado.value);
+  } else if (resultado.isDenied) {
+    // Crear grupo/ruta - primero verificar conflictos
+    await verificarYCrearGrupo(pedidos);
   }
 }
 
@@ -1098,6 +1180,684 @@ async function procesarPedidosMasivamente(pedidos) {
     });
   }
 }
+
+// ========== CREAR GRUPO/RUTA ==========
+
+// Verificar conflictos antes de crear grupo
+async function verificarYCrearGrupo(pedidos) {
+  // Mostrar indicador de carga
+  Swal.fire({
+    title: 'Verificando...',
+    text: 'Comprobando si los pedidos ya están en otros grupos',
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  });
+
+  try {
+    // Obtener solo los IDs de los pedidos
+    const pedidosIds = pedidos.map(p => p.id);
+
+    // Llamar al endpoint de verificación
+    const response = await fetch('verificar_pedidos_en_grupos.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ pedidos_ids: pedidosIds })
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: data.message || 'Error al verificar pedidos'
+      });
+      return;
+    }
+
+    // Cerrar el indicador de carga
+    Swal.close();
+
+    // Si no hay conflictos, proceder directamente
+    if (!data.tiene_conflictos) {
+      await abrirModalCrearGrupo(pedidos, false);
+      return;
+    }
+
+    // Si hay conflictos, mostrar advertencia
+    let mensajeConflictos = '<div style="text-align: left; margin: 15px 0;">';
+    mensajeConflictos += '<p style="color: #856404; margin-bottom: 10px;">⚠️ <strong>Los siguientes pedidos ya están asignados a otros grupos:</strong></p>';
+    mensajeConflictos += '<div style="background: #fff3cd; padding: 15px; border-radius: 5px; border-left: 4px solid #ffc107; max-height: 200px; overflow-y: auto;">';
+
+    data.pedidos_en_grupos.forEach(pedido => {
+      mensajeConflictos += `
+        <div style="padding: 8px 0; border-bottom: 1px solid #ffe69c;">
+          <strong>Pedido #${pedido.pedido_id}</strong> - ${pedido.FACTURA}<br>
+          <small style="color: #666;">
+            Cliente: ${pedido.NOMBRE_CLIENTE}<br>
+            Grupo actual: "${pedido.nombre_grupo}" (Chofer: ${pedido.chofer_asignado})
+          </small>
+        </div>
+      `;
+    });
+
+    mensajeConflictos += '</div></div>';
+
+    const resultado = await Swal.fire({
+      icon: 'warning',
+      title: 'Pedidos ya asignados a grupos',
+      html: `
+        ${mensajeConflictos}
+        <p style="margin-top: 15px; color: #333;">
+          <strong>¿Qué deseas hacer?</strong>
+        </p>
+      `,
+      width: '650px',
+      showDenyButton: true,
+      showCancelButton: true,
+      confirmButtonText: 'Mover al nuevo grupo',
+      denyButtonText: 'Continuar sin cambios',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#28a745',
+      denyButtonColor: '#6c757d',
+      cancelButtonColor: '#dc3545'
+    });
+
+    if (resultado.isConfirmed) {
+      // Usuario quiere mover los pedidos al nuevo grupo
+      await abrirModalCrearGrupo(pedidos, true);
+    } else if (resultado.isDenied) {
+      // Usuario quiere continuar pero sin mover los que ya están en grupos
+      // Filtrar solo los pedidos que NO están en grupos
+      const pedidosEnGruposIds = data.pedidos_en_grupos.map(p => p.pedido_id);
+      const pedidosSinGrupo = pedidos.filter(p => !pedidosEnGruposIds.includes(p.id));
+
+      if (pedidosSinGrupo.length === 0) {
+        Swal.fire({
+          icon: 'info',
+          title: 'Sin pedidos disponibles',
+          text: 'Todos los pedidos seleccionados ya están en grupos activos.'
+        });
+        return;
+      }
+
+      await abrirModalCrearGrupo(pedidosSinGrupo, false);
+    }
+    // Si es cancelar, no hacer nada
+
+  } catch (error) {
+    console.error('Error verificando conflictos:', error);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Error al verificar conflictos. ' + error.message
+    });
+  }
+}
+
+async function abrirModalCrearGrupo(pedidos, moverDesdeOtrosGrupos = false) {
+  // Generar lista de pedidos para mostrar
+  let listaPedidos = '<div style="margin: 15px 0; padding: 10px; background: #f8f9fa; border-radius: 5px; max-height: 200px; overflow-y: auto;">';
+  listaPedidos += '<strong>Pedidos seleccionados:</strong><ul style="margin: 10px 0; text-align: left;">';
+
+  pedidos.forEach(pedido => {
+    listaPedidos += `<li>Pedido #${pedido.id} - ${pedido.factura} (${pedido.cliente})</li>`;
+  });
+
+  listaPedidos += '</ul></div>';
+
+  // Generar HTML para validación de precios
+  let preciosHTML = '<div style="margin: 15px 0;">';
+  preciosHTML += '<div style="background: white; padding: 15px; border-radius: 8px; border: 2px solid #006996;">';
+  preciosHTML += '<h4 style="margin-top: 0; color: #006996;">Validación de Precios</h4>';
+
+  pedidos.forEach((pedido, index) => {
+    const alertaPrecio = pedido.precioReal > 0 && pedido.precioReal < 1000
+      ? '<span style="color: #856404; font-size: 12px;">⚠️ Precio menor a $1000</span>'
+      : '';
+
+    preciosHTML += `
+      <div style="padding: 10px; margin-bottom: 10px; background: #f8f9fa; border-radius: 5px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <strong style="color: #006996;">Pedido #${pedido.id}</strong>
+          <span style="color: #666; font-size: 13px;">Precio vendedor: $${pedido.precioVendedor}</span>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <input type="number" class="grupo-precio-real" data-index="${index}"
+                 value="${pedido.precioReal}" step="0.01" min="0.01"
+                 placeholder="Precio real"
+                 style="flex: 1; padding: 8px; border: 1px solid #006996; border-radius: 4px;">
+          <label style="display: flex; align-items: center; gap: 5px; white-space: nowrap;">
+            <input type="checkbox" class="grupo-validar-precio" data-index="${index}"
+                   ${pedido.validado === 1 ? 'checked' : ''}
+                   style="width: 18px; height: 18px;">
+            <span>Validar</span>
+          </label>
+        </div>
+        ${alertaPrecio}
+      </div>
+    `;
+  });
+
+  preciosHTML += '</div></div>';
+
+  const result = await Swal.fire({
+    title: '🚚 Crear Grupo/Ruta',
+    html: `
+      <div style="text-align: left;">
+        <p style="color: #666; margin-bottom: 15px;">
+          Agrupa estos pedidos y asígnalos todos al mismo chofer para optimizar la ruta de entrega.
+        </p>
+
+        ${listaPedidos}
+
+        ${preciosHTML}
+
+        <div style="margin: 15px 0;">
+          <label style="display: block; font-weight: bold; margin-bottom: 5px;">Nombre del Grupo (opcional):</label>
+          <input type="text" id="grupo-nombre" placeholder="Ej: Ruta Norte Mañana"
+                 style="width: 100%; padding: 10px; border: 1px solid #006996; border-radius: 4px;">
+          <small style="color: #666;">Si lo dejas vacío, se generará automáticamente</small>
+        </div>
+
+        <div style="margin: 15px 0;">
+          <label style="display: block; font-weight: bold; margin-bottom: 5px;">Sucursal:</label>
+          <select id="grupo-sucursal" style="width: 100%; padding: 10px; border: 1px solid #006996; border-radius: 4px;">
+            <option value="">Seleccionar sucursal...</option>
+            <option value="GABSA">GABSA</option>
+            <option value="ILUMINACION">ILUMINACION</option>
+            <option value="DIMEGSA">DIMEGSA</option>
+            <option value="DEASA">DEASA</option>
+            <option value="AIESA">AIESA</option>
+            <option value="SEGSA">SEGSA</option>
+            <option value="FESA">FESA</option>
+            <option value="TAPATIA">TAPATIA</option>
+            <option value="VALLARTA">VALLARTA</option>
+            <option value="CODI">CODI</option>
+            <option value="QUERETARO">QUERETARO</option>
+          </select>
+        </div>
+
+        <div style="margin: 15px 0;">
+          <label style="display: block; font-weight: bold; margin-bottom: 5px;">Chofer:</label>
+          <select id="grupo-chofer" disabled style="width: 100%; padding: 10px; border: 1px solid #006996; border-radius: 4px;">
+            <option value="">Primero seleccione sucursal</option>
+          </select>
+        </div>
+
+        <div style="margin: 15px 0;">
+          <label style="display: block; font-weight: bold; margin-bottom: 5px;">Notas (opcional):</label>
+          <textarea id="grupo-notas" rows="3" placeholder="Notas o comentarios sobre esta ruta..."
+                    style="width: 100%; padding: 10px; border: 1px solid #006996; border-radius: 4px; resize: vertical;"></textarea>
+        </div>
+
+        <!-- Mapa de vista previa -->
+        <div style="margin: 15px 0;">
+          <label style="display: block; font-weight: bold; margin-bottom: 5px;">
+            🗺️ Vista Previa de la Ruta:
+          </label>
+          <div id="preview-map" style="width: 100%; height: 350px; border-radius: 8px; border: 2px solid #006996;"></div>
+          <small style="color: #666; display: block; margin-top: 5px;">
+            Esta es la ruta sugerida basada en las direcciones de los pedidos seleccionados
+          </small>
+        </div>
+      </div>
+    `,
+    width: '900px',
+    showCancelButton: true,
+    confirmButtonText: 'Crear Grupo y Asignar',
+    cancelButtonText: 'Cancelar',
+    confirmButtonColor: '#28a745',
+    cancelButtonColor: '#6c757d',
+    didOpen: () => {
+      // Cargar choferes cuando se selecciona sucursal
+      const sucursalSelect = document.getElementById('grupo-sucursal');
+      const choferSelect = document.getElementById('grupo-chofer');
+
+      sucursalSelect.addEventListener('change', async function() {
+        const sucursal = this.value;
+
+        if (!sucursal) {
+          choferSelect.disabled = true;
+          choferSelect.innerHTML = '<option value="">Primero seleccione sucursal</option>';
+          return;
+        }
+
+        try {
+          const response = await fetch(`obtener_choferes.php?sucursal=${encodeURIComponent(sucursal)}`);
+          const choferes = await response.json();
+
+          choferSelect.disabled = false;
+          choferSelect.innerHTML = '<option value="">Seleccionar chofer...</option>';
+
+          // Separar choferes con y sin vehículo
+          const conVehiculo = choferes.filter(c => c.tiene_vehiculo);
+          const sinVehiculo = choferes.filter(c => !c.tiene_vehiculo);
+
+          // Agregar grupos
+          if (conVehiculo.length > 0) {
+            const optgroupCon = document.createElement('optgroup');
+            optgroupCon.label = 'Con vehículo';
+            conVehiculo.forEach(chofer => {
+              const option = document.createElement('option');
+              option.value = chofer.username;
+              option.textContent = `${chofer.username} – ${chofer.placa || 'sin placa'}`;
+              optgroupCon.appendChild(option);
+            });
+            choferSelect.appendChild(optgroupCon);
+          }
+
+          if (sinVehiculo.length > 0) {
+            const optgroupSin = document.createElement('optgroup');
+            optgroupSin.label = 'Sin vehículo';
+            sinVehiculo.forEach(chofer => {
+              const option = document.createElement('option');
+              option.value = chofer.username;
+              option.textContent = `${chofer.username} – sin vehículo`;
+              option.disabled = true;
+              optgroupSin.appendChild(option);
+            });
+            choferSelect.appendChild(optgroupSin);
+          }
+        } catch (error) {
+          console.error('Error al cargar choferes:', error);
+          Swal.showValidationMessage('Error al cargar choferes');
+        }
+      });
+
+      // Validación de precios en tiempo real
+      document.querySelectorAll('.grupo-precio-real').forEach(input => {
+        input.addEventListener('input', function() {
+          const precio = parseFloat(this.value);
+          const parent = this.parentElement.parentElement;
+          let alerta = parent.querySelector('span[style*="color: #856404"]');
+
+          if (!isNaN(precio) && precio > 0 && precio < 1000) {
+            if (!alerta) {
+              alerta = document.createElement('span');
+              alerta.style.cssText = 'color: #856404; font-size: 12px; display: block; margin-top: 5px;';
+              alerta.textContent = '⚠️ Precio menor a $1000';
+              parent.appendChild(alerta);
+            }
+            this.style.backgroundColor = '#fff3cd';
+          } else {
+            if (alerta) alerta.remove();
+            this.style.backgroundColor = '';
+          }
+        });
+      });
+
+      // Inicializar mapa de vista previa
+      mapboxgl.accessToken = 'pk.eyJ1IjoiYWNhc2lsbGFzNzY2IiwiYSI6ImNsdW12cTZyMjB4NnMya213MDdseXp6ZGgifQ.t7-l1lQfd8mgHILM5YrdNw';
+
+      const previewMap = new mapboxgl.Map({
+        container: 'preview-map',
+        style: 'mapbox://styles/mapbox/streets-v12',
+        center: [-103.3494, 20.6737], // Guadalajara por defecto
+        zoom: 11
+      });
+
+      let warehouseMarker = null;
+      let warehouseCoords = null;
+
+      // Función para actualizar el mapa de vista previa
+      async function actualizarMapaPreview() {
+        // Limpiar marcadores y rutas anteriores
+        const markers = document.querySelectorAll('.mapboxgl-marker');
+        markers.forEach(marker => marker.remove());
+
+        if (previewMap.getSource('route')) {
+          previewMap.removeLayer('route');
+          previewMap.removeSource('route');
+        }
+
+        // Remover información de ruta si existe
+        const infoDiv = document.getElementById('preview-map').parentElement.querySelector('div[style*="background: #d4edda"]');
+        if (infoDiv) infoDiv.remove();
+
+        const coordenadasValidas = [];
+        const bounds = new mapboxgl.LngLatBounds();
+
+        // Obtener sucursal del primer pedido (todos deben ser de la misma sucursal)
+        let sucursalPedido = null;
+        if (pedidos.length > 0 && pedidos[0].sucursal) {
+          sucursalPedido = pedidos[0].sucursal;
+        }
+
+        // Si hay sucursal del pedido, obtener coordenadas del almacén
+        if (sucursalPedido) {
+          try {
+            // Determinar qué sucursal usar (TAPATIA para ILUMINACION/TAPATIA)
+            let sucursalOrigen = sucursalPedido;
+            if (sucursalPedido === 'ILUMINACION' || sucursalPedido === 'TAPATIA') {
+              sucursalOrigen = 'TAPATIA';
+            }
+
+            const response = await fetch('obtener_ubicacion.php?sucursal=' + encodeURIComponent(sucursalOrigen));
+            const data = await response.json();
+
+            if (data.success && data.ubicacion && data.ubicacion.coordenadas) {
+              let coordString = data.ubicacion.coordenadas.trim();
+              let lat, lng;
+
+              // Parsear coordenadas (formato "lat, lng")
+              if (coordString.includes(',')) {
+                const parts = coordString.split(',').map(p => p.trim());
+                if (parts.length === 2) {
+                  lat = parseFloat(parts[0]);
+                  lng = parseFloat(parts[1]);
+                }
+              }
+
+              if (!isNaN(lng) && !isNaN(lat) && lng !== 0 && lat !== 0) {
+                warehouseCoords = [lng, lat];
+
+                // Crear marcador de bodega
+                const elOrigen = document.createElement('div');
+                elOrigen.style.cssText = `
+                  background: #ff6b6b;
+                  color: white;
+                  width: 40px;
+                  height: 40px;
+                  border-radius: 50%;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-size: 24px;
+                  border: 3px solid white;
+                  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+                  cursor: pointer;
+                `;
+                elOrigen.textContent = '🏢';
+
+                warehouseMarker = new mapboxgl.Marker(elOrigen)
+                  .setLngLat([lng, lat])
+                  .setPopup(new mapboxgl.Popup().setHTML(
+                    '<strong>🏢 Bodega/Origen</strong><br>' +
+                    (data.ubicacion.NombreCompleto || '') + '<br>' +
+                    (data.ubicacion.Direccion || '')
+                  ))
+                  .addTo(previewMap);
+
+                bounds.extend([lng, lat]);
+                coordenadasValidas.push([lng, lat]);
+              }
+            }
+          } catch (error) {
+            console.error('Error obteniendo coordenadas de bodega:', error);
+          }
+        }
+
+        // Procesar coordenadas de los pedidos
+        pedidos.forEach((pedido, index) => {
+        if (pedido.coordenadas && pedido.coordenadas.trim() !== '') {
+          try {
+            let coordString = pedido.coordenadas.trim();
+            let lat, lng;
+
+            // Intentar parsear como JSON primero
+            try {
+              const coords = JSON.parse(coordString);
+              lng = parseFloat(coords.lng);
+              lat = parseFloat(coords.lat);
+            } catch (jsonError) {
+              // Intentar formato simple: "20.71685200, -103.36460500"
+              if (coordString.includes(',')) {
+                const parts = coordString.split(',').map(p => p.trim());
+                if (parts.length === 2) {
+                  lat = parseFloat(parts[0]);
+                  lng = parseFloat(parts[1]);
+                }
+              }
+            }
+
+            if (!isNaN(lng) && !isNaN(lat) && lng !== 0 && lat !== 0) {
+              // Crear marcador numerado
+              const el = document.createElement('div');
+              el.style.cssText = `
+                background: #28a745;
+                color: white;
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                font-size: 14px;
+                border: 2px solid white;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+              `;
+              el.textContent = index + 1;
+
+              new mapboxgl.Marker(el)
+                .setLngLat([lng, lat])
+                .setPopup(new mapboxgl.Popup().setHTML(
+                  '<strong>Pedido #' + pedido.id + '</strong><br>' +
+                  pedido.cliente + '<br>' +
+                  pedido.direccion
+                ))
+                .addTo(previewMap);
+
+              bounds.extend([lng, lat]);
+              coordenadasValidas.push([lng, lat]);
+            }
+          } catch (e) {
+            console.error('Error procesando coordenadas del pedido ' + pedido.id + ':', e);
+          }
+        }
+      });
+
+        // Ajustar vista al contenido y dibujar ruta
+        if (coordenadasValidas.length > 0) {
+          previewMap.fitBounds(bounds, { padding: 50 });
+
+          // Dibujar ruta si hay más de un punto (necesitamos origen + al menos 1 destino)
+          if (coordenadasValidas.length > 1) {
+            // Esperar a que el mapa esté cargado
+            if (previewMap.loaded()) {
+              await dibujarRutaPreview(coordenadasValidas);
+            } else {
+              previewMap.on('load', async () => {
+                await dibujarRutaPreview(coordenadasValidas);
+              });
+            }
+          }
+        }
+      }
+
+      // Función auxiliar para dibujar la ruta en el preview
+      async function dibujarRutaPreview(coordenadasValidas) {
+        try {
+          // Limitar a 25 puntos (límite de Mapbox)
+          const coords = coordenadasValidas.slice(0, 25);
+          const coordsString = coords.map(c => c.join(',')).join(';');
+          const url = 'https://api.mapbox.com/directions/v5/mapbox/driving/' + coordsString + '?geometries=geojson&access_token=' + mapboxgl.accessToken;
+
+          const response = await fetch(url);
+          const data = await response.json();
+
+          if (data.routes && data.routes.length > 0) {
+            const route = data.routes[0].geometry;
+            const distanciaKm = (data.routes[0].distance / 1000).toFixed(2);
+            const tiempoMin = Math.round(data.routes[0].duration / 60);
+
+            // Agregar capa de ruta
+            if (previewMap.getSource('route')) {
+              previewMap.getSource('route').setData({
+                type: 'Feature',
+                geometry: route
+              });
+            } else {
+              previewMap.addSource('route', {
+                type: 'geojson',
+                data: {
+                  type: 'Feature',
+                  geometry: route
+                }
+              });
+
+              previewMap.addLayer({
+                id: 'route',
+                type: 'line',
+                source: 'route',
+                layout: {
+                  'line-join': 'round',
+                  'line-cap': 'round'
+                },
+                paint: {
+                  'line-color': '#28a745',
+                  'line-width': 4,
+                  'line-opacity': 0.8
+                }
+              });
+            }
+
+            // Mostrar información de la ruta
+            const infoDiv = document.createElement('div');
+            infoDiv.style.cssText = 'margin-top: 10px; padding: 10px; background: #d4edda; border-radius: 5px; color: #155724; text-align: center;';
+            infoDiv.innerHTML = '<strong>📊 Información de la Ruta:</strong><br>' +
+              'Distancia: ' + distanciaKm + ' km | Tiempo estimado: ' + tiempoMin + ' minutos';
+            document.getElementById('preview-map').parentElement.appendChild(infoDiv);
+          }
+        } catch (error) {
+          console.error('Error al obtener ruta:', error);
+        }
+      }
+
+      // Inicializar el mapa al abrir el modal
+      previewMap.on('load', () => {
+        actualizarMapaPreview();
+      });
+
+      // Actualizar mapa cuando cambie la sucursal
+      document.getElementById('grupo-sucursal').addEventListener('change', () => {
+        actualizarMapaPreview();
+      });
+    },
+    preConfirm: () => {
+      const nombreGrupo = document.getElementById('grupo-nombre').value.trim();
+      const sucursal = document.getElementById('grupo-sucursal').value;
+      const chofer = document.getElementById('grupo-chofer').value;
+      const notas = document.getElementById('grupo-notas').value.trim();
+
+      // Validaciones
+      if (!sucursal) {
+        Swal.showValidationMessage('Debe seleccionar una sucursal');
+        return false;
+      }
+
+      if (!chofer) {
+        Swal.showValidationMessage('Debe seleccionar un chofer');
+        return false;
+      }
+
+      // Validar precios
+      const pedidosConPrecios = [];
+      let error = null;
+
+      pedidos.forEach((pedido, index) => {
+        const precioReal = parseFloat(document.querySelector(`.grupo-precio-real[data-index="${index}"]`).value);
+        const validado = document.querySelector(`.grupo-validar-precio[data-index="${index}"]`).checked;
+
+        if (isNaN(precioReal) || precioReal <= 0) {
+          error = `El precio del pedido #${pedido.id} debe ser mayor a 0`;
+          return;
+        }
+
+        if (!validado) {
+          error = `Debe validar el precio del pedido #${pedido.id}`;
+          return;
+        }
+
+        pedidosConPrecios.push({
+          id: pedido.id,
+          precio_real: precioReal,
+          validado: validado
+        });
+      });
+
+      if (error) {
+        Swal.showValidationMessage(error);
+        return false;
+      }
+
+      return {
+        nombre_grupo: nombreGrupo,
+        sucursal: sucursal,
+        chofer: chofer,
+        notas: notas,
+        pedidos: pedidosConPrecios
+      };
+    }
+  });
+
+  if (result.isConfirmed && result.value) {
+    await crearGrupoRuta(result.value, moverDesdeOtrosGrupos);
+  }
+}
+
+// Crear grupo/ruta en el backend
+async function crearGrupoRuta(datos, moverDesdeOtrosGrupos = false) {
+  Swal.fire({
+    title: 'Creando Grupo...',
+    html: 'Creando grupo y asignando pedidos, por favor espere...',
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  });
+
+  try {
+    // Agregar flag al objeto de datos
+    datos.mover_desde_otros_grupos = moverDesdeOtrosGrupos;
+
+    const response = await fetch('crear_grupo_ruta.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(datos)
+    });
+
+    const resultado = await response.json();
+
+    if (resultado.success) {
+      await Swal.fire({
+        icon: 'success',
+        title: 'Grupo Creado',
+        html: `
+          <p><strong>${resultado.nombre_grupo}</strong></p>
+          <p>${resultado.pedidos_actualizados} de ${resultado.total_pedidos} pedidos asignados</p>
+          ${resultado.errores ? `<p style="color: #dc3545;">Con algunos errores</p>` : ''}
+        `,
+        confirmButtonColor: '#28a745'
+      });
+
+      // Recargar la página para mostrar los cambios
+      window.location.reload();
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: resultado.message || 'No se pudo crear el grupo',
+        confirmButtonColor: '#006996'
+      });
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error de Conexión',
+      text: 'No se pudo conectar con el servidor',
+      confirmButtonColor: '#006996'
+    });
+  }
+}
 </script>
 <?php endif; ?>
 
@@ -1142,6 +1902,70 @@ async function procesarPedidosMasivamente(pedidos) {
   font-size: 16px;
   margin: 0 10px;
   color: #333;
+}
+
+/* ========== ESTILOS PARA BADGE DE GRUPO/RUTA ========== */
+.badge-grupo-link {
+  display: inline-block;
+  max-width: 100%;
+  text-decoration: none;
+}
+
+.badge-grupo {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: white;
+  padding: 4px 10px;
+  border-radius: 15px;
+  font-size: 11px;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  animation: fadeInBadge 0.3s ease-in;
+  cursor: pointer;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.badge-grupo:hover {
+  transform: scale(1.05);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+  filter: brightness(1.1);
+}
+
+.grupo-icono {
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.grupo-nombre {
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.grupo-orden {
+  background: rgba(255, 255, 255, 0.3);
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 10px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+@keyframes fadeInBadge {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 </style>
