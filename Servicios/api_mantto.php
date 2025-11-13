@@ -570,49 +570,69 @@ try {
   if ($method === 'GET' && $action === 'observaciones') {
     try {
       // Obtener vehículos con ítems calificados como "Mal" en checklist
-      // Basado en estructura: id, id_vehiculo, id_chofer, fecha_inspeccion, kilometraje, seccion, item, calificacion, observaciones_rotulado
+      // AGRUPADO por vehículo + sección + ítem, con contador de reportes
       $sql = "
         SELECT
           cv.id_vehiculo,
-          cv.id_chofer,
           v.placa,
           v.tipo,
           v.Sucursal,
           v.Km_Actual,
           cv.seccion,
           cv.item,
-          cv.calificacion,
-          cv.observaciones_rotulado,
-          cv.fecha_inspeccion,
-          cv.kilometraje,
-          cv.id AS checklist_id
+          COUNT(*) as total_reportes,
+          MAX(cv.fecha_inspeccion) as ultima_inspeccion,
+          MAX(cv.kilometraje) as ultimo_km,
+          GROUP_CONCAT(
+            CONCAT(DATE_FORMAT(cv.fecha_inspeccion, '%Y-%m-%d'), '|', COALESCE(cv.observaciones_rotulado, 'Sin observaciones'))
+            ORDER BY cv.fecha_inspeccion DESC
+            SEPARATOR '###'
+          ) as historial_reportes
         FROM checklist_vehicular cv
         INNER JOIN vehiculos v ON cv.id_vehiculo = v.id_vehiculo
         WHERE cv.calificacion = 'Mal'
-        ORDER BY cv.seccion, v.placa, cv.fecha_inspeccion DESC
+        GROUP BY cv.id_vehiculo, cv.seccion, cv.item, v.placa, v.tipo, v.Sucursal, v.Km_Actual
+        ORDER BY cv.seccion, v.placa, MAX(cv.fecha_inspeccion) DESC
       ";
 
       $stmt = $pdo->prepare($sql);
       $stmt->execute();
       $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-      // Ahora buscar si cada vehículo tiene órdenes de servicio activas relacionadas con observaciones
+      // Procesar historial y buscar órdenes de servicio
       $result = [];
       foreach ($items as $item) {
         $idVeh = (int)$item['id_vehiculo'];
         $seccion = $item['seccion'];
+
+        // Parsear historial de reportes
+        $historial = [];
+        if (!empty($item['historial_reportes'])) {
+          $reportes = explode('###', $item['historial_reportes']);
+          foreach ($reportes as $reporte) {
+            $partes = explode('|', $reporte, 2);
+            if (count($partes) === 2) {
+              $historial[] = [
+                'fecha' => $partes[0],
+                'observacion' => $partes[1]
+              ];
+            }
+          }
+        }
+        $item['historial'] = $historial;
+        unset($item['historial_reportes']);
 
         // Buscar orden de servicio relacionada
         $sqlOrden = "
           SELECT id, estatus
           FROM orden_servicio
           WHERE id_vehiculo = ?
-            AND notas LIKE ?
+            AND (notas LIKE ? OR notas LIKE ?)
             AND COALESCE(estatus, 'Pendiente') IN ('Pendiente', 'Programado', 'EnTaller')
           LIMIT 1
         ";
         $stmtOrden = $pdo->prepare($sqlOrden);
-        $stmtOrden->execute([$idVeh, "%[OBSERVACIONES - $seccion]%"]);
+        $stmtOrden->execute([$idVeh, "%[CHECKLIST - $seccion]%", "%[OBSERVACIONES - $seccion]%"]);
         $orden = $stmtOrden->fetch(PDO::FETCH_ASSOC);
 
         $item['orden_id'] = $orden ? $orden['id'] : null;

@@ -9,8 +9,6 @@ session_start();
 <html lang="es">
 
 <head>
-
-
   <meta charset="utf-8">
   <title>Detalles Chofer</title>
   <link rel="stylesheet" href="../styles.css">
@@ -22,7 +20,6 @@ session_start();
   </script>
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-
 </head>
 
 <body>
@@ -63,6 +60,16 @@ session_start();
           this.src = imgNormalAgregar;
         });
       }
+
+      var iconoObservaciones = document.querySelector(".icono-observaciones");
+      if (iconoObservaciones) {
+        iconoObservaciones.addEventListener("mouseover", function() {
+          this.style.transform = "scale(1.1)";
+        });
+        iconoObservaciones.addEventListener("mouseout", function() {
+          this.style.transform = "scale(1)";
+        });
+      }
     });
   </script>
 
@@ -77,6 +84,10 @@ session_start();
         <a href="agregar_servicio.php">
           <img src="/Pedidos_GA/Img/SVG/CrearSerN.svg" class="icono-agregar_servicio sidebar-icon" alt="Agregar">
         </a>
+      </li>
+      <li>
+        <a href="observaciones.php" title="Observaciones de Vehículos">
+          <span class="icono-observaciones sidebar-icon" style="font-size: 2rem; transition: transform 0.2s;">🔍</span>
         </a>
       </li>
       <li class="corner-left-bottom">
@@ -419,26 +430,24 @@ session_start();
         border: 1px solid #cfeacf
       }
 
-      /* Estilos para vista de Observaciones - Diseño Moderno tipo Dashboard */
+      /* Estilos para vista de Observaciones - Diseño Moderno tipo Dashboard + menú lateral */
       .observaciones-wrap {
         background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
         border-radius: 16px;
         padding: 2rem;
-        /* Grid moved to inner container */
+      }
+
+      .observaciones-wrap > #observaciones-content {
+        min-height: 600px;
+        display: grid;
+        grid-template-columns: 260px 1fr;
+        gap: 2rem;
       }
 
       @media (max-width: 1200px) {
         .observaciones-wrap > #observaciones-content {
           grid-template-columns: 1fr;
         }
-      }
-
-      /* Grid de 2 columnas aplicado al contenedor interno */
-      .observaciones-wrap > #observaciones-content {
-        min-height: 600px;
-        display: grid;
-        grid-template-columns: 280px 1fr;
-        gap: 2rem;
       }
 
       .obs-sidebar {
@@ -677,6 +686,14 @@ session_start();
         transition: all .3s ease;
       }
 
+      .obs-section.hidden {
+        display: none !important;
+      }
+
+      .obs-card.hidden {
+        display: none !important;
+      }
+
       .obs-section:hover {
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
       }
@@ -781,7 +798,7 @@ session_start();
       .obs-section-stats {
         display: flex;
         align-items: center;
-        gap: 1rem;
+        gap: .75rem;
       }
 
       .obs-section-count {
@@ -803,9 +820,42 @@ session_start();
         box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
       }
 
+      /* Botón para plegar/desplegar sección (accordion) */
+      .obs-section-toggle {
+        background: rgba(255, 255, 255, 0.18);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        border-radius: 999px;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #ffffff;
+        transition: background .2s, transform .2s;
+      }
+
+      .obs-section-toggle:hover {
+        background: rgba(255, 255, 255, 0.25);
+        transform: scale(1.05);
+      }
+
+      .obs-section-toggle-icon {
+        transition: transform .2s;
+      }
+
+      .obs-section.collapsed .obs-section-toggle-icon {
+        transform: rotate(-90deg);
+      }
+
       .obs-section-body {
         padding: 1.5rem;
         background: #fafbfc;
+        display: block;
+      }
+
+      .obs-section.collapsed .obs-section-body {
+        display: none;
       }
 
       .obs-vehiculos {
@@ -827,13 +877,13 @@ session_start();
       }
 
       .obs-card {
-        background: #ffffff;
-        border: 2px solid #e9ecef;
-        border-radius: 12px;
-        overflow: hidden;
-        transition: all .3s ease;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-      }
+  background: #ffffff;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  /* overflow: hidden;  <- QUITADO para que no corte la tabla ni el botón */
+  transition: all .3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
 
       .obs-card:hover {
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
@@ -888,30 +938,39 @@ session_start();
         font-weight: 600;
       }
 
-      .obs-card-details {
-        padding: 1.5rem;
-        background: #ffffff;
-      }
+      /* === Tabla de Ítems Inspeccionados / Observaciones / Acción === */
+     .obs-card-details {
+  padding: 1.25rem 1.25rem 1.5rem;
+  background: #ffffff;
+  overflow-x: auto;        /* scroll horizontal si no cabe */
+  box-sizing: border-box;  /* que respete el ancho del card */
+}
+
 
       .obs-items-table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        margin-top: 1rem;
-      }
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: 1rem;
+  /* Dejamos que el contenido decida el ancho de columnas */
+  table-layout: auto;
+  min-width: 600px; /* fuerza scroll horizontal en pantallas chicas en vez de cortar */
+}
+
 
       .obs-items-table thead {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       }
 
       .obs-items-table thead th {
-        padding: 1rem 1.25rem;
+        padding: 0.75rem 0.9rem;
         text-align: left;
         font-weight: 700;
-        font-size: .85rem;
+        font-size: .8rem;
         color: #ffffff;
         text-transform: uppercase;
-        letter-spacing: .5px;
+        letter-spacing: .4px;
+        white-space: nowrap;
       }
 
       .obs-items-table thead th:first-child {
@@ -922,34 +981,62 @@ session_start();
         border-radius: 0 8px 0 0;
       }
 
-      .obs-items-table tbody tr {
-        transition: all .2s;
-        border-bottom: 1px solid #e9ecef;
-      }
-
       .obs-items-table tbody tr:hover {
         background: #f8f9fa;
-        transform: scale(1.01);
       }
 
       .obs-items-table tbody td {
-        padding: 1rem 1.25rem;
-        font-size: .9rem;
+        padding: 0.75rem 0.9rem;
+        font-size: .85rem;
         color: #495057;
+        vertical-align: top;
+        word-wrap: break-word;
+        word-break: break-word;
       }
 
-      .obs-items-table tbody td:last-child {
+      /* Distribución de columnas */
+      .obs-items-table th:nth-child(1),
+      .obs-items-table td:nth-child(1) {
+        width: 28%;
+      }
+
+      .obs-items-table th:nth-child(2),
+      .obs-items-table td:nth-child(2) {
+        width: 52%;
+      }
+
+      .obs-items-table th:nth-child(3),
+      .obs-items-table td:nth-child(3) {
+        width: 20%;
         text-align: center;
+        white-space: nowrap;
+      }
+
+      .obs-item-name {
+        font-weight: 700;
+        color: #212529;
+        display: flex;
+        align-items: flex-start;
+        gap: .5rem;
+        word-break: break-word;
+      }
+
+      .obs-item-obs {
+        color: #6c757d;
+        font-weight: 500;
+        line-height: 1.4;
+        word-break: break-word;
       }
 
       .btn-crear-orden-item {
-        padding: .5rem .9rem;
+        padding: .4rem .7rem;
+        font-size: .75rem;
+        white-space: nowrap;
         background: linear-gradient(135deg, #10b981 0%, #059669 100%);
         color: #ffffff;
         border: none;
         border-radius: 6px;
         font-weight: 700;
-        font-size: .75rem;
         cursor: pointer;
         transition: all .3s;
         text-transform: uppercase;
@@ -971,23 +1058,39 @@ session_start();
         transform: none;
       }
 
-      .obs-item-name {
-        font-weight: 700;
-        color: #212529;
-        display: flex;
-        align-items: center;
-        gap: .5rem;
+      /* Ajustes responsive para la tabla */
+      @media (max-width: 900px) {
+        .obs-items-table thead th {
+          font-size: .75rem;
+          padding: 0.6rem 0.7rem;
+        }
+
+        .obs-items-table tbody td {
+          font-size: .8rem;
+          padding: 0.6rem 0.7rem;
+        }
+
+        .obs-items-table th:nth-child(1),
+        .obs-items-table td:nth-child(1) {
+          width: 32%;
+        }
+
+        .obs-items-table th:nth-child(2),
+        .obs-items-table td:nth-child(2) {
+          width: 48%;
+        }
+
+        .obs-items-table th:nth-child(3),
+        .obs-items-table td:nth-child(3) {
+          width: 20%;
+        }
       }
 
-      .obs-item-name::before {
-        content: '⚠️';
-        font-size: 1.1rem;
-      }
-
-      .obs-item-obs {
-        color: #6c757d;
-        font-weight: 500;
-        line-height: 1.5;
+      @media (max-width: 600px) {
+        .btn-crear-orden-item {
+          width: 100%;
+          justify-content: center;
+        }
       }
 
       .obs-badge {
@@ -1083,15 +1186,6 @@ session_start();
 
         .obs-tipo {
           grid-template-columns: 1fr;
-        }
-
-        .obs-items-table {
-          font-size: .85rem;
-        }
-
-        .obs-items-table thead th,
-        .obs-items-table tbody td {
-          padding: .75rem;
         }
 
         .obs-card-footer {
@@ -1306,7 +1400,7 @@ session_start();
       }
     </style>
 
-    <!-- ===== Script del kanban + modal, envuelto en DOMContentLoaded ===== -->
+    <!-- ===== Script del kanban + modal + observaciones ===== -->
     <script>
       document.addEventListener('DOMContentLoaded', function() {
         const API_URL = 'api_mantto.php';
@@ -1343,8 +1437,8 @@ session_start();
         const state = {
           tab: 'board',
           items: [],
-          allItems: [], // Todos los items sin filtrar
-          observaciones: [], // Observaciones de vehículos con calificación "Mal"
+          allItems: [],
+          observaciones: [],
           draggingId: null,
           fechaDesde: '',
           fechaHasta: '',
@@ -1355,7 +1449,7 @@ session_start();
           }
         };
 
-        // Función para obtener el primer y último día del mes actual
+        // Rango de fechas del mes actual
         function getCurrentMonthRange() {
           const now = new Date();
           const year = now.getFullYear();
@@ -1368,7 +1462,6 @@ session_start();
           };
         }
 
-        // Función para filtrar items por rango de fechas
         function filterByDateRange(items, desde, hasta) {
           if (!desde && !hasta) return items;
           return items.filter(it => {
@@ -1381,7 +1474,6 @@ session_start();
           });
         }
 
-        // Función para actualizar el info de fechas
         function updateFechaInfo() {
           if (!el.fechaInfo) return;
           const total = state.allItems.length;
@@ -1401,7 +1493,7 @@ session_start();
           if (!t) {
             alert(msg);
             return;
-          } // <- guarda por si no existe el toast
+          }
           t.textContent = msg;
           t.style.background = ok ? '#0f172a' : '#9f1239';
           t.style.display = 'block';
@@ -1414,7 +1506,7 @@ session_start();
           });
           return r.json();
         }
-        // Reemplaza tu apiPost actual por esto:
+
         async function apiPost(action, data) {
           const r = await fetch(`${API_URL}?action=${encodeURIComponent(action)}`, {
             method: 'POST',
@@ -1422,11 +1514,10 @@ session_start();
               'Content-Type': 'application/json'
             },
             credentials: 'same-origin',
-            body: JSON.stringify(data) //  ya NO mandamos "action" dentro
+            body: JSON.stringify(data)
           });
           return r.json();
         }
-
 
         root.innerHTML = `
         <div class="mantto-tabs">
@@ -1488,7 +1579,7 @@ session_start();
           fechaInfo: root.querySelector('#fecha-info'),
         };
 
-        // Modal de confirmación de cambio de estatus
+        // ===== Modal confirm estatus =====
         const confirmEl = (function() {
           const html = document.createElement('div');
           html.innerHTML = `
@@ -1555,12 +1646,10 @@ session_start();
             const hoy = new Date().toISOString().slice(0, 10);
             confirmEl.date.value = hoy;
           }
-          // Si la orden no tiene servicio y vamos a Programado, pedirlo
           const cur = state.items.find(x => x.id === id);
           const needService = (to === 'Programado' && (!cur || !Number(cur.id_servicio || 0)));
           confirmEl.serviceWrap.style.display = needService ? 'block' : 'none';
           if (needService) {
-            // Cargar catálogos si faltan
             const ensureOptions = async () => {
               if (!state.options.servicios.length || !state.options.vehiculos.length) {
                 const res = await apiGet('options');
@@ -1595,6 +1684,7 @@ session_start();
           function onBackdrop(e) {
             if (e.target === confirmEl.wrap) close();
           }
+
           async function onOk() {
             const payload = {
               id,
@@ -1614,7 +1704,6 @@ session_start();
                   toast('Selecciona un servicio', false);
                   return;
                 }
-                // Asignar servicio antes de programar
                 const res = await apiPost('set_service', {
                   id,
                   id_servicio: srv
@@ -1668,7 +1757,6 @@ session_start();
             <span class="goto" data-goto="${it.id}" title="Ver detalle">ver detalle</span>
           </div>
         `;
-          // Si no tiene servicio asignado, agrega un acceso para asignarlo
           try {
             if (!(Number(it.id_servicio || 0) > 0)) {
               const tags = div.querySelector('.tags');
@@ -1711,7 +1799,7 @@ session_start();
             return;
           }
           if (destIdx > curIdx + 1) {
-            toast('Sigue la secuencia: Pendiente ? Programado ? En Taller ? Completado', false);
+            toast('Sigue la secuencia: Pendiente → Programado → En Taller → Completado', false);
             return;
           }
           if (dest === 'Programado' && cur && cur.status !== 'Pendiente') {
@@ -1781,9 +1869,9 @@ session_start();
             <td><span class="status-pill ${ (it.status==='Completado'?'s-comp':(it.status==='EnTaller'?'s-taller':(it.status==='Programado'?'s-prog':'s-pend'))) }">${humanStatus(it.status || 'Pendiente')}</span></td>
             <td>${it.prio || 'Media'}</td>
             <td>
-              ${it.status==='Pendiente' ? `<button data-move="${it.id}" data-to="Programado">? Programado</button>` : ''}
-              ${it.status==='Programado' ? `<button data-move="${it.id}" data-to="EnTaller">? En Taller</button>` : ''}
-              ${it.status==='EnTaller' ? `<button data-move="${it.id}" data-to="Completado">? Completado</button>` : ''}
+              ${it.status==='Pendiente' ? `<button data-move="${it.id}" data-to="Programado">→ Programado</button>` : ''}
+              ${it.status==='Programado' ? `<button data-move="${it.id}" data-to="EnTaller">→ En Taller</button>` : ''}
+              ${it.status==='EnTaller' ? `<button data-move="${it.id}" data-to="Completado">→ Completado</button>` : ''}
               <button data-goto="${it.id}">Detalle</button>
             </td>
           </tr>
@@ -1815,7 +1903,7 @@ session_start();
               });
             });
           });
-          // Agregar boton Asignar servicio dinámicamente a filas sin servicio
+
           try {
             const trs = Array.from(el.tbody.querySelectorAll('tr'));
             trs.forEach((tr, idx) => {
@@ -1845,7 +1933,7 @@ session_start();
           });
         }
 
-        // Función para renderizar observaciones agrupadas por sección
+        // ===== OBSERVACIONES con menú lateral + secciones desplegables =====
         function renderObservaciones() {
           const obsContent = root.querySelector('#observaciones-content');
           if (!obsContent) return;
@@ -1864,7 +1952,6 @@ session_start();
             return;
           }
 
-          // Agrupar por sección
           const groupedBySection = {};
           obs.forEach(item => {
             const seccion = item.seccion || 'Sin sección';
@@ -1892,7 +1979,6 @@ session_start();
             });
           });
 
-          // Iconos para cada tipo de sección
           const sectionIcons = {
             'SISTEMA DE LUCES': '💡',
             'PARTE EXTERNA': '🚗',
@@ -1902,8 +1988,6 @@ session_start();
             'default': '⚠️'
           };
 
-          // Generar HTML con buscador y filtros
-          // Primero contar vehículos por sección
           const sectionCounts = {};
           Object.keys(groupedBySection).forEach(seccion => {
             sectionCounts[seccion] = Object.keys(groupedBySection[seccion]).length;
@@ -1917,7 +2001,7 @@ session_start();
           let html = `
             <div class="obs-sidebar">
               <div class="obs-filter-buttons">
-                <div class="obs-filter-title">🎯 Filtrar Secciones</div>
+                <div class="obs-filter-title">🎯 Secciones del checklist</div>
                 <button class="obs-filter-btn active" data-filter="all">
                   <span class="obs-filter-btn-text">
                     <span class="obs-filter-btn-icon">📊</span>
@@ -1927,7 +2011,6 @@ session_start();
                 </button>
           `;
 
-          // Generar botones de filtro para cada sección
           Object.keys(groupedBySection).sort().forEach(seccion => {
             const icon = sectionIcons[seccion] || sectionIcons['default'];
             const count = sectionCounts[seccion];
@@ -1953,17 +2036,15 @@ session_start();
               <div class="obs-sections-grid" id="obs-sections-container">
           `;
 
-          // Generar HTML por sección con cards tipo carpeta
           let sectionIndex = 0;
           Object.keys(groupedBySection).sort().forEach(seccion => {
             const vehiculos = Object.values(groupedBySection[seccion]);
             const totalVehiculos = vehiculos.length;
             const icon = sectionIcons[seccion] || sectionIcons['default'];
             const totalItems = vehiculos.reduce((sum, v) => sum + v.items.length, 0);
-            const currentSectionIndex = sectionIndex; // Guardar el índice actual
 
             html += `
-              <div class="obs-section" data-seccion="${seccion}" id="obs-section-${currentSectionIndex}">
+              <div class="obs-section" data-seccion="${seccion}" id="obs-section-${sectionIndex}">
                 <div class="obs-section-header">
                   <div class="obs-section-header-content">
                     <div class="obs-section-header-left">
@@ -1979,6 +2060,9 @@ session_start();
                     </div>
                     <div class="obs-section-stats">
                       <span class="obs-section-count">${totalVehiculos}</span>
+                      <button type="button" class="obs-section-toggle" aria-expanded="true">
+                        <i class="fa-solid fa-chevron-down obs-section-toggle-icon"></i>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -1990,13 +2074,24 @@ session_start();
               const kmActual = veh.Km_Actual ? Number(veh.Km_Actual).toLocaleString() : 'N/A';
               const tieneOrden = veh.orden_id && veh.orden_id !== null;
               const estatusOrden = veh.orden_estatus || 'Pendiente';
-              const totalItems = veh.items.length;
+              const totalItemsVeh = veh.items.length;
 
-              // Colores y etiquetas por estatus
               const estatusInfo = {
-                'Pendiente': { color: '#dc2626', bg: '#fef2f2', label: '⏳ Pendiente' },
-                'Programado': { color: '#f59e0b', bg: '#fffbeb', label: '📅 Programada' },
-                'EnTaller': { color: '#f97316', bg: '#fff7ed', label: '🔧 En Taller' }
+                'Pendiente': {
+                  color: '#dc2626',
+                  bg: '#fef2f2',
+                  label: '⏳ Pendiente'
+                },
+                'Programado': {
+                  color: '#f59e0b',
+                  bg: '#fffbeb',
+                  label: '📅 Programada'
+                },
+                'EnTaller': {
+                  color: '#f97316',
+                  bg: '#fff7ed',
+                  label: '🔧 En Taller'
+                }
               };
               const info = estatusInfo[estatusOrden] || estatusInfo['Pendiente'];
 
@@ -2030,26 +2125,25 @@ session_start();
                         <tr>
                           <th>Ítem Inspeccionado</th>
                           <th>Observaciones</th>
-                          <th style="width: 150px;">Acción</th>
+                          <th>Acción</th>
                         </tr>
                       </thead>
                       <tbody>
               `;
 
               veh.items.forEach((it, itemIndex) => {
-                const obs = it.observaciones ? it.observaciones : 'Sin observaciones';
+                const obsTxt = it.observaciones ? it.observaciones : 'Sin observaciones';
                 html += `
                         <tr>
                           <td><div class="obs-item-name">${it.item || 'Sin descripción'}</div></td>
-                          <td><div class="obs-item-obs">${obs}</div></td>
+                          <td><div class="obs-item-obs">${obsTxt}</div></td>
                           <td>
                             <button class="btn-crear-orden-item"
                                     data-vehiculo="${veh.id_vehiculo}"
                                     data-placa="${veh.placa || 'Sin placa'}"
                                     data-seccion="${seccion}"
                                     data-item="${it.item || 'Sin descripción'}"
-                                    data-observaciones="${obs}"
-                                    data-item-index="${itemIndex}">
+                                    data-observaciones="${obsTxt}">
                               ➕ Crear Orden
                             </button>
                           </td>
@@ -2074,7 +2168,7 @@ session_start();
                       </div>
                       <div class="obs-meta-item">
                         <span class="obs-meta-icon">⚠️</span>
-                        <span>${totalItems} problema${totalItems !== 1 ? 's' : ''}</span>
+                        <span>${totalItemsVeh} problema${totalItemsVeh !== 1 ? 's' : ''}</span>
                       </div>
                       ${tieneOrden ? `
                       <div class="obs-meta-item" style="margin-left:auto;">
@@ -2090,45 +2184,18 @@ session_start();
             });
 
             html += `
+                  </div>
                 </div>
               </div>
             `;
-
-            sectionIndex++; // Incrementar para la siguiente sección
+            sectionIndex++;
           });
 
-          html += `</div>`; // Cierra obs-sections-container
+          html += `</div></div>`;
 
           obsContent.innerHTML = html;
-          // Ajustes de UI para textos y estado de filtro
-          let currentFilter = 'all';
-          const titleEl = obsContent.querySelector('.obs-filter-title');
-          if (titleEl) titleEl.textContent = 'Filtrar secciones';
-          const searchInputEl = obsContent.querySelector('#obs-search');
-          if (searchInputEl) searchInputEl.setAttribute('placeholder', 'Buscar por placa...');
 
-          // Reemplazar íconos/textos de placeholders "??" por contenido legible
-          // 1) Limpiar badges de estatus y botones con símbolos extra al inicio
-          obsContent.querySelectorAll('.obs-badge, button').forEach(el => {
-            const t = (el.textContent || '').trim();
-            el.textContent = t.replace(/^[^A-Za-zÁÉÍÓÚÑáéíóú0-9]+\s*/, '');
-          });
-
-          // 2) Colocar íconos claros en placa e items (evita depender de ::before existentes)
-          obsContent.querySelectorAll('.obs-placa').forEach(el => {
-            if (!el.dataset.iconized) {
-              el.dataset.iconized = '1';
-              el.textContent = '🚘 ' + (el.textContent || '');
-            }
-          });
-          obsContent.querySelectorAll('.obs-item-name').forEach(el => {
-            if (!el.dataset.iconized) {
-              el.dataset.iconized = '1';
-              el.textContent = '🔧 ' + (el.textContent || '');
-            }
-          });
-
-          // 3) Asignar íconos a los filtros laterales y encabezados por sección
+          // Normalizar íconos de filtros
           const iconMap = {
             'SISTEMA DE LUCES': '💡',
             'PARTE EXTERNA': '🚗',
@@ -2140,7 +2207,7 @@ session_start();
             const labelEl = btn.querySelector('.obs-filter-btn-label');
             const iconEl = btn.querySelector('.obs-filter-btn-icon');
             const label = (labelEl && labelEl.textContent || '').trim();
-            if (iconEl) iconEl.textContent = iconMap[label] || '📁';
+            if (iconEl && label !== 'Todas') iconEl.textContent = iconMap[label] || '📁';
           });
           obsContent.querySelectorAll('.obs-section').forEach(sec => {
             const name = sec.getAttribute('data-seccion') || '';
@@ -2148,28 +2215,35 @@ session_start();
             if (iconEl) iconEl.textContent = iconMap[name] || '📁';
           });
 
-          // Event listeners para búsqueda
+          let currentFilter = 'all';
+
+          // Búsqueda por placa
           const searchInput = document.getElementById('obs-search');
           const searchMeta = document.getElementById('obs-search-meta');
 
           if (searchInput) {
             searchInput.addEventListener('input', (e) => {
               const query = e.target.value.toLowerCase().trim();
-              const allCards = obsContent.querySelectorAll('.obs-card');
               const allSections = obsContent.querySelectorAll('.obs-section');
 
               if (query === '') {
-                // Mostrar segun el filtro activo
-                allCards.forEach(card => card.style.display = '');
                 allSections.forEach(section => {
                   const seccionName = section.getAttribute('data-seccion');
-                  if (currentFilter === 'all' || seccionName === currentFilter) {
-                    section.style.display = '';
-                    const visibleCards = section.querySelectorAll('.obs-card');
-                    const count = visibleCards.length;
-                    section.querySelector('.obs-section-count').textContent = `${count}`;
+                  const shouldShow = currentFilter === 'all' || seccionName === currentFilter;
+
+                  if (shouldShow) {
+                    section.classList.remove('hidden');
+                    section.style.removeProperty('display');
+                    const cards = section.querySelectorAll('.obs-card');
+                    cards.forEach(card => {
+                      card.classList.remove('hidden');
+                      card.style.removeProperty('display');
+                    });
+                    const count = cards.length;
+                    const countEl = section.querySelector('.obs-section-count');
+                    if (countEl) countEl.textContent = `${count}`;
                   } else {
-                    section.style.display = 'none';
+                    section.classList.add('hidden');
                   }
                 });
                 searchMeta.textContent = '';
@@ -2178,26 +2252,36 @@ session_start();
 
               let visibleCount = 0;
               allSections.forEach(section => {
+                const seccionName = section.getAttribute('data-seccion');
+                const shouldSearchInSection = currentFilter === 'all' || seccionName === currentFilter;
+
+                if (!shouldSearchInSection) {
+                  section.classList.add('hidden');
+                  return;
+                }
+
                 const cards = section.querySelectorAll('.obs-card');
                 let sectionVisibleCount = 0;
 
                 cards.forEach(card => {
-                  const placa = card.getAttribute('data-placa').toLowerCase();
+                  const placa = (card.getAttribute('data-placa') || '').toLowerCase();
                   if (placa.includes(query)) {
-                    card.style.display = '';
+                    card.classList.remove('hidden');
+                    card.style.removeProperty('display');
                     sectionVisibleCount++;
                     visibleCount++;
                   } else {
-                    card.style.display = 'none';
+                    card.classList.add('hidden');
                   }
                 });
 
-                // Ocultar sección si no tiene vehículos visibles
                 if (sectionVisibleCount === 0) {
-                  section.style.display = 'none';
+                  section.classList.add('hidden');
                 } else {
-                  section.style.display = '';
-                  section.querySelector('.obs-section-count').textContent = `${sectionVisibleCount}`;
+                  section.classList.remove('hidden');
+                  section.style.removeProperty('display');
+                  const countEl = section.querySelector('.obs-section-count');
+                  if (countEl) countEl.textContent = `${sectionVisibleCount}`;
                 }
               });
 
@@ -2207,7 +2291,7 @@ session_start();
             });
           }
 
-          // Agregar event listeners a los botones de crear orden por ítem
+          // Botones "Crear orden" desde cada ítem
           obsContent.querySelectorAll('.btn-crear-orden-item').forEach(btn => {
             btn.addEventListener('click', () => {
               const idVehiculo = parseInt(btn.getAttribute('data-vehiculo'));
@@ -2220,7 +2304,7 @@ session_start();
             });
           });
 
-          // Agregar event listeners a los botones de ver orden
+          // Botones "Ver orden"
           obsContent.querySelectorAll('.btn-ver-orden').forEach(btn => {
             btn.addEventListener('click', () => {
               const ordenId = parseInt(btn.getAttribute('data-orden'));
@@ -2228,7 +2312,7 @@ session_start();
             });
           });
 
-          // Event listeners para los botones de filtro por sección
+          // Menú lateral: filtro por sección
           const filterButtons = obsContent.querySelectorAll('.obs-filter-btn');
           const allSections = obsContent.querySelectorAll('.obs-section');
 
@@ -2237,47 +2321,80 @@ session_start();
               const filter = btn.getAttribute('data-filter');
               currentFilter = filter;
 
-              // Actualizar estado activo de los botones
               filterButtons.forEach(b => b.classList.remove('active'));
               btn.classList.add('active');
 
-              // Filtrar secciones
-              if (filter === 'all') {
-                // Mostrar todas las secciones
-                allSections.forEach(section => section.style.display = '');
-              } else {
-                // Mostrar solo la sección seleccionada y hacer scroll
-                allSections.forEach(section => {
-                  const seccionName = section.getAttribute('data-seccion');
-                  if (seccionName === filter) {
-                    section.style.display = '';
-                    // Smooth scroll a la sección
-                    setTimeout(() => {
-                      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }, 100);
-                  } else {
-                    section.style.display = 'none';
-                  }
-                });
+              if (searchInput) searchInput.value = '';
+              if (searchMeta) searchMeta.textContent = '';
+
+              allSections.forEach(section => {
+                const seccionName = section.getAttribute('data-seccion');
+                const shouldShow = filter === 'all' || seccionName === filter;
+
+                if (shouldShow) {
+                  section.classList.remove('hidden');
+                  section.style.removeProperty('display');
+                  const cards = section.querySelectorAll('.obs-card');
+                  cards.forEach(card => {
+                    card.classList.remove('hidden');
+                    card.style.removeProperty('display');
+                  });
+                } else {
+                  section.classList.add('hidden');
+                }
+              });
+
+              if (filter !== 'all') {
+                const visibleSection = Array.from(allSections).find(s =>
+                  s.getAttribute('data-seccion') === filter
+                );
+                if (visibleSection) {
+                  setTimeout(() => {
+                    visibleSection.scrollIntoView({
+                      behavior: 'smooth',
+                      block: 'start'
+                    });
+                  }, 100);
+                }
               }
+            });
+          });
+
+          // Accordion: plegar/desplegar secciones desde su header
+          obsContent.querySelectorAll('.obs-section-toggle').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const section = btn.closest('.obs-section');
+              if (!section) return;
+              const isCollapsed = section.classList.toggle('collapsed');
+              btn.setAttribute('aria-expanded', String(!isCollapsed));
+            });
+          });
+
+          // También permitir click en la cabecera para desplegar
+          obsContent.querySelectorAll('.obs-section-header').forEach(header => {
+            header.addEventListener('click', (e) => {
+              if (e.target.closest('.obs-section-toggle')) return;
+              const section = header.closest('.obs-section');
+              const btn = header.querySelector('.obs-section-toggle');
+              if (!section || !btn) return;
+              const isCollapsed = section.classList.toggle('collapsed');
+              btn.setAttribute('aria-expanded', String(!isCollapsed));
             });
           });
         }
 
-        // Función para crear orden de servicio desde un ítem específico
+        // Crear orden desde un ítem de checklist
         async function crearOrdenDesdeItem(idVehiculo, placa, seccion, item, observaciones) {
-          // Crear nota indicando que viene de una observación específica
           const nota = `[CHECKLIST - ${seccion}]
 Ítem: ${item}
 Observaciones: ${observaciones}
 
 Creada automáticamente desde observaciones del checklist vehicular.`;
 
-          // Crear la orden de servicio sin servicio asignado (pendiente)
           const payload = {
             id_vehiculo: idVehiculo,
-            id_servicio: 0, // Sin servicio por ahora, se asignará después
-            duracion_minutos: 60, // Duración por defecto
+            id_servicio: 0,
+            duracion_minutos: 60,
             notas: nota,
             materiales: []
           };
@@ -2291,10 +2408,7 @@ Creada automáticamente desde observaciones del checklist vehicular.`;
 
             toast(`✅ Orden creada para ${placa} - ${item}`);
 
-            // Recargar la lista de observaciones
             await loadList();
-
-            // Mantener en la vista de observaciones para seguir creando órdenes si es necesario
             renderObservaciones();
           } catch (error) {
             toast('Error al crear la orden', false);
@@ -2341,6 +2455,7 @@ Creada automáticamente desde observaciones del checklist vehicular.`;
           function onBack(e) {
             if (e.target === confirmEl.wrap) close();
           }
+
           async function onOk() {
             const srv = Number(confirmEl.service.value || 0);
             if (!srv) {
@@ -2392,13 +2507,12 @@ Creada automáticamente desde observaciones del checklist vehicular.`;
         el.tabs.forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
         root.querySelector('#mantto-q').addEventListener('input', renderList);
 
-        // ===== Modal (ahora sí, después de que TODO el DOM existe) =====
+        // ===== Modal Agregar servicio =====
         const mb = document.getElementById('modal-os');
         const f = document.getElementById('form-os');
         const selVeh = document.getElementById('vehiculo');
         const selSrv = document.getElementById('servicio');
         const containerMats = document.getElementById('mat-rows');
-
         const btnAddMat = document.getElementById('btn-add-mat');
 
         if (!mb || !f) {
@@ -2458,12 +2572,10 @@ Creada automáticamente desde observaciones del checklist vehicular.`;
               }
               if (selVeh) selVeh.innerHTML = '<option value="" disabled selected>Seleccionado</option>' +
                 state.options.vehiculos.map(v => `<option value="${v.id}">${v.placa} - ${v.tipo} - ${fmt(v.km)}</option>`).join('');
-              // servicios se filtran al elegir vehículo
               if (selSrv) selSrv.innerHTML = '<option value="" disabled selected>Seleccionado</option>';
               renderMoAuto2();
             }).catch(() => toast('Error de red (catalogos)', false));
           } else {
-            // ya tenemos catálogos; al abrir solo recalcula el MO con lo actual
             renderMoAuto2();
           }
         }
@@ -2485,15 +2597,12 @@ Creada automáticamente desde observaciones del checklist vehicular.`;
           const vid = Number(selVeh.value || 0);
           const servicios = (state.options.servicios || []).filter(s => !Array.isArray(s.vehiculos) || s.vehiculos.length === 0 || s.vehiculos.includes(vid));
           selSrv.innerHTML = '<option value="" disabled selected>Seleccionado</option>' + servicios.map(s => `<option value="${s.id}" data-d="${s.duracion_minutos}">${s.nombre}</option>`).join('');
-          // limpiar materiales y preparar inventario filtrado
           if (containerMats) containerMats.innerHTML = '';
         });
 
         selSrv?.addEventListener('change', () => {
-          // Al seleccionar servicio, cargar materiales del catalogo en la lista editable
           const vid = Number(selVeh.value || 0);
           const inv = (state.options.inventario || []).filter(i => !Array.isArray(i.vehiculos) || i.vehiculos.length === 0 || i.vehiculos.includes(vid));
-          // No adjuntar listener aqui para evitar duplicados al cambiar servicio
           const srvId = Number(selSrv.value || 0);
           if (srvId) {
             fetch('servicios_api.php?action=get&id=' + srvId, {
@@ -2531,7 +2640,6 @@ Creada automáticamente desde observaciones del checklist vehicular.`;
         });
 
         if (btnAddMat) {
-          // Garantiza un solo handler: evita acumulaciones por reabrir el modal
           btnAddMat.onclick = () => {
             const vid = Number(selVeh.value || 0);
             const inv = (state.options.inventario || []).filter(i => !Array.isArray(i.vehiculos) || i.vehiculos.length === 0 || i.vehiculos.includes(vid));
@@ -2539,7 +2647,6 @@ Creada automáticamente desde observaciones del checklist vehicular.`;
           };
         }
 
-        // Cálculo automático de MO en este modal
         function renderMoAuto2() {
           const dur = document.getElementById('duracion_minutos');
           const span = document.getElementById('moAuto2');
@@ -2566,7 +2673,6 @@ Creada automáticamente desde observaciones del checklist vehicular.`;
             id_servicio: Number(f.id_servicio.value),
             duracion_minutos: Number(f.duracion_minutos.value || 0),
             notas: f.notas.value || null,
-            // Siempre crear como Pendiente; la programacion se hace en el tablero
             programar: false,
             materiales: mats
           };
@@ -2581,7 +2687,6 @@ Creada automáticamente desde observaciones del checklist vehicular.`;
           }).catch(() => toast('Error de red al guardar', false));
         });
 
-        // Función para aplicar los filtros de fecha
         function applyDateFilters() {
           state.fechaDesde = el.fechaDesde.value || '';
           state.fechaHasta = el.fechaHasta.value || '';
@@ -2599,7 +2704,6 @@ Creada automáticamente desde observaciones del checklist vehicular.`;
           state.allItems = res.items || [];
           applyDateFilters();
 
-          // Cargar observaciones
           const obsRes = await apiGet('observaciones');
           if (obsRes && obsRes.ok) {
             state.observaciones = obsRes.items || [];
@@ -2608,14 +2712,13 @@ Creada automáticamente desde observaciones del checklist vehicular.`;
           setTab('board');
         }
 
-        // Inicializar fechas con el mes actual
+        // Inicializar fechas con el mes actual por defecto
         const currentMonth = getCurrentMonthRange();
         if (el.fechaDesde) el.fechaDesde.value = currentMonth.desde;
         if (el.fechaHasta) el.fechaHasta.value = currentMonth.hasta;
         state.fechaDesde = currentMonth.desde;
         state.fechaHasta = currentMonth.hasta;
 
-        // Event listeners para los filtros de fecha
         if (el.fechaDesde) {
           el.fechaDesde.addEventListener('change', applyDateFilters);
         }
@@ -2661,11 +2764,6 @@ Creada automáticamente desde observaciones del checklist vehicular.`;
         <div class="field grid-1" style="grid-column:1/-1">
           <label for="notas">Notas</label>
           <textarea id="notas" name="notas" rows="3" placeholder="Detalles del servicio..."></textarea>
-        </div>
-
-        <!-- Eliminado: la orden siempre inicia Pendiente y se programa despues en el tablero -->
-        <div class="field grid-1" style="grid-column:1/-1">
-
         </div>
 
         <div class="grid-1" style="grid-column:1/-1">

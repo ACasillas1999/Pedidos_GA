@@ -33,7 +33,8 @@
       "Bash(\"\\192.168.60.194\\xampp\\mysql\\bin\\mysql.exe\" -u root -e \"SELECT table_schema, table_name FROM information_schema.tables WHERE table_name LIKE ''%vehiculo%'' OR table_name LIKE ''%vehiculo%'';\")",
       "Bash(\"\\192.168.60.194\\xampp\\mysql\\bin\\mysql.exe\" -u root gpoascen_pedidos_app -e \"SELECT COUNT(*) as total_mal FROM checklist_vehicular WHERE calificacion = ''Mal'';\")",
       "Bash(\"\\192.168.60.194\\xampp\\mysql\\bin\\mysql.exe\" -u root -e \"SELECT table_schema FROM information_schema.tables WHERE table_name = ''checklist_vehicular'';\")",
-      "Bash(\"\\192.168.60.194\\xampp\\mysql\\bin\\mysql.exe\" -u root gpoascen_pedidos_app -e \"UPDATE checklist_vehicular SET calificacion = ''Mal'' WHERE id IN (175, 177, 181) LIMIT 3;\")"
+      "Bash(\"\\192.168.60.194\\xampp\\mysql\\bin\\mysql.exe\" -u root gpoascen_pedidos_app -e \"UPDATE checklist_vehicular SET calificacion = ''Mal'' WHERE id IN (175, 177, 181) LIMIT 3;\")",
+      "Bash(\"\\192.168.60.194\\xampp\\mysql\\bin\\mysql.exe\" -u root gpoascen_pedidos_app -e \"SELECT cv.id_vehiculo, v.placa, cv.seccion, cv.item, COUNT(*) as total_reportes, MAX(cv.fecha_inspeccion) as ultima_inspeccion FROM checklist_vehicular cv INNER JOIN vehiculos v ON cv.id_vehiculo = v.id_vehiculo WHERE cv.calificacion = ''Mal'' GROUP BY cv.id_vehiculo, cv.seccion, cv.item LIMIT 5;\")"
     ],
     "deny": [],
     "ask": []
