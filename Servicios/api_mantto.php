@@ -454,6 +454,48 @@ try {
         } catch (Throwable $e) {}
       }
       try { $user = isset($_SESSION['usuario']) ? (string)$_SESSION['usuario'] : null; $pdo->prepare("INSERT INTO orden_servicio_hist (id_orden,de,a,usuario) VALUES (?,?,?,?)")->execute([$id,(string)$cur['status'],'Completado',$user]); } catch (Throwable $e) {}
+
+      // Marcar observaciones de checklist como resueltas
+      try {
+        $notas = (string)($cur['notas'] ?? '');
+        // Verificar si es una orden de checklist (contiene [CHECKLIST)
+        if (stripos($notas, '[CHECKLIST') !== false) {
+          // Extraer sección (entre [CHECKLIST - y ])
+          if (preg_match('/\[CHECKLIST - (.+?)\]/', $notas, $matchSeccion)) {
+            $seccion = $matchSeccion[1];
+            // Extraer ítem (después de "Ítem: " hasta el salto de línea)
+            if (preg_match('/Ítem: (.+?)(\n|$)/s', $notas, $matchItem)) {
+              $item = trim($matchItem[1]);
+              $idVehiculo = (int)($cur['id_vehiculo'] ?? 0);
+
+              // Marcar TODOS los checklists de este vehículo+sección+ítem como resueltos
+              $sqlUpdate = "
+                UPDATE checklist_vehicular
+                SET resuelto = 1,
+                    fecha_resolucion = NOW(),
+                    orden_resolucion = ?
+                WHERE id_vehiculo = ?
+                  AND seccion = ?
+                  AND item = ?
+                  AND calificacion = 'Mal'
+                  AND COALESCE(resuelto, 0) = 0
+              ";
+              $stmtUpdate = $pdo->prepare($sqlUpdate);
+              $stmtUpdate->execute([$id, $idVehiculo, $seccion, $item]);
+              $affectedRows = $stmtUpdate->rowCount();
+
+              // Log opcional de observaciones resueltas
+              if ($affectedRows > 0) {
+                error_log("Orden #{$id} completada: se marcaron {$affectedRows} observaciones como resueltas (Vehículo: {$idVehiculo}, Sección: {$seccion}, Ítem: {$item})");
+              }
+            }
+          }
+        }
+      } catch (Throwable $e) {
+        // No bloquear la finalización de la orden si falla el marcado de resolución
+        error_log("Error al marcar observaciones como resueltas para orden #{$id}: " . $e->getMessage());
+      }
+
       echo json_encode(['ok'=>true,'msg'=>'Servicio completado']); exit;
     }
 
@@ -571,6 +613,7 @@ try {
     try {
       // Obtener vehículos con ítems calificados como "Mal" en checklist
       // AGRUPADO por vehículo + sección + ítem, con contador de reportes
+      // SOLO items NO RESUELTOS
       $sql = "
         SELECT
           cv.id_vehiculo,
@@ -591,6 +634,7 @@ try {
         FROM checklist_vehicular cv
         INNER JOIN vehiculos v ON cv.id_vehiculo = v.id_vehiculo
         WHERE cv.calificacion = 'Mal'
+          AND COALESCE(cv.resuelto, 0) = 0
         GROUP BY cv.id_vehiculo, cv.seccion, cv.item, v.placa, v.tipo, v.Sucursal, v.Km_Actual
         ORDER BY cv.seccion, v.placa, MAX(cv.fecha_inspeccion) DESC
       ";
@@ -604,6 +648,7 @@ try {
       foreach ($items as $item) {
         $idVeh = (int)$item['id_vehiculo'];
         $seccion = $item['seccion'];
+        $itemNombre = $item['item'];
 
         // Parsear historial de reportes
         $historial = [];
@@ -622,17 +667,19 @@ try {
         $item['historial'] = $historial;
         unset($item['historial_reportes']);
 
-        // Buscar orden de servicio relacionada
+        // Buscar orden de servicio relacionada ESPECÍFICA para este ítem
         $sqlOrden = "
           SELECT id, estatus
           FROM orden_servicio
           WHERE id_vehiculo = ?
-            AND (notas LIKE ? OR notas LIKE ?)
+            AND notas LIKE ?
             AND COALESCE(estatus, 'Pendiente') IN ('Pendiente', 'Programado', 'EnTaller')
           LIMIT 1
         ";
         $stmtOrden = $pdo->prepare($sqlOrden);
-        $stmtOrden->execute([$idVeh, "%[CHECKLIST - $seccion]%", "%[OBSERVACIONES - $seccion]%"]);
+        // Buscar por ítem específico en las notas
+        $searchPattern = "%Ítem: " . $itemNombre . "%";
+        $stmtOrden->execute([$idVeh, $searchPattern]);
         $orden = $stmtOrden->fetch(PDO::FETCH_ASSOC);
 
         $item['orden_id'] = $orden ? $orden['id'] : null;
@@ -645,6 +692,141 @@ try {
     } catch (Throwable $e) {
       http_response_code(500);
       echo json_encode(['ok'=>false, 'error'=>'OBSERVACIONES_ERROR', 'msg'=>$e->getMessage()]); exit;
+    }
+  }
+
+  if ($method === 'POST' && $action === 'marcar_resuelto') {
+    try {
+      // Marcar TODOS los checklists de un ítem como resueltos cuando la orden se completa
+      $data = json_decode(file_get_contents('php://input'), true);
+
+      $idVehiculo = (int)($data['id_vehiculo'] ?? 0);
+      $seccion = $data['seccion'] ?? '';
+      $item = $data['item'] ?? '';
+      $ordenId = (int)($data['orden_id'] ?? 0);
+
+      if (!$idVehiculo || !$seccion || !$item || !$ordenId) {
+        http_response_code(400);
+        echo json_encode(['ok'=>false, 'msg'=>'Faltan parámetros requeridos']);
+        exit;
+      }
+
+      // Marcar TODOS los checklists de este vehículo+sección+ítem como resueltos
+      $sqlUpdate = "
+        UPDATE checklist_vehicular
+        SET resuelto = 1,
+            fecha_resolucion = NOW(),
+            orden_resolucion = ?
+        WHERE id_vehiculo = ?
+          AND seccion = ?
+          AND item = ?
+          AND calificacion = 'Mal'
+          AND COALESCE(resuelto, 0) = 0
+      ";
+
+      $stmtUpdate = $pdo->prepare($sqlUpdate);
+      $stmtUpdate->execute([$ordenId, $idVehiculo, $seccion, $item]);
+      $affectedRows = $stmtUpdate->rowCount();
+
+      echo json_encode([
+        'ok' => true,
+        'msg' => "Se marcaron {$affectedRows} observaciones como resueltas",
+        'affected_rows' => $affectedRows
+      ]);
+      exit;
+    } catch (Throwable $e) {
+      http_response_code(500);
+      echo json_encode(['ok'=>false, 'error'=>'MARCAR_RESUELTO_ERROR', 'msg'=>$e->getMessage()]);
+      exit;
+    }
+  }
+
+  if ($method === 'GET' && $action === 'observaciones_resueltas') {
+    try {
+      // Obtener órdenes de servicio completadas relacionadas con checklist
+      $sql = "
+        SELECT
+          os.id as orden_id,
+          os.id_vehiculo,
+          os.notas,
+          os.creado_en as fecha_creacion,
+          os.estatus,
+          v.placa,
+          v.tipo,
+          v.Sucursal,
+          DATEDIFF(
+            (SELECT MAX(hecho_en) FROM orden_servicio_hist WHERE id_orden = os.id AND a = 'Completado'),
+            os.creado_en
+          ) as dias_resolucion
+        FROM orden_servicio os
+        INNER JOIN vehiculos v ON os.id_vehiculo = v.id_vehiculo
+        WHERE os.estatus = 'Completado'
+          AND (os.notas LIKE '%[CHECKLIST%' OR os.notas LIKE '%Ítem:%')
+        ORDER BY os.id DESC
+        LIMIT 100
+      ";
+
+      $stmt = $pdo->prepare($sql);
+      $stmt->execute();
+      $ordenes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+      // Procesar cada orden para extraer sección e ítem de las notas
+      $result = [];
+      foreach ($ordenes as $orden) {
+        $notas = $orden['notas'];
+
+        // Extraer sección (entre [CHECKLIST - y ])
+        preg_match('/\[CHECKLIST - (.+?)\]/', $notas, $matchSeccion);
+        $seccion = $matchSeccion[1] ?? 'Sin sección';
+
+        // Extraer ítem (después de "Ítem: " hasta el salto de línea)
+        preg_match('/Ítem: (.+?)(\n|$)/s', $notas, $matchItem);
+        $item = $matchItem[1] ?? 'Sin descripción';
+
+        // Extraer observaciones (después de "Observaciones: " hasta el salto de línea)
+        preg_match('/Observaciones: (.+?)(\n|$)/s', $notas, $matchObs);
+        $observaciones = $matchObs[1] ?? '';
+
+        $orden['seccion'] = $seccion;
+        $orden['item'] = trim($item);
+        $orden['observaciones'] = trim($observaciones);
+
+        $result[] = $orden;
+      }
+
+      // Calcular métricas
+      $totalResueltas = count($result);
+      $diasPromedio = 0;
+      if ($totalResueltas > 0) {
+        $sumaDias = array_sum(array_column($result, 'dias_resolucion'));
+        $diasPromedio = round($sumaDias / $totalResueltas, 1);
+      }
+
+      // Items más problemáticos (más veces resueltos)
+      $itemsCount = [];
+      foreach ($result as $r) {
+        $key = $r['item'];
+        if (!isset($itemsCount[$key])) {
+          $itemsCount[$key] = ['item' => $key, 'count' => 0, 'seccion' => $r['seccion']];
+        }
+        $itemsCount[$key]['count']++;
+      }
+      arsort($itemsCount);
+      $topProblematicos = array_slice(array_values($itemsCount), 0, 5);
+
+      echo json_encode([
+        'ok' => true,
+        'items' => $result,
+        'metricas' => [
+          'total_resueltas' => $totalResueltas,
+          'dias_promedio_resolucion' => $diasPromedio,
+          'top_problematicos' => $topProblematicos
+        ]
+      ]);
+      exit;
+    } catch (Throwable $e) {
+      http_response_code(500);
+      echo json_encode(['ok'=>false, 'error'=>'HISTORIAL_ERROR', 'msg'=>$e->getMessage()]); exit;
     }
   }
 

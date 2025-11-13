@@ -790,7 +790,10 @@ session_start();
 
         const state = {
           observaciones: [],
-          currentFilter: 'all'
+          resueltas: [],
+          metricas: {},
+          currentFilter: 'all',
+          currentTab: 'pendientes'
         };
 
         // Renderizar página
@@ -800,13 +803,62 @@ session_start();
               <h1>🔍 Observaciones de Vehículos</h1>
               <p>Vehículos con calificación "Mal" en sus checklists vehiculares</p>
             </div>
-            <section class="observaciones-wrap">
+            <div class="obs-tabs" style="display:flex;gap:0.5rem;margin-bottom:1.5rem;border-bottom:2px solid #e9ecef;padding-bottom:0.5rem;">
+              <button class="obs-tab-btn active" data-tab="pendientes" style="background:linear-gradient(135deg, #005996 0%, #003d6b 100%);color:white;border:none;padding:0.75rem 1.5rem;border-radius:8px 8px 0 0;font-weight:700;cursor:pointer;transition:all 0.3s;">
+                ⚠️ Observaciones Pendientes
+              </button>
+              <button class="obs-tab-btn" data-tab="resueltas" style="background:#f8f9fa;color:#495057;border:none;padding:0.75rem 1.5rem;border-radius:8px 8px 0 0;font-weight:700;cursor:pointer;transition:all 0.3s;">
+                ✅ Historial Resueltas
+              </button>
+            </div>
+            <section class="observaciones-wrap" id="obs-pendientes-section">
               <div id="observaciones-content">Cargando...</div>
+            </section>
+            <section class="observaciones-wrap" id="obs-resueltas-section" style="display:none;">
+              <div id="resueltas-content">Cargando...</div>
             </section>
           `;
 
+          // Event listeners para tabs
+          root.querySelectorAll('.obs-tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const tab = btn.getAttribute('data-tab');
+              switchTab(tab);
+            });
+          });
+
           await loadObservaciones();
           renderObservaciones();
+        }
+
+        function switchTab(tab) {
+          state.currentTab = tab;
+
+          // Actualizar botones
+          root.querySelectorAll('.obs-tab-btn').forEach(btn => {
+            if (btn.getAttribute('data-tab') === tab) {
+              btn.classList.add('active');
+              btn.style.background = 'linear-gradient(135deg, #005996 0%, #003d6b 100%)';
+              btn.style.color = 'white';
+            } else {
+              btn.classList.remove('active');
+              btn.style.background = '#f8f9fa';
+              btn.style.color = '#495057';
+            }
+          });
+
+          // Mostrar/ocultar secciones
+          const pendientesSection = root.querySelector('#obs-pendientes-section');
+          const resueltasSection = root.querySelector('#obs-resueltas-section');
+
+          if (tab === 'pendientes') {
+            pendientesSection.style.display = 'block';
+            resueltasSection.style.display = 'none';
+          } else {
+            pendientesSection.style.display = 'none';
+            resueltasSection.style.display = 'block';
+            loadResueltas();
+          }
         }
 
         // Cargar observaciones desde la API
@@ -854,17 +906,18 @@ session_start();
                 tipo: item.tipo,
                 Sucursal: item.Sucursal,
                 Km_Actual: item.Km_Actual,
-                orden_id: item.orden_id,
-                orden_estatus: item.orden_estatus,
                 items: []
               };
             }
+            // Cada ítem tiene su propia orden de servicio
             groupedBySection[seccion][vehiculoKey].items.push({
               item: item.item,
               total_reportes: item.total_reportes || 1,
               ultima_inspeccion: item.ultima_inspeccion || item.fecha_inspeccion,
               ultimo_km: item.ultimo_km || item.kilometraje,
-              historial: item.historial || []
+              historial: item.historial || [],
+              orden_id: item.orden_id,
+              orden_estatus: item.orden_estatus
             });
           });
 
@@ -1016,6 +1069,17 @@ session_start();
                 const ultimaObs = historial.length > 0 ? historial[0].observacion : 'Sin observaciones';
                 const itemId = `item-${veh.id_vehiculo}-${idx}`;
 
+                // Verificar si este ítem específico tiene una orden de servicio
+                const tieneOrdenItem = it.orden_id && it.orden_id !== null;
+                const estatusOrdenItem = it.orden_estatus || 'Pendiente';
+
+                const estatusItemInfo = {
+                  'Pendiente': { color: '#dc2626', bg: '#fef2f2', label: '⏳ Pendiente', icon: '⏳' },
+                  'Programado': { color: '#f59e0b', bg: '#fffbeb', label: '📅 Programada', icon: '📅' },
+                  'EnTaller': { color: '#f97316', bg: '#fff7ed', label: '🔧 En Taller', icon: '🔧' }
+                };
+                const infoItem = estatusItemInfo[estatusOrdenItem] || estatusItemInfo['Pendiente'];
+
                 html += `
                         <tr>
                           <td><div class="obs-item-name">🔧 ${it.item || 'Sin descripción'}</div></td>
@@ -1037,14 +1101,25 @@ session_start();
                             ` : ''}
                           </td>
                           <td>
-                            <button class="btn-crear-orden-item"
-                                    data-vehiculo="${veh.id_vehiculo}"
-                                    data-placa="${veh.placa || 'Sin placa'}"
-                                    data-seccion="${seccion}"
-                                    data-item="${it.item || 'Sin descripción'}"
-                                    data-observaciones="${ultimaObs}">
-                              ➕ Crear Orden
-                            </button>
+                            ${tieneOrdenItem ? `
+                              <div style="display:flex;flex-direction:column;gap:0.5rem;align-items:center;">
+                                <span class="obs-badge" style="background:${infoItem.bg};color:${infoItem.color};border:2px solid ${infoItem.color};padding:0.5rem 1rem;border-radius:8px;font-weight:600;font-size:0.85rem;display:flex;align-items:center;gap:0.5rem;">
+                                  ${infoItem.icon} ${infoItem.label}
+                                </span>
+                                <button class="obs-action-btn btn-ver-orden" data-orden="${it.orden_id}" style="font-size:0.75rem;padding:0.4rem 0.8rem;">
+                                  👁️ Ver Orden #${it.orden_id}
+                                </button>
+                              </div>
+                            ` : `
+                              <button class="btn-crear-orden-item"
+                                      data-vehiculo="${veh.id_vehiculo}"
+                                      data-placa="${veh.placa || 'Sin placa'}"
+                                      data-seccion="${seccion}"
+                                      data-item="${it.item || 'Sin descripción'}"
+                                      data-observaciones="${ultimaObs}">
+                                ➕ Crear Orden
+                              </button>
+                            `}
                           </td>
                         </tr>
                 `;
@@ -1262,6 +1337,136 @@ session_start();
               }
             });
           });
+        }
+
+        // Cargar observaciones resueltas desde la API
+        async function loadResueltas() {
+          const resueltasContent = root.querySelector('#resueltas-content');
+          if (!resueltasContent) return;
+
+          resueltasContent.innerHTML = '<div style="text-align:center;padding:2rem;"><i class="fa fa-spinner fa-spin" style="font-size:2rem;"></i><p>Cargando historial...</p></div>';
+
+          const res = await apiGet('observaciones_resueltas');
+          if (res && res.ok) {
+            state.resueltas = res.items || [];
+            state.metricas = res.metricas || {};
+            renderResueltas();
+          } else {
+            resueltasContent.innerHTML = '<div style="text-align:center;padding:2rem;color:#dc2626;"><p>❌ Error al cargar historial de observaciones resueltas</p></div>';
+          }
+        }
+
+        // Renderizar historial de observaciones resueltas
+        function renderResueltas() {
+          const resueltasContent = root.querySelector('#resueltas-content');
+          if (!resueltasContent) return;
+
+          const resueltas = state.resueltas || [];
+          const metricas = state.metricas || {};
+
+          if (resueltas.length === 0) {
+            resueltasContent.innerHTML = `
+              <div class="obs-empty">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>No hay observaciones resueltas todavía</div>
+              </div>
+            `;
+            return;
+          }
+
+          // Dashboard con métricas
+          let html = `
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1.5rem;margin-bottom:2rem;">
+              <div style="background:linear-gradient(135deg,#28a745 0%,#20c997 100%);padding:1.5rem;border-radius:12px;color:white;box-shadow:0 4px 12px rgba(40,167,69,0.3);">
+                <div style="font-size:0.9rem;opacity:0.95;margin-bottom:0.5rem;font-weight:600;">✅ Total Resueltas</div>
+                <div style="font-size:2.5rem;font-weight:700;">${metricas.total_resueltas || 0}</div>
+              </div>
+              <div style="background:linear-gradient(135deg,#007bff 0%,#0056b3 100%);padding:1.5rem;border-radius:12px;color:white;box-shadow:0 4px 12px rgba(0,123,255,0.3);">
+                <div style="font-size:0.9rem;opacity:0.95;margin-bottom:0.5rem;font-weight:600;">⏱️ Promedio Resolución</div>
+                <div style="font-size:2.5rem;font-weight:700;">${metricas.dias_promedio_resolucion || 0} <span style="font-size:1.2rem;">días</span></div>
+              </div>
+            </div>
+
+            <div style="background:#fff;padding:1.5rem;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);margin-bottom:2rem;">
+              <h3 style="margin:0 0 1rem 0;font-size:1.2rem;color:#495057;">🔥 Top 5 Ítems Más Problemáticos</h3>
+              <div style="display:grid;gap:0.75rem;">
+          `;
+
+          const topProblematicos = metricas.top_problematicos || [];
+          topProblematicos.forEach((item, idx) => {
+            const width = ((item.count / topProblematicos[0].count) * 100) + '%';
+            html += `
+              <div style="display:flex;align-items:center;gap:1rem;">
+                <div style="min-width:30px;text-align:center;font-weight:700;color:#6c757d;">#${idx + 1}</div>
+                <div style="flex:1;">
+                  <div style="font-weight:600;color:#495057;margin-bottom:0.25rem;">${item.item}</div>
+                  <div style="background:#e9ecef;height:24px;border-radius:12px;overflow:hidden;position:relative;">
+                    <div style="background:linear-gradient(135deg,#dc2626 0%,#ef4444 100%);height:100%;width:${width};transition:width 0.5s;display:flex;align-items:center;padding:0 0.75rem;">
+                      <span style="color:white;font-weight:700;font-size:0.85rem;">${item.count} veces</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+          });
+
+          html += `
+              </div>
+            </div>
+
+            <div style="background:#fff;padding:1.5rem;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+              <h3 style="margin:0 0 1rem 0;font-size:1.2rem;color:#495057;">📋 Historial Completo</h3>
+              <div style="overflow-x:auto;">
+                <table style="width:100%;border-collapse:separate;border-spacing:0;border:1px solid #e9ecef;border-radius:8px;overflow:hidden;">
+                  <thead style="background:linear-gradient(135deg,#495057 0%,#343a40 100%);color:white;">
+                    <tr>
+                      <th style="padding:0.9rem 1rem;text-align:left;font-weight:700;font-size:0.85rem;">Orden #</th>
+                      <th style="padding:0.9rem 1rem;text-align:left;font-weight:700;font-size:0.85rem;">Vehículo</th>
+                      <th style="padding:0.9rem 1rem;text-align:left;font-weight:700;font-size:0.85rem;">Sección</th>
+                      <th style="padding:0.9rem 1rem;text-align:left;font-weight:700;font-size:0.85rem;">Ítem</th>
+                      <th style="padding:0.9rem 1rem;text-align:left;font-weight:700;font-size:0.85rem;">Observación</th>
+                      <th style="padding:0.9rem 1rem;text-align:center;font-weight:700;font-size:0.85rem;">Días Resolución</th>
+                      <th style="padding:0.9rem 1rem;text-align:left;font-weight:700;font-size:0.85rem;">Fecha Creación</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+          `;
+
+          resueltas.forEach((r, idx) => {
+            const bgColor = idx % 2 === 0 ? '#fff' : '#f8f9fa';
+            const fechaCreacion = new Date(r.fecha_creacion).toLocaleDateString('es-MX');
+            const diasBadge = r.dias_resolucion <= 3 ? '#28a745' : (r.dias_resolucion <= 7 ? '#ffc107' : '#dc2626');
+
+            html += `
+              <tr style="background:${bgColor};border-bottom:1px solid #e9ecef;transition:background 0.2s;" onmouseover="this.style.background='#f1f3f5'" onmouseout="this.style.background='${bgColor}'">
+                <td style="padding:1rem;font-weight:600;color:#005996;">#${r.orden_id}</td>
+                <td style="padding:1rem;">
+                  <div style="font-weight:600;color:#495057;">${r.placa}</div>
+                  <div style="font-size:0.85rem;color:#6c757d;">${r.tipo} - ${r.Sucursal}</div>
+                </td>
+                <td style="padding:1rem;font-size:0.9rem;color:#6c757d;">${r.seccion}</td>
+                <td style="padding:1rem;font-weight:600;color:#495057;">${r.item}</td>
+                <td style="padding:1rem;font-size:0.9rem;color:#6c757d;">${r.observaciones || 'N/A'}</td>
+                <td style="padding:1rem;text-align:center;">
+                  <span style="background:${diasBadge};color:white;padding:0.4rem 0.8rem;border-radius:50px;font-weight:700;font-size:0.85rem;">
+                    ${r.dias_resolucion || 0} días
+                  </span>
+                </td>
+                <td style="padding:1rem;font-size:0.9rem;color:#6c757d;">${fechaCreacion}</td>
+              </tr>
+            `;
+          });
+
+          html += `
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          resueltasContent.innerHTML = html;
         }
 
         // Función para crear orden desde un ítem específico
