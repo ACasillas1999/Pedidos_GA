@@ -419,6 +419,688 @@ session_start();
         border: 1px solid #cfeacf
       }
 
+      /* Estilos para vista de Observaciones */
+      .observaciones-wrap {
+        background: var(--panel);
+        border-radius: var(--radius);
+        padding: 1.5rem;
+      }
+
+      .obs-search-box {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        box-shadow: var(--shadow);
+      }
+
+      .obs-search-input {
+        width: 100%;
+        padding: .6rem 1rem;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: .95rem;
+        transition: .2s;
+      }
+
+      .obs-search-input:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(0, 89, 150, 0.1);
+      }
+
+      .obs-search-meta {
+        margin-top: .5rem;
+        font-size: .85rem;
+        color: var(--muted);
+      }
+
+      .obs-sections-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        align-items: start;
+      }
+
+      @media (max-width: 1200px) {
+        .obs-sections-grid {
+          grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        }
+      }
+
+      @media (max-width: 768px) {
+        .obs-sections-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .obs-section {
+        background: #fff;
+        border: 2px solid #e5e7eb;
+        border-radius: 18px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+        overflow: hidden;
+        transition: all .35s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+      }
+
+      .obs-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--danger) 0%, #f97316 50%, var(--danger) 100%);
+        opacity: 0;
+        transition: opacity .3s;
+      }
+
+      .obs-section:hover::before {
+        opacity: 1;
+      }
+
+      .obs-section:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+        border-color: #fca5a5;
+      }
+
+      .obs-section.collapsed {
+        background: #fff;
+      }
+
+      .obs-section.collapsed:hover {
+        background: linear-gradient(135deg, #fefefe 0%, #fafafa 100%);
+      }
+
+      .obs-section.expanded {
+        background: #fff;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      }
+
+      .obs-section.expanded::before {
+        opacity: 1;
+        height: 5px;
+      }
+
+      .obs-section-header {
+        padding: 1.5rem 1.75rem;
+        cursor: pointer;
+        transition: all .3s ease;
+        user-select: none;
+        background: linear-gradient(135deg, #fef8f8 0%, #fff 100%);
+        border-bottom: 2px solid transparent;
+        position: relative;
+      }
+
+      .obs-section-header::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 1.75rem;
+        right: 1.75rem;
+        height: 2px;
+        background: linear-gradient(90deg, transparent 0%, #fee2e2 50%, transparent 100%);
+        opacity: 0;
+        transition: opacity .3s;
+      }
+
+      .obs-section.collapsed .obs-section-header {
+        border-bottom: none;
+        background: linear-gradient(135deg, #fafafa 0%, #fff 100%);
+      }
+
+      .obs-section.collapsed .obs-section-header:hover {
+        background: linear-gradient(135deg, #fef2f2 0%, #fff7f7 100%);
+      }
+
+      .obs-section.expanded .obs-section-header::after {
+        opacity: 1;
+      }
+
+      .obs-section-header:hover {
+        background: linear-gradient(135deg, #fef2f2 0%, #fff 100%);
+      }
+
+      .obs-section-header:active {
+        transform: scale(0.99);
+      }
+
+      .obs-section-header-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+      }
+
+      .obs-section-header-left {
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        flex: 1;
+      }
+
+      .obs-section-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 1.75rem;
+        box-shadow: 0 6px 20px rgba(220, 38, 38, 0.35);
+        transition: all .35s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .obs-section-icon::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 100%);
+        opacity: 0;
+        transition: opacity .3s;
+      }
+
+      .obs-section:hover .obs-section-icon::before {
+        opacity: 1;
+      }
+
+      .obs-section:hover .obs-section-icon {
+        transform: scale(1.15) rotate(8deg);
+        box-shadow: 0 8px 24px rgba(220, 38, 38, 0.45);
+      }
+
+      .obs-section.expanded .obs-section-icon {
+        transform: scale(1.05);
+        box-shadow: 0 4px 16px rgba(220, 38, 38, 0.3);
+      }
+
+      .obs-section-info {
+        flex: 1;
+      }
+
+      .obs-section-title {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: .35rem;
+        line-height: 1.3;
+        letter-spacing: .3px;
+        text-transform: uppercase;
+        background: linear-gradient(135deg, var(--text) 0%, #475569 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .obs-section-subtitle {
+        font-size: .85rem;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        font-weight: 600;
+      }
+
+      .obs-section-subtitle span {
+        display: inline-flex;
+        align-items: center;
+        gap: .25rem;
+      }
+
+      .obs-section-subtitle span::before {
+        content: '';
+        width: 4px;
+        height: 4px;
+        background: var(--muted);
+        border-radius: 50%;
+        display: inline-block;
+      }
+
+      .obs-section-subtitle span:first-child::before {
+        display: none;
+      }
+
+      .obs-section-count {
+        background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+        color: #fff;
+        padding: .4rem .85rem;
+        border-radius: 999px;
+        font-size: .9rem;
+        font-weight: 800;
+        box-shadow: 0 3px 12px rgba(220, 38, 38, 0.4);
+        min-width: 40px;
+        text-align: center;
+        border: 2px solid rgba(255, 255, 255, 0.9);
+        transition: all .3s;
+      }
+
+      .obs-section:hover .obs-section-count {
+        transform: scale(1.1);
+        box-shadow: 0 4px 16px rgba(220, 38, 38, 0.5);
+      }
+
+      .obs-section-toggle {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #f8fafc 0%, #fff 100%);
+        border-radius: 12px;
+        transition: all .3s;
+        border: 2px solid #e5e7eb;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .obs-section-toggle::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, var(--accent) 0%, #0284c7 100%);
+        opacity: 0;
+        transition: opacity .3s;
+      }
+
+      .obs-section-toggle svg {
+        transition: transform .35s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        z-index: 1;
+      }
+
+      .obs-section:hover .obs-section-toggle {
+        border-color: var(--accent);
+        transform: scale(1.05);
+      }
+
+      .obs-section:hover .obs-section-toggle::before {
+        opacity: 0.1;
+      }
+
+      .obs-section.collapsed .obs-section-toggle {
+        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+        border-color: #cbd5e1;
+      }
+
+      .obs-section.collapsed .obs-section-toggle svg {
+        transform: rotate(-90deg);
+      }
+
+      .obs-section.expanded .obs-section-toggle {
+        background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+        border-color: var(--accent);
+      }
+
+      .obs-section.expanded .obs-section-toggle svg {
+        stroke: var(--accent);
+      }
+
+      .obs-section-body {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height .5s cubic-bezier(0.4, 0, 0.2, 1), padding .5s, opacity .3s;
+        padding: 0 1.75rem;
+        opacity: 0;
+      }
+
+      .obs-section.expanded .obs-section-body {
+        max-height: 15000px;
+        padding: 1.5rem 1.75rem 1.75rem;
+        opacity: 1;
+      }
+
+      .obs-vehiculos {
+        display: grid;
+        gap: 1.25rem;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      }
+
+      @media (max-width: 768px) {
+        .obs-vehiculos {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .obs-vehiculos .obs-card.expanded {
+        box-shadow: 0 10px 30px rgba(220, 38, 38, .25);
+        z-index: 10;
+      }
+
+      .obs-card {
+        background: #fff;
+        border: 2px solid #fecaca;
+        border-radius: 12px;
+        padding: 0;
+        transition: all .3s ease;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .obs-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 5px;
+        height: 100%;
+        background: linear-gradient(180deg, var(--danger) 0%, #fca5a5 100%);
+        transition: width .3s ease;
+      }
+
+      .obs-card:hover {
+        box-shadow: 0 6px 16px rgba(220, 38, 38, .15);
+        transform: translateY(-3px);
+        border-color: var(--danger);
+      }
+
+      .obs-card.expanded {
+        border-color: var(--danger);
+        box-shadow: 0 8px 24px rgba(220, 38, 38, .2);
+      }
+
+      .obs-card.expanded::before {
+        width: 8px;
+      }
+
+      .obs-card.expanded:hover {
+        transform: translateY(-1px);
+      }
+
+      .obs-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 1rem 0 1.25rem;
+        background: linear-gradient(180deg, #fef2f2 0%, #fff 100%);
+        border-bottom: 1px solid #fee2e2;
+        gap: .5rem;
+        flex-wrap: wrap;
+      }
+
+      .obs-card.expanded .obs-card-header {
+        padding-bottom: .75rem;
+        background: linear-gradient(180deg, #fef2f2 0%, #fff7f7 100%);
+      }
+
+      .obs-placa {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: var(--text);
+        letter-spacing: .5px;
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+      }
+
+      .obs-placa::before {
+        content: '🚗';
+        font-size: 1.3rem;
+      }
+
+      .obs-tipo {
+        font-size: .85rem;
+        color: var(--muted);
+        padding: 0 1.25rem .75rem;
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        background: linear-gradient(180deg, #fff 0%, #fafafa 100%);
+      }
+
+      .obs-tipo::before {
+        content: '📍';
+        font-size: .9rem;
+      }
+
+      .obs-card-compact-info {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: .75rem 1.25rem;
+        background: #fafafa;
+        border-top: 1px solid #f3f4f6;
+      }
+
+      .obs-items-count {
+        background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+        color: #fff;
+        padding: .35rem .7rem;
+        border-radius: 8px;
+        font-size: .8rem;
+        font-weight: 700;
+        box-shadow: 0 2px 4px rgba(220, 38, 38, .2);
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+      }
+
+      .obs-items-count::before {
+        content: '⚠️';
+        font-size: .85rem;
+      }
+
+      .obs-card-details {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height .4s cubic-bezier(0.4, 0, 0.2, 1), padding .4s;
+        padding: 0 1.25rem;
+      }
+
+      .obs-card.expanded .obs-card-details {
+        max-height: 2500px;
+        padding: 1rem 1.25rem 1.25rem;
+      }
+
+      .obs-expand-indicator {
+        font-size: .8rem;
+        color: var(--accent);
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        padding: .35rem .6rem;
+        background: rgba(0, 89, 150, 0.08);
+        border-radius: 8px;
+        transition: all .3s;
+        border: 1px solid rgba(0, 89, 150, 0.15);
+      }
+
+      .obs-expand-indicator:hover {
+        background: rgba(0, 89, 150, 0.12);
+        transform: scale(1.05);
+      }
+
+      .obs-expand-indicator svg {
+        width: 16px;
+        height: 16px;
+        transition: transform .3s;
+      }
+
+      .obs-card.expanded .obs-expand-indicator {
+        color: var(--ok);
+        background: rgba(22, 163, 74, 0.08);
+        border-color: rgba(22, 163, 74, 0.15);
+      }
+
+      .obs-card.expanded .obs-expand-indicator:hover {
+        background: rgba(22, 163, 74, 0.12);
+      }
+
+      .obs-card.expanded .obs-expand-indicator svg {
+        transform: rotate(180deg);
+      }
+
+      .obs-expand-indicator::before {
+        content: '👁️ Ver detalles';
+        font-size: .8rem;
+      }
+
+      .obs-card.expanded .obs-expand-indicator::before {
+        content: '📦 Ocultar';
+      }
+
+      .obs-item {
+        background: linear-gradient(135deg, #fff 0%, #fef9f9 100%);
+        padding: .75rem 1rem;
+        border-radius: 10px;
+        margin-bottom: .65rem;
+        border: 1px solid #fee2e2;
+        border-left: 3px solid var(--danger);
+        transition: all .2s;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, .05);
+      }
+
+      .obs-item:hover {
+        transform: translateX(4px);
+        box-shadow: 0 2px 6px rgba(220, 38, 38, .1);
+        border-left-width: 4px;
+      }
+
+      .obs-item:last-child {
+        margin-bottom: 0;
+      }
+
+      .obs-item-name {
+        font-weight: 700;
+        color: var(--danger);
+        font-size: .95rem;
+        margin-bottom: .35rem;
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+      }
+
+      .obs-item-name::before {
+        content: '🔴';
+        font-size: .8rem;
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.6; }
+      }
+
+      .obs-item-obs {
+        font-size: .85rem;
+        color: var(--muted);
+        line-height: 1.5;
+        padding-left: 1.3rem;
+        font-style: italic;
+      }
+
+      .obs-meta {
+        display: flex;
+        gap: 1.25rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 2px solid #fee2e2;
+        font-size: .8rem;
+        color: var(--muted);
+        flex-wrap: wrap;
+      }
+
+      .obs-meta > div {
+        display: flex;
+        align-items: center;
+        gap: .35rem;
+        font-weight: 600;
+        padding: .25rem .5rem;
+        background: #fafafa;
+        border-radius: 6px;
+      }
+
+      .obs-empty {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--muted);
+        font-size: 1.1rem;
+      }
+
+      .obs-empty svg {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 1rem;
+        opacity: .3;
+      }
+
+      .btn-crear-orden {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .btn-crear-orden::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, .3);
+        transform: translate(-50%, -50%);
+        transition: width .4s, height .4s;
+      }
+
+      .btn-crear-orden:hover::before {
+        width: 300px;
+        height: 300px;
+      }
+
+      .btn-crear-orden:hover {
+        background: linear-gradient(135deg, var(--accent) 0%, #004477 100%) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 89, 150, .35);
+      }
+
+      .btn-ver-orden {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .btn-ver-orden:hover {
+        background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%) !important;
+        border-color: #94a3b8 !important;
+        color: #1e293b !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(71, 85, 105, .25);
+      }
+
+      .obs-card-con-orden {
+        opacity: 0.92;
+      }
+
+      .obs-card-con-orden::before {
+        background: linear-gradient(180deg, #64748b 0%, #94a3b8 100%);
+      }
+
+      .obs-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .5rem;
+        flex-wrap: wrap;
+      }
+
+      .obs-badge {
+        white-space: nowrap;
+        animation: pulse-badge 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse-badge {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.8; }
+      }
+
       @media (max-width:1200px) {
         .kanban {
           grid-template-columns: repeat(3, minmax(260px, 1fr))
@@ -622,6 +1304,7 @@ session_start();
           tab: 'board',
           items: [],
           allItems: [], // Todos los items sin filtrar
+          observaciones: [], // Observaciones de vehículos con calificación "Mal"
           draggingId: null,
           fechaDesde: '',
           fechaHasta: '',
@@ -709,6 +1392,7 @@ session_start();
         <div class="mantto-tabs">
           <button class="btn" data-tab="board" aria-pressed="true">Tablero (Drag & Drop)</button>
           <button class="btn" data-tab="list"  aria-pressed="false">Lista</button>
+          <button class="btn" data-tab="observaciones"  aria-pressed="false">Observaciones</button>
           <span class="meta" id="mantto-count"></span>
           <button class="btn" id="btn-add">Agregar servicio</button>
         </div>
@@ -742,6 +1426,10 @@ session_start();
                 <tbody id="mantto-tbody"></tbody>
               </table>
             </div>
+          </section>
+
+          <section class="observaciones-wrap" id="mantto-observaciones" style="display:none">
+            <div id="observaciones-content"></div>
           </section>
         </div>
       `;
@@ -1117,6 +1805,337 @@ session_start();
           });
         }
 
+        // Función para renderizar observaciones agrupadas por sección
+        function renderObservaciones() {
+          const obsContent = root.querySelector('#observaciones-content');
+          if (!obsContent) return;
+
+          const obs = state.observaciones || [];
+
+          if (obs.length === 0) {
+            obsContent.innerHTML = `
+              <div class="obs-empty">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>No hay vehículos con calificación "Mal" en sus checklists</div>
+              </div>
+            `;
+            return;
+          }
+
+          // Agrupar por sección
+          const groupedBySection = {};
+          obs.forEach(item => {
+            const seccion = item.seccion || 'Sin sección';
+            if (!groupedBySection[seccion]) {
+              groupedBySection[seccion] = {};
+            }
+            const vehiculoKey = item.id_vehiculo;
+            if (!groupedBySection[seccion][vehiculoKey]) {
+              groupedBySection[seccion][vehiculoKey] = {
+                id_vehiculo: item.id_vehiculo,
+                placa: item.placa,
+                tipo: item.tipo,
+                Sucursal: item.Sucursal,
+                Km_Actual: item.Km_Actual,
+                orden_id: item.orden_id,
+                orden_estatus: item.orden_estatus,
+                items: []
+              };
+            }
+            groupedBySection[seccion][vehiculoKey].items.push({
+              item: item.item,
+              observaciones: item.observaciones_rotulado,
+              fecha_inspeccion: item.fecha_inspeccion,
+              km_inspeccion: item.kilometraje
+            });
+          });
+
+          // Generar HTML con buscador
+          let html = `
+            <div class="obs-search-box">
+              <input type="text" id="obs-search" class="obs-search-input" placeholder="🔍 Buscar por placa...">
+              <div class="obs-search-meta" id="obs-search-meta"></div>
+            </div>
+            <div class="obs-sections-grid" id="obs-sections-container">
+          `;
+
+          // Iconos para cada tipo de sección
+          const sectionIcons = {
+            'SISTEMA DE LUCES': '💡',
+            'PARTE EXTERNA': '🚗',
+            'PARTE INTERNA': '🪑',
+            'ESTADO DE LLANTAS': '⚫',
+            'default': '⚠️'
+          };
+
+          // Generar HTML por sección con cards tipo carpeta
+          let sectionIndex = 0;
+          Object.keys(groupedBySection).sort().forEach(seccion => {
+            const vehiculos = Object.values(groupedBySection[seccion]);
+            const totalVehiculos = vehiculos.length;
+            const icon = sectionIcons[seccion] || sectionIcons['default'];
+            const totalItems = vehiculos.reduce((sum, v) => sum + v.items.length, 0);
+            const currentSectionIndex = sectionIndex; // Guardar el índice actual
+
+            html += `
+              <div class="obs-section collapsed" data-seccion="${seccion}" data-section-index="${currentSectionIndex}" id="obs-section-${currentSectionIndex}">
+                <div class="obs-section-header" data-section-toggle="${currentSectionIndex}">
+                  <div class="obs-section-header-content">
+                    <div class="obs-section-header-left">
+                      <div class="obs-section-icon">${icon}</div>
+                      <div class="obs-section-info">
+                        <div class="obs-section-title">${seccion}</div>
+                        <div class="obs-section-subtitle">
+                          <span>${totalVehiculos} vehículo${totalVehiculos !== 1 ? 's' : ''}</span>
+                          <span>•</span>
+                          <span>${totalItems} problema${totalItems !== 1 ? 's' : ''}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:.5rem">
+                      <span class="obs-section-count">${totalVehiculos}</span>
+                      <div class="obs-section-toggle">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="obs-section-body">
+                  <div class="obs-vehiculos">
+            `;
+
+            vehiculos.forEach(veh => {
+              const kmActual = veh.Km_Actual ? Number(veh.Km_Actual).toLocaleString() : 'N/A';
+              const tieneOrden = veh.orden_id && veh.orden_id !== null;
+              const estatusOrden = veh.orden_estatus || 'Pendiente';
+              const totalItems = veh.items.length;
+
+              // Colores y etiquetas por estatus
+              const estatusInfo = {
+                'Pendiente': { color: '#dc2626', bg: '#fef2f2', label: '⏳ Orden Pendiente' },
+                'Programado': { color: '#d97706', bg: '#fffbeb', label: '📅 Orden Programada' },
+                'EnTaller': { color: '#ea580c', bg: '#fff7ed', label: '🔧 En Taller' }
+              };
+              const info = estatusInfo[estatusOrden] || estatusInfo['Pendiente'];
+
+              const cardId = `obs-card-${sectionIndex}-${veh.id_vehiculo}`;
+              html += `
+                <div class="obs-card ${tieneOrden ? 'obs-card-con-orden' : ''}" data-placa="${veh.placa || ''}" id="${cardId}" onclick="if(!event.target.closest('button')){document.getElementById('${cardId}').classList.toggle('expanded')}">
+                  <div class="obs-card-header">
+                    <div class="obs-placa">${veh.placa || 'Sin placa'}</div>
+                    ${tieneOrden ? `<span class="obs-badge" style="background:${info.bg};color:${info.color};padding:.25rem .6rem;border-radius:6px;font-size:.75rem;font-weight:700;border:1px solid ${info.color}33;">${info.label}</span>` : ''}
+                  </div>
+                  <div class="obs-tipo">${veh.tipo || 'Sin tipo'} | ${veh.Sucursal || 'Sin sucursal'}</div>
+                  <div class="obs-card-compact-info">
+                    <span class="obs-items-count">${totalItems} ítem${totalItems !== 1 ? 's' : ''} con problemas</span>
+                    <span class="obs-expand-indicator">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    </span>
+                  </div>
+
+                  <div class="obs-card-details">
+              `;
+
+              veh.items.forEach(it => {
+                const obs = it.observaciones ? it.observaciones : '';
+                html += `
+                  <div class="obs-item">
+                    <div class="obs-item-name">${it.item || 'Sin descripción'}</div>
+                    ${obs ? `<div class="obs-item-obs">${obs}</div>` : ''}
+                  </div>
+                `;
+              });
+
+              const fechaInspeccion = veh.items[0]?.fecha_inspeccion ? new Date(veh.items[0].fecha_inspeccion).toLocaleDateString('es-MX') : 'N/A';
+              const kmInspeccion = veh.items[0]?.km_inspeccion ? Number(veh.items[0].km_inspeccion).toLocaleString() : 'N/A';
+
+              html += `
+                    <div class="obs-meta">
+                      <div>📅 ${fechaInspeccion}</div>
+                      <div>🚗 ${kmInspeccion} km</div>
+                      <div>📊 Actual: ${kmActual} km</div>
+                    </div>
+              `;
+
+              if (tieneOrden) {
+                html += `
+                    <button class="btn-ver-orden" data-orden="${veh.orden_id}" style="width:100%;margin-top:.75rem;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;padding:.6rem 1rem;border-radius:8px;font-weight:600;cursor:pointer;transition:.2s;" onclick="event.stopPropagation()">
+                      👁️ Ver Orden #${veh.orden_id}
+                    </button>
+                `;
+              } else {
+                html += `
+                    <button class="btn-crear-orden" data-vehiculo="${veh.id_vehiculo}" data-seccion="${seccion}" style="width:100%;margin-top:.75rem;background:var(--accent);color:#fff;border:none;padding:.6rem 1rem;border-radius:8px;font-weight:600;cursor:pointer;transition:.2s;" onclick="event.stopPropagation()">
+                      ➕ Crear Orden de Servicio
+                    </button>
+                `;
+              }
+
+              html += `
+                  </div>
+                </div>
+              `;
+            });
+
+            html += `
+                </div>
+              </div>
+            `;
+
+            sectionIndex++; // Incrementar para la siguiente sección
+          });
+
+          html += `</div>`; // Cierra obs-sections-container
+
+          obsContent.innerHTML = html;
+
+          // Event listeners para búsqueda
+          const searchInput = document.getElementById('obs-search');
+          const searchMeta = document.getElementById('obs-search-meta');
+
+          if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+              const query = e.target.value.toLowerCase().trim();
+              const allCards = obsContent.querySelectorAll('.obs-card');
+              const allSections = obsContent.querySelectorAll('.obs-section');
+
+              if (query === '') {
+                // Mostrar todo
+                allCards.forEach(card => card.style.display = '');
+                allSections.forEach(section => {
+                  section.style.display = '';
+                  const visibleCards = section.querySelectorAll('.obs-card');
+                  const count = visibleCards.length;
+                  section.querySelector('.obs-section-count').textContent = `${count} vehículo${count !== 1 ? 's' : ''}`;
+                });
+                searchMeta.textContent = '';
+                return;
+              }
+
+              let visibleCount = 0;
+              allSections.forEach(section => {
+                const cards = section.querySelectorAll('.obs-card');
+                let sectionVisibleCount = 0;
+
+                cards.forEach(card => {
+                  const placa = card.getAttribute('data-placa').toLowerCase();
+                  if (placa.includes(query)) {
+                    card.style.display = '';
+                    sectionVisibleCount++;
+                    visibleCount++;
+                  } else {
+                    card.style.display = 'none';
+                  }
+                });
+
+                // Ocultar sección si no tiene vehículos visibles
+                if (sectionVisibleCount === 0) {
+                  section.style.display = 'none';
+                } else {
+                  section.style.display = '';
+                  section.classList.remove('collapsed'); // Expandir sección con resultados
+                  section.querySelector('.obs-section-count').textContent = `${sectionVisibleCount} vehículo${sectionVisibleCount !== 1 ? 's' : ''}`;
+                }
+              });
+
+              searchMeta.textContent = visibleCount > 0
+                ? `Se encontraron ${visibleCount} vehículo${visibleCount !== 1 ? 's' : ''} con la placa "${query}"`
+                : `No se encontraron vehículos con la placa "${query}"`;
+            });
+          }
+
+          // Agregar event listeners para el acordeón de secciones
+          obsContent.querySelectorAll('[data-section-toggle]').forEach(header => {
+            header.addEventListener('click', () => {
+              const sectionIndex = header.getAttribute('data-section-toggle');
+              const clickedSection = document.getElementById(`obs-section-${sectionIndex}`);
+              if (!clickedSection) return;
+
+              const isCurrentlyExpanded = clickedSection.classList.contains('expanded');
+
+              // Colapsar todas las secciones
+              obsContent.querySelectorAll('.obs-section').forEach(section => {
+                section.classList.remove('expanded');
+                section.classList.add('collapsed');
+              });
+
+              // Si la sección clickeada estaba colapsada, expandirla
+              if (!isCurrentlyExpanded) {
+                clickedSection.classList.remove('collapsed');
+                clickedSection.classList.add('expanded');
+              }
+            });
+          });
+
+          // Agregar event listeners a los botones de crear orden
+          obsContent.querySelectorAll('.btn-crear-orden').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const idVehiculo = parseInt(btn.getAttribute('data-vehiculo'));
+              const seccion = btn.getAttribute('data-seccion');
+              crearOrdenDesdeObservacion(idVehiculo, seccion);
+            });
+          });
+
+          // Agregar event listeners a los botones de ver orden
+          obsContent.querySelectorAll('.btn-ver-orden').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const ordenId = parseInt(btn.getAttribute('data-orden'));
+              window.location.href = `/Pedidos_GA/Servicios/detalles_orden.php?id=${ordenId}`;
+            });
+          });
+        }
+
+        // Función para crear orden de servicio desde observaciones
+        async function crearOrdenDesdeObservacion(idVehiculo, seccion) {
+          // Encontrar el vehículo en las observaciones
+          const obsVehiculo = state.observaciones.find(o => o.id_vehiculo === idVehiculo && o.seccion === seccion);
+          if (!obsVehiculo) {
+            toast('No se encontró información del vehículo', false);
+            return;
+          }
+
+          // Obtener todos los ítems con "Mal" de este vehículo en esta sección
+          const itemsMal = state.observaciones
+            .filter(o => o.id_vehiculo === idVehiculo && o.seccion === seccion)
+            .map(o => o.item)
+            .join(', ');
+
+          // Crear nota indicando que viene de observaciones
+          const nota = `[OBSERVACIONES - ${seccion}] Ítems detectados: ${itemsMal}`;
+
+          // Crear la orden de servicio sin servicio asignado (pendiente)
+          const payload = {
+            id_vehiculo: idVehiculo,
+            id_servicio: 0, // Sin servicio por ahora, se asignará después
+            duracion_minutos: 60, // Duración por defecto
+            notas: nota,
+            materiales: []
+          };
+
+          try {
+            const res = await apiPost('create', payload);
+            if (!res || !res.ok) {
+              toast(res?.msg || 'No se pudo crear la orden', false);
+              return;
+            }
+
+            toast(`✅ Orden creada para ${obsVehiculo.placa} desde observaciones`);
+
+            // Recargar la lista y cambiar a vista de tablero
+            await loadList();
+            setTab('board');
+          } catch (error) {
+            toast('Error al crear la orden', false);
+            console.error(error);
+          }
+        }
+
         // Modal para asignar servicio a una OS pendiente sin servicio
         function openServicePicker(id) {
           const cur = state.items.find(x => x.id === id);
@@ -1184,12 +2203,24 @@ session_start();
         function setTab(tab) {
           state.tab = tab;
           el.tabs.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.tab === tab)));
+
+          const kanban = root.querySelector('.kanban');
+          const listWrap = root.querySelector('.list-wrap');
+          const obsWrap = root.querySelector('.observaciones-wrap');
+
           if (tab === 'board') {
-            root.querySelector('.kanban').style.display = 'grid';
-            el.listWrap.style.display = 'none';
-          } else {
-            root.querySelector('.kanban').style.display = 'none';
-            el.listWrap.style.display = 'block';
+            kanban.style.display = 'grid';
+            listWrap.style.display = 'none';
+            obsWrap.style.display = 'none';
+          } else if (tab === 'list') {
+            kanban.style.display = 'none';
+            listWrap.style.display = 'block';
+            obsWrap.style.display = 'none';
+          } else if (tab === 'observaciones') {
+            kanban.style.display = 'none';
+            listWrap.style.display = 'none';
+            obsWrap.style.display = 'block';
+            renderObservaciones();
           }
         }
         el.tabs.forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
@@ -1401,6 +2432,13 @@ session_start();
           }
           state.allItems = res.items || [];
           applyDateFilters();
+
+          // Cargar observaciones
+          const obsRes = await apiGet('observaciones');
+          if (obsRes && obsRes.ok) {
+            state.observaciones = obsRes.items || [];
+          }
+
           setTab('board');
         }
 

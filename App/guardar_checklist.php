@@ -51,14 +51,21 @@ try {
         $seccion = isset($it['seccion']) ? trim($it['seccion']) : '';
         $item = isset($it['item']) ? trim($it['item']) : '';
         $cal = isset($it['calificacion']) ? trim($it['calificacion']) : '';
-        $obs = isset($it['observaciones_rotulado']) ? $it['observaciones_rotulado'] : null;
+        // Se acepta 'observacion' o 'observaciones_rotulado' desde el cliente y se guarda en la columna existente
+        $obs = isset($it['observacion']) ? $it['observacion'] : (isset($it['observaciones_rotulado']) ? $it['observaciones_rotulado'] : null);
 
         if ($seccion === '' || $item === '' || !in_array($cal, $allowed, true)) {
             $conn->rollback(); bad('FALTAN_CALIFICACIONES');
         }
 
-        // Solo guardar observaciones en filas de sección ROTULADO
-        if (strtoupper($seccion) !== 'ROTULADO') { $obs = null; }
+        // Regla: si calificación es 'Mal', observación es obligatoria; para otras calificaciones se ignora
+        if ($cal === 'Mal') {
+            $obs = is_null($obs) ? '' : trim((string)$obs);
+            if ($obs === '') { $conn->rollback(); bad('FALTA_OBSERVACION'); }
+        } else {
+            // Para Bien/N.A no se requiere observación
+            $obs = null;
+        }
 
         $kmVal = is_null($km) || $km === '' ? null : (int)$km;
         $ins->bind_param('iissssss', $idVehiculo, $idChofer, $fechaIns, $kmVal, $seccion, $item, $cal, $obs);
@@ -73,4 +80,3 @@ try {
     http_response_code(500);
     echo json_encode(['ok'=>false,'error'=>'ERROR']);
 }
-

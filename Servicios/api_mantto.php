@@ -214,24 +214,26 @@ try {
     $notas       = trim($in['notas'] ?? '');
     $materiales  = $in['materiales'] ?? []; // [{id_inventario, cantidad}, ...]
 
-    if ($id_vehiculo<=0 || $id_servicio<=0) {
+    if ($id_vehiculo<=0) {
       http_response_code(400);
-      echo json_encode(['ok'=>false,'error'=>'VALIDATION','msg'=>'Vehículo y servicio son requeridos']); exit;
+      echo json_encode(['ok'=>false,'error'=>'VALIDATION','msg'=>'Vehículo es requerido']); exit;
     }
 
-    // Compatibilidad servicio-vehículo (si el servicio tiene restricciones)
-    try {
-      $st = $pdo->prepare("SELECT COUNT(*) FROM servicio_vehiculo WHERE id_servicio=?");
-      $st->execute([$id_servicio]);
-      $srvHasRestr = (int)$st->fetchColumn();
-      if ($srvHasRestr > 0) {
-        $chk = $pdo->prepare("SELECT COUNT(*) FROM servicio_vehiculo WHERE id_servicio=? AND id_vehiculo=?");
-        $chk->execute([$id_servicio, $id_vehiculo]);
-        if ((int)$chk->fetchColumn() === 0) {
-          echo json_encode(['ok'=>false,'error'=>'INCOMPATIBLE','msg'=>'Servicio no compatible con el vehículo seleccionado']); exit;
+    // Compatibilidad servicio-vehículo (si el servicio tiene restricciones y está asignado)
+    if ($id_servicio > 0) {
+      try {
+        $st = $pdo->prepare("SELECT COUNT(*) FROM servicio_vehiculo WHERE id_servicio=?");
+        $st->execute([$id_servicio]);
+        $srvHasRestr = (int)$st->fetchColumn();
+        if ($srvHasRestr > 0) {
+          $chk = $pdo->prepare("SELECT COUNT(*) FROM servicio_vehiculo WHERE id_servicio=? AND id_vehiculo=?");
+          $chk->execute([$id_servicio, $id_vehiculo]);
+          if ((int)$chk->fetchColumn() === 0) {
+            echo json_encode(['ok'=>false,'error'=>'INCOMPATIBLE','msg'=>'Servicio no compatible con el vehículo seleccionado']); exit;
+          }
         }
-      }
-    } catch (Throwable $e) {}
+      } catch (Throwable $e) {}
+    }
 
     // Determinar materiales a validar (enviados o catálogo)
     $matsToUse = [];
@@ -278,9 +280,9 @@ try {
 
     $pdo->beginTransaction();
 
-    // crear orden
+    // crear orden (id_servicio puede ser NULL si no está asignado)
     $stmt = $pdo->prepare("INSERT INTO orden_servicio (id_vehiculo, id_servicio, duracion_minutos, notas) VALUES (?,?,?,?)");
-    $stmt->execute([$id_vehiculo, $id_servicio, $duracion, $notas ?: null]);
+    $stmt->execute([$id_vehiculo, ($id_servicio > 0 ? $id_servicio : null), $duracion, $notas ?: null]);
     $newId = (int)$pdo->lastInsertId();
 
     // materiales: usar los enviados o, si vienen vacíos, precargar desde servicio_insumo
@@ -562,6 +564,67 @@ try {
     } catch (Throwable $e) {
       if ($pdo->inTransaction()) $pdo->rollBack();
       http_response_code(500); echo json_encode(['ok'=>false,'error'=>'SERVER','msg'=>$e->getMessage()]); exit;
+    }
+  }
+
+  if ($method === 'GET' && $action === 'observaciones') {
+    try {
+      // Obtener vehículos con ítems calificados como "Mal" en checklist
+      // Basado en estructura: id, id_vehiculo, id_chofer, fecha_inspeccion, kilometraje, seccion, item, calificacion, observaciones_rotulado
+      $sql = "
+        SELECT
+          cv.id_vehiculo,
+          cv.id_chofer,
+          v.placa,
+          v.tipo,
+          v.Sucursal,
+          v.Km_Actual,
+          cv.seccion,
+          cv.item,
+          cv.calificacion,
+          cv.observaciones_rotulado,
+          cv.fecha_inspeccion,
+          cv.kilometraje,
+          cv.id AS checklist_id
+        FROM checklist_vehicular cv
+        INNER JOIN vehiculos v ON cv.id_vehiculo = v.id_vehiculo
+        WHERE cv.calificacion = 'Mal'
+        ORDER BY cv.seccion, v.placa, cv.fecha_inspeccion DESC
+      ";
+
+      $stmt = $pdo->prepare($sql);
+      $stmt->execute();
+      $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+      // Ahora buscar si cada vehículo tiene órdenes de servicio activas relacionadas con observaciones
+      $result = [];
+      foreach ($items as $item) {
+        $idVeh = (int)$item['id_vehiculo'];
+        $seccion = $item['seccion'];
+
+        // Buscar orden de servicio relacionada
+        $sqlOrden = "
+          SELECT id, estatus
+          FROM orden_servicio
+          WHERE id_vehiculo = ?
+            AND notas LIKE ?
+            AND COALESCE(estatus, 'Pendiente') IN ('Pendiente', 'Programado', 'EnTaller')
+          LIMIT 1
+        ";
+        $stmtOrden = $pdo->prepare($sqlOrden);
+        $stmtOrden->execute([$idVeh, "%[OBSERVACIONES - $seccion]%"]);
+        $orden = $stmtOrden->fetch(PDO::FETCH_ASSOC);
+
+        $item['orden_id'] = $orden ? $orden['id'] : null;
+        $item['orden_estatus'] = $orden ? ($orden['estatus'] ?? 'Pendiente') : null;
+
+        $result[] = $item;
+      }
+
+      echo json_encode(['ok'=>true, 'items'=>$result]); exit;
+    } catch (Throwable $e) {
+      http_response_code(500);
+      echo json_encode(['ok'=>false, 'error'=>'OBSERVACIONES_ERROR', 'msg'=>$e->getMessage()]); exit;
     }
   }
 

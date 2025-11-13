@@ -25,7 +25,15 @@
       "Bash(\"\\192.168.60.194\\xampp\\mysql\\bin\\mysql.exe\" -u root gpoascen_pedidos_app -e \"CREATE TABLE IF NOT EXISTS pedidos_grupos (id INT AUTO_INCREMENT PRIMARY KEY, pedido_id INT NOT NULL, grupo_id INT NOT NULL, orden_entrega INT DEFAULT NULL, fecha_asignacion DATETIME DEFAULT CURRENT_TIMESTAMP, INDEX idx_pedido (pedido_id), INDEX idx_grupo (grupo_id), UNIQUE KEY unique_pedido_grupo (pedido_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;\")",
       "Bash(\"C:\\xampp\\mysql\\bin\\mysql.exe\":*)",
       "Bash(\"\\192.168.60.194\\xampp\\mysql\\bin\\mysql.exe\" -u root gpoascen_pedidos_app -e \"SHOW TABLES LIKE ''%grupo%'';\")",
-      "Bash(\"\\192.168.60.194\\xampp\\mysql\\bin\\mysql.exe\" -u root gpoascen_pedidos_app -e \"DESCRIBE grupos_rutas; DESCRIBE pedidos_grupos;\")"
+      "Bash(\"\\192.168.60.194\\xampp\\mysql\\bin\\mysql.exe\" -u root gpoascen_pedidos_app -e \"DESCRIBE grupos_rutas; DESCRIBE pedidos_grupos;\")",
+      "Bash(\"\\192.168.60.194\\xampp\\mysql\\bin\\mysql.exe\" -u root gpoascen_pedidos_app -e \"SELECT COUNT(*) as total FROM checklist_vehicular WHERE calificacion = ''Mal'';\")",
+      "Bash(\"\\192.168.60.194\\xampp\\mysql\\bin\\mysql.exe\" -u root gpoascen_pedidos_app -e \"SHOW TABLES LIKE ''%checklist%'';\")",
+      "Bash(\"\\192.168.60.194\\xampp\\mysql\\bin\\mysql.exe\" -u root gpoascen_pedidos_app -e \"SHOW TABLES;\")",
+      "Bash(\"\\192.168.60.194\\xampp\\mysql\\bin\\mysql.exe\" -u root -e \"SELECT table_schema, table_name FROM information_schema.tables WHERE table_name LIKE ''%checklist%'';\")",
+      "Bash(\"\\192.168.60.194\\xampp\\mysql\\bin\\mysql.exe\" -u root -e \"SELECT table_schema, table_name FROM information_schema.tables WHERE table_name LIKE ''%vehiculo%'' OR table_name LIKE ''%vehiculo%'';\")",
+      "Bash(\"\\192.168.60.194\\xampp\\mysql\\bin\\mysql.exe\" -u root gpoascen_pedidos_app -e \"SELECT COUNT(*) as total_mal FROM checklist_vehicular WHERE calificacion = ''Mal'';\")",
+      "Bash(\"\\192.168.60.194\\xampp\\mysql\\bin\\mysql.exe\" -u root -e \"SELECT table_schema FROM information_schema.tables WHERE table_name = ''checklist_vehicular'';\")",
+      "Bash(\"\\192.168.60.194\\xampp\\mysql\\bin\\mysql.exe\" -u root gpoascen_pedidos_app -e \"UPDATE checklist_vehicular SET calificacion = ''Mal'' WHERE id IN (175, 177, 181) LIMIT 3;\")"
     ],
     "deny": [],
     "ask": []

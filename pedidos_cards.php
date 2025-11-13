@@ -1,0 +1,167 @@
+<?php
+ini_set('session.cookie_httponly', true);
+ini_set('session.cookie_secure', true);
+session_name('GA');
+session_start();
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+  header('location: /Pedidos_GA/Sesion/login.html');
+  exit;
+}
+?>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pedidos – Vista Cards</title>
+  <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+  <style>
+    :root { --muted:#6b7280; }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;background:#f3f4f6;color:#111827}
+    header{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:12px 16px;background:#0ea5e9;color:#fff;position:sticky;top:0;z-index:2}
+    header .actions{display:flex;gap:8px;align-items:center}
+    a.btn,button.btn{appearance:none;border:none;background:#1f2937;color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer;text-decoration:none}
+    main{padding:16px}
+    .filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+    .filters input,.filters select{padding:10px;border:1px solid #d1d5db;border-radius:8px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+    .card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+    .card-header{display:flex;justify-content:space-between;align-items:center}
+    .chip{display:inline-block;padding:3px 8px;border-radius:999px;font-size:12px;border:1px solid #e5e7eb;background:#f9fafb}
+    .chip.estado-ACTIVO{background:#ecfccb;border-color:#bef264}
+    .chip.estado-PROGRAMADO{background:#fef9c3;border-color:#fde047}
+    .chip.estado-ENTREGADO{background:#dcfce7;border-color:#86efac}
+    .meta{color:#6b7280;font-size:12px}
+    .card-footer{display:flex;gap:8px;align-items:center;justify-content:flex-end}
+    .price{font-weight:600}
+    .badge{font-size:11px;background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;border-radius:999px;padding:2px 6px}
+    .empty{padding:24px;text-align:center;color:#6b7280}
+    @media (max-width: 900px){ .filters{grid-template-columns:repeat(2,1fr);} }
+    @media (max-width: 520px){ .filters{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body>
+  <header>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <strong>Pedidos – Cards</strong>
+      <span class="badge" id="count">0</span>
+    </div>
+    <div class="actions">
+      <a class="btn" href="Pedidos_GA.php">Tabla</a>
+      <a class="btn" href="pedidos_kanban.php">Kanban</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="filters">
+      <input id="q" placeholder="Buscar cliente, dirección o factura" />
+      <select id="fSucursal"><option value="">Todas las sucursales</option></select>
+      <select id="fEstado"><option value="">Todos los estados</option></select>
+      <select id="fChofer"><option value="">Todos los choferes</option></select>
+    </section>
+
+    <section class="grid" id="grid"></section>
+    <div class="empty" id="empty" style="display:none;">Sin resultados con los filtros actuales.</div>
+  </main>
+
+  <script>
+    const grid = document.getElementById('grid');
+    const empty = document.getElementById('empty');
+    const count = document.getElementById('count');
+    const q = document.getElementById('q');
+    const fSucursal = document.getElementById('fSucursal');
+    const fEstado = document.getElementById('fEstado');
+    const fChofer = document.getElementById('fChofer');
+    let data = [];
+
+    const normalizar = s => (s||'').toString().toLowerCase();
+
+    function uniqueOptions(arr, key){
+      const set = new Set(); arr.forEach(x=>{ if(x[key]) set.add(x[key]); });
+      return Array.from(set).sort();
+    }
+
+    function renderFilters(){
+      for(const val of uniqueOptions(data,'SUCURSAL')){
+        const o=document.createElement('option');o.value=val;o.textContent=val;fSucursal.appendChild(o);
+      }
+      for(const val of uniqueOptions(data,'ESTADO')){
+        const o=document.createElement('option');o.value=val;o.textContent=val;fEstado.appendChild(o);
+      }
+      for(const val of uniqueOptions(data,'CHOFER_ASIGNADO')){
+        const o=document.createElement('option');o.value=val;o.textContent=val;fChofer.appendChild(o);
+      }
+    }
+
+    function passFilters(p){
+      const sQ = normalizar(q.value);
+      if (sQ) {
+        const blob = normalizar(`${p.NOMBRE_CLIENTE} ${p.DIRECCION} ${p.FACTURA} ${p.VENDEDOR}`);
+        if(!blob.includes(sQ)) return false;
+      }
+      if (fSucursal.value && p.SUCURSAL !== fSucursal.value) return false;
+      if (fEstado.value && p.ESTADO !== fEstado.value) return false;
+      if (fChofer.value && p.CHOFER_ASIGNADO !== fChofer.value) return false;
+      return true;
+    }
+
+    function toPrice(val){
+      if(val==null||val==='') return '';
+      const num = Number(String(val).replace(/[^0-9.-]/g,''));
+      if(Number.isNaN(num)) return String(val);
+      return num.toLocaleString('es-MX',{style:'currency',currency:'MXN'});
+    }
+
+    function card(p){
+      const div = document.createElement('article');
+      div.className = 'card';
+      div.innerHTML = `
+        <div class="card-header">
+          <div><strong>#${p.ID || ''}</strong> · <span class="meta">${p.SUCURSAL||''}</span></div>
+          <span class="chip estado-${(p.ESTADO||'').replace(/\s/g,'-')}">${p.ESTADO||''}</span>
+        </div>
+        <div>
+          <div style="font-weight:600;margin-bottom:2px;">${p.NOMBRE_CLIENTE||''}</div>
+          <div class="meta">${p.DIRECCION||''}</div>
+        </div>
+        <div class="meta">Factura: <strong>${p.FACTURA||'-'}</strong> · Vendedor: ${p.VENDEDOR||'-'}</div>
+        <div class="meta">Chofer: <strong>${p.CHOFER_ASIGNADO||'—'}</strong> · Recepción: ${p.FECHA_RECEPCION_FACTURA||'-'}</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span class="price">${toPrice(p.precio_factura_real)}</span>
+          <div class="card-footer">
+            <a class="btn" href="detalle_pedido.php?id=${encodeURIComponent(p.ID)}">Ver detalles</a>
+          </div>
+        </div>`;
+      return div;
+    }
+
+    function render(){
+      grid.innerHTML='';
+      const list = data.filter(passFilters);
+      count.textContent = list.length;
+      if(list.length===0){ empty.style.display='block'; return; } else { empty.style.display='none'; }
+      const frag = document.createDocumentFragment();
+      list.forEach(p => frag.appendChild(card(p)));
+      grid.appendChild(frag);
+    }
+
+    async function load(){
+      try{
+        const res = await fetch('obtener_pedidos.php',{credentials:'same-origin'});
+        if(!res.ok) throw new Error('HTTP '+res.status);
+        data = await res.json();
+      }catch(e){
+        grid.innerHTML = '<div class="empty">No se pudo cargar la información o el formato no es válido.</div>';
+        console.error(e);
+        return;
+      }
+      renderFilters();
+      render();
+    }
+
+    [q,fSucursal,fEstado,fChofer].forEach(el=> el.addEventListener('input', render));
+    load();
+  </script>
+</body>
+</html>

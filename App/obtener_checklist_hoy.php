@@ -31,17 +31,29 @@ try {
     $sec = $it = $cal = $obsRow = null;
     $q->bind_result($sec, $it, $cal, $obsRow);
     $items = [];
-    $obs = null;
     while ($q->fetch()) {
-        $items[] = [ 'seccion' => $sec, 'item' => $it, 'calificacion' => $cal ];
-        if ($obs === null && !empty($obsRow)) { $obs = $obsRow; }
+        $obsOut = null;
+        if (!is_null($obsRow) && $obsRow !== '') {
+            $tmp = (string)$obsRow;
+            if (stripos($tmp, '[AUTO]') === 0) {
+                $tmp = trim(substr($tmp, 6)); // limpiar etiqueta antigua si existiera
+            }
+            $obsOut = ($tmp === '') ? null : $tmp;
+        }
+        $items[] = [
+            'seccion' => $sec,
+            'item' => $it,
+            'calificacion' => $cal,
+            // Enviar cadena vacia en lugar de null para evitar "null" literal en clientes
+            'observacion' => is_null($obsOut) ? '' : $obsOut,
+        ];
     }
     $q->free_result();
     $q->close();
 
     if (count($items) === 0) { echo json_encode(['ok'=>false,'error'=>'SIN_DATOS']); exit; }
 
-    echo json_encode(['ok'=>true,'items'=>$items,'observaciones_rotulado'=>$obs]);
+    echo json_encode(['ok'=>true,'items'=>$items]);
 } catch (Throwable $e) {
     http_response_code(500);
     echo json_encode(['ok'=>false,'error'=>'ERROR']);
