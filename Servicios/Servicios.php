@@ -419,207 +419,334 @@ session_start();
         border: 1px solid #cfeacf
       }
 
-      /* Estilos para vista de Observaciones */
+      /* Estilos para vista de Observaciones - Diseño Moderno tipo Dashboard */
       .observaciones-wrap {
-        background: var(--panel);
-        border-radius: var(--radius);
-        padding: 1.5rem;
-      }
-
-      .obs-search-box {
-        background: #fff;
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 1rem;
-        margin-bottom: 1.5rem;
-        box-shadow: var(--shadow);
-      }
-
-      .obs-search-input {
-        width: 100%;
-        padding: .6rem 1rem;
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        font-size: .95rem;
-        transition: .2s;
-      }
-
-      .obs-search-input:focus {
-        outline: none;
-        border-color: var(--accent);
-        box-shadow: 0 0 0 3px rgba(0, 89, 150, 0.1);
-      }
-
-      .obs-search-meta {
-        margin-top: .5rem;
-        font-size: .85rem;
-        color: var(--muted);
-      }
-
-      .obs-sections-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-        align-items: start;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 16px;
+        padding: 2rem;
+        /* Grid moved to inner container */
       }
 
       @media (max-width: 1200px) {
-        .obs-sections-grid {
-          grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-        }
-      }
-
-      @media (max-width: 768px) {
-        .obs-sections-grid {
+        .observaciones-wrap > #observaciones-content {
           grid-template-columns: 1fr;
         }
       }
 
-      .obs-section {
-        background: #fff;
-        border: 2px solid #e5e7eb;
-        border-radius: 18px;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-        overflow: hidden;
-        transition: all .35s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
+      /* Grid de 2 columnas aplicado al contenedor interno */
+      .observaciones-wrap > #observaciones-content {
+        min-height: 600px;
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 2rem;
       }
 
-      .obs-section::before {
+      .obs-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .obs-main-content {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        min-width: 0;
+      }
+
+      .obs-search-box {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        border: 2px solid #dee2e6;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .obs-search-box::before {
         content: '';
         position: absolute;
         top: 0;
         left: 0;
         right: 0;
         height: 4px;
-        background: linear-gradient(90deg, var(--danger) 0%, #f97316 50%, var(--danger) 100%);
-        opacity: 0;
-        transition: opacity .3s;
+        background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
       }
 
-      .obs-section:hover::before {
-        opacity: 1;
+      .obs-filter-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: .75rem;
+        background: #ffffff;
+        border: 2px solid #dee2e6;
+        border-radius: 16px;
+        padding: 1.25rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        position: sticky;
+        top: 1rem;
+      }
+
+      .obs-filter-title {
+        font-size: 1rem;
+        font-weight: 800;
+        color: #212529;
+        margin-bottom: .5rem;
+        padding-bottom: .75rem;
+        border-bottom: 2px solid #e9ecef;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+      }
+
+      .obs-filter-btn {
+        padding: .85rem 1rem;
+        border: 2px solid transparent;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: .8rem;
+        cursor: pointer;
+        transition: all .3s;
+        text-transform: uppercase;
+        letter-spacing: .3px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .5rem;
+        background: #f8f9fa;
+        color: #495057;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        width: 100%;
+        text-align: left;
+      }
+
+      .obs-filter-btn:hover {
+        transform: translateX(4px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      .obs-filter-btn.active {
+        transform: translateX(4px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+      }
+
+      .obs-filter-btn-text {
+        display: flex;
+        align-items: center;
+        gap: .65rem;
+        flex: 1;
+      }
+
+      .obs-filter-btn-icon {
+        font-size: 1.1rem;
+      }
+
+      .obs-filter-btn-label {
+        font-size: .75rem;
+        line-height: 1.3;
+      }
+
+      .obs-filter-btn .filter-count {
+        background: rgba(0, 0, 0, 0.1);
+        padding: .2rem .5rem;
+        border-radius: 6px;
+        font-size: .75rem;
+        font-weight: 800;
+      }
+
+      .obs-filter-btn:hover .filter-count,
+      .obs-filter-btn.active .filter-count {
+        background: rgba(255, 255, 255, 0.25);
+        color: #ffffff;
+      }
+
+      /* Colores de los filtros por sección */
+      .obs-filter-btn[data-filter="SISTEMA DE LUCES"] {
+        border-color: #fbbf24;
+        color: #b45309;
+      }
+
+      .obs-filter-btn[data-filter="SISTEMA DE LUCES"]:hover,
+      .obs-filter-btn[data-filter="SISTEMA DE LUCES"].active {
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        color: #ffffff;
+        border-color: #f59e0b;
+      }
+
+      .obs-filter-btn[data-filter="PARTE EXTERNA"] {
+        border-color: #3b82f6;
+        color: #1e40af;
+      }
+
+      .obs-filter-btn[data-filter="PARTE EXTERNA"]:hover,
+      .obs-filter-btn[data-filter="PARTE EXTERNA"].active {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: #ffffff;
+        border-color: #2563eb;
+      }
+
+      .obs-filter-btn[data-filter="PARTE INTERNA"] {
+        border-color: #8b5cf6;
+        color: #6b21a8;
+      }
+
+      .obs-filter-btn[data-filter="PARTE INTERNA"]:hover,
+      .obs-filter-btn[data-filter="PARTE INTERNA"].active {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        color: #ffffff;
+        border-color: #7c3aed;
+      }
+
+      .obs-filter-btn[data-filter="ESTADO DE LLANTAS"] {
+        border-color: #1f2937;
+        color: #111827;
+      }
+
+      .obs-filter-btn[data-filter="ESTADO DE LLANTAS"]:hover,
+      .obs-filter-btn[data-filter="ESTADO DE LLANTAS"].active {
+        background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+        color: #ffffff;
+        border-color: #111827;
+      }
+
+      .obs-filter-btn[data-filter="ACCESORIOS DE SEGURIDAD"] {
+        border-color: #ef4444;
+        color: #991b1b;
+      }
+
+      .obs-filter-btn[data-filter="ACCESORIOS DE SEGURIDAD"]:hover,
+      .obs-filter-btn[data-filter="ACCESORIOS DE SEGURIDAD"].active {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: #ffffff;
+        border-color: #dc2626;
+      }
+
+      .obs-filter-btn[data-filter="all"] {
+        border-color: #6b7280;
+        color: #374151;
+      }
+
+      .obs-filter-btn[data-filter="all"]:hover,
+      .obs-filter-btn[data-filter="all"].active {
+        background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+        color: #ffffff;
+        border-color: #4b5563;
+      }
+
+      .obs-search-input {
+        width: 100%;
+        padding: 1rem 1.5rem;
+        padding-left: 3rem;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all .3s;
+        background: #fff;
+        font-weight: 500;
+      }
+
+      .obs-search-input:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        transform: translateY(-2px);
+      }
+
+      .obs-search-meta {
+        margin-top: .75rem;
+        font-size: .9rem;
+        color: #6c757d;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+      }
+
+      .obs-sections-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+      }
+
+      .obs-section {
+        background: #ffffff;
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        overflow: hidden;
+        transition: all .3s ease;
       }
 
       .obs-section:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
-        border-color: #fca5a5;
-      }
-
-      .obs-section.collapsed {
-        background: #fff;
-      }
-
-      .obs-section.collapsed:hover {
-        background: linear-gradient(135deg, #fefefe 0%, #fafafa 100%);
-      }
-
-      .obs-section.expanded {
-        background: #fff;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-      }
-
-      .obs-section.expanded::before {
-        opacity: 1;
-        height: 5px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
       }
 
       .obs-section-header {
-        padding: 1.5rem 1.75rem;
-        cursor: pointer;
-        transition: all .3s ease;
+        padding: 0;
         user-select: none;
-        background: linear-gradient(135deg, #fef8f8 0%, #fff 100%);
-        border-bottom: 2px solid transparent;
+        border: none;
         position: relative;
       }
 
-      .obs-section-header::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 1.75rem;
-        right: 1.75rem;
-        height: 2px;
-        background: linear-gradient(90deg, transparent 0%, #fee2e2 50%, transparent 100%);
-        opacity: 0;
-        transition: opacity .3s;
+      /* Colores específicos por sección */
+      .obs-section[data-seccion="SISTEMA DE LUCES"] .obs-section-header {
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
       }
 
-      .obs-section.collapsed .obs-section-header {
-        border-bottom: none;
-        background: linear-gradient(135deg, #fafafa 0%, #fff 100%);
+      .obs-section[data-seccion="PARTE EXTERNA"] .obs-section-header {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
       }
 
-      .obs-section.collapsed .obs-section-header:hover {
-        background: linear-gradient(135deg, #fef2f2 0%, #fff7f7 100%);
+      .obs-section[data-seccion="PARTE INTERNA"] .obs-section-header {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
       }
 
-      .obs-section.expanded .obs-section-header::after {
-        opacity: 1;
+      .obs-section[data-seccion="ESTADO DE LLANTAS"] .obs-section-header {
+        background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
       }
 
-      .obs-section-header:hover {
-        background: linear-gradient(135deg, #fef2f2 0%, #fff 100%);
+      .obs-section[data-seccion="ACCESORIOS DE SEGURIDAD"] .obs-section-header {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
       }
 
-      .obs-section-header:active {
-        transform: scale(0.99);
+      /* Color por defecto para otras secciones */
+      .obs-section-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       }
 
       .obs-section-header-content {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: .75rem;
+        padding: 1.25rem 1.75rem;
+        gap: 1rem;
       }
 
       .obs-section-header-left {
         display: flex;
         align-items: center;
-        gap: .75rem;
+        gap: 1.25rem;
         flex: 1;
       }
 
       .obs-section-icon {
-        width: 60px;
-        height: 60px;
-        background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
-        border-radius: 16px;
+        width: 48px;
+        height: 48px;
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #fff;
-        font-size: 1.75rem;
-        box-shadow: 0 6px 20px rgba(220, 38, 38, 0.35);
-        transition: all .35s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        overflow: hidden;
-      }
-
-      .obs-section-icon::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 100%);
-        opacity: 0;
-        transition: opacity .3s;
-      }
-
-      .obs-section:hover .obs-section-icon::before {
-        opacity: 1;
+        font-size: 1.5rem;
+        transition: all .3s ease;
+        flex-shrink: 0;
+        border: 2px solid rgba(255, 255, 255, 0.3);
       }
 
       .obs-section:hover .obs-section-icon {
-        transform: scale(1.15) rotate(8deg);
-        box-shadow: 0 8px 24px rgba(220, 38, 38, 0.45);
-      }
-
-      .obs-section.expanded .obs-section-icon {
-        transform: scale(1.05);
-        box-shadow: 0 4px 16px rgba(220, 38, 38, 0.3);
+        transform: scale(1.1);
+        background: rgba(255, 255, 255, 0.35);
       }
 
       .obs-section-info {
@@ -627,410 +754,354 @@ session_start();
       }
 
       .obs-section-title {
-        font-size: 1.1rem;
-        font-weight: 800;
-        color: var(--text);
-        margin-bottom: .35rem;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #ffffff;
+        margin-bottom: .25rem;
         line-height: 1.3;
         letter-spacing: .3px;
         text-transform: uppercase;
-        background: linear-gradient(135deg, var(--text) 0%, #475569 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
       }
 
       .obs-section-subtitle {
         font-size: .85rem;
-        color: var(--muted);
+        color: rgba(255, 255, 255, 0.85);
         display: flex;
         align-items: center;
-        gap: .5rem;
-        font-weight: 600;
+        gap: .75rem;
+        font-weight: 500;
       }
 
       .obs-section-subtitle span {
         display: inline-flex;
         align-items: center;
-        gap: .25rem;
+        gap: .35rem;
       }
 
-      .obs-section-subtitle span::before {
-        content: '';
-        width: 4px;
-        height: 4px;
-        background: var(--muted);
-        border-radius: 50%;
-        display: inline-block;
-      }
-
-      .obs-section-subtitle span:first-child::before {
-        display: none;
+      .obs-section-stats {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
       }
 
       .obs-section-count {
-        background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
-        color: #fff;
-        padding: .4rem .85rem;
-        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.95);
+        color: #667eea;
+        padding: .5rem .9rem;
+        border-radius: 10px;
         font-size: .9rem;
         font-weight: 800;
-        box-shadow: 0 3px 12px rgba(220, 38, 38, 0.4);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         min-width: 40px;
         text-align: center;
-        border: 2px solid rgba(255, 255, 255, 0.9);
         transition: all .3s;
+        border: 2px solid rgba(255, 255, 255, 0.5);
       }
 
       .obs-section:hover .obs-section-count {
-        transform: scale(1.1);
-        box-shadow: 0 4px 16px rgba(220, 38, 38, 0.5);
-      }
-
-      .obs-section-toggle {
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: linear-gradient(135deg, #f8fafc 0%, #fff 100%);
-        border-radius: 12px;
-        transition: all .3s;
-        border: 2px solid #e5e7eb;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .obs-section-toggle::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(135deg, var(--accent) 0%, #0284c7 100%);
-        opacity: 0;
-        transition: opacity .3s;
-      }
-
-      .obs-section-toggle svg {
-        transition: transform .35s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        z-index: 1;
-      }
-
-      .obs-section:hover .obs-section-toggle {
-        border-color: var(--accent);
-        transform: scale(1.05);
-      }
-
-      .obs-section:hover .obs-section-toggle::before {
-        opacity: 0.1;
-      }
-
-      .obs-section.collapsed .obs-section-toggle {
-        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-        border-color: #cbd5e1;
-      }
-
-      .obs-section.collapsed .obs-section-toggle svg {
-        transform: rotate(-90deg);
-      }
-
-      .obs-section.expanded .obs-section-toggle {
-        background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
-        border-color: var(--accent);
-      }
-
-      .obs-section.expanded .obs-section-toggle svg {
-        stroke: var(--accent);
+        transform: scale(1.08);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
       }
 
       .obs-section-body {
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height .5s cubic-bezier(0.4, 0, 0.2, 1), padding .5s, opacity .3s;
-        padding: 0 1.75rem;
-        opacity: 0;
-      }
-
-      .obs-section.expanded .obs-section-body {
-        max-height: 15000px;
-        padding: 1.5rem 1.75rem 1.75rem;
-        opacity: 1;
+        padding: 1.5rem;
+        background: #fafbfc;
       }
 
       .obs-vehiculos {
         display: grid;
         gap: 1.25rem;
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        grid-template-columns: repeat(3, 1fr);
       }
 
-      @media (max-width: 768px) {
+      @media (max-width: 1800px) {
+        .obs-vehiculos {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      @media (max-width: 1200px) {
         .obs-vehiculos {
           grid-template-columns: 1fr;
         }
       }
 
-      .obs-vehiculos .obs-card.expanded {
-        box-shadow: 0 10px 30px rgba(220, 38, 38, .25);
-        z-index: 10;
-      }
-
       .obs-card {
-        background: #fff;
-        border: 2px solid #fecaca;
+        background: #ffffff;
+        border: 2px solid #e9ecef;
         border-radius: 12px;
-        padding: 0;
-        transition: all .3s ease;
-        cursor: pointer;
-        position: relative;
         overflow: hidden;
-      }
-
-      .obs-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 5px;
-        height: 100%;
-        background: linear-gradient(180deg, var(--danger) 0%, #fca5a5 100%);
-        transition: width .3s ease;
+        transition: all .3s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
       }
 
       .obs-card:hover {
-        box-shadow: 0 6px 16px rgba(220, 38, 38, .15);
-        transform: translateY(-3px);
-        border-color: var(--danger);
-      }
-
-      .obs-card.expanded {
-        border-color: var(--danger);
-        box-shadow: 0 8px 24px rgba(220, 38, 38, .2);
-      }
-
-      .obs-card.expanded::before {
-        width: 8px;
-      }
-
-      .obs-card.expanded:hover {
-        transform: translateY(-1px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        transform: translateY(-4px);
+        border-color: #6366f1;
       }
 
       .obs-card-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 1rem 1rem 0 1.25rem;
-        background: linear-gradient(180deg, #fef2f2 0%, #fff 100%);
-        border-bottom: 1px solid #fee2e2;
-        gap: .5rem;
-        flex-wrap: wrap;
-      }
-
-      .obs-card.expanded .obs-card-header {
-        padding-bottom: .75rem;
-        background: linear-gradient(180deg, #fef2f2 0%, #fff7f7 100%);
+        padding: 1.25rem 1.5rem;
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border-bottom: 2px solid #e9ecef;
+        gap: 1rem;
       }
 
       .obs-placa {
-        font-size: 1.15rem;
+        font-size: 1.25rem;
         font-weight: 800;
-        color: var(--text);
+        color: #212529;
         letter-spacing: .5px;
         display: flex;
         align-items: center;
-        gap: .5rem;
+        gap: .75rem;
+        text-transform: uppercase;
       }
 
       .obs-placa::before {
-        content: '🚗';
-        font-size: 1.3rem;
+        content: '🚙';
+        font-size: 1.5rem;
       }
 
       .obs-tipo {
-        font-size: .85rem;
-        color: var(--muted);
-        padding: 0 1.25rem .75rem;
+        font-size: .9rem;
+        color: #6c757d;
+        padding: 1rem 1.5rem;
+        background: #ffffff;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        border-bottom: 1px solid #e9ecef;
+      }
+
+      .obs-tipo-item {
         display: flex;
         align-items: center;
         gap: .5rem;
-        background: linear-gradient(180deg, #fff 0%, #fafafa 100%);
-      }
-
-      .obs-tipo::before {
-        content: '📍';
-        font-size: .9rem;
-      }
-
-      .obs-card-compact-info {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: .75rem 1.25rem;
-        background: #fafafa;
-        border-top: 1px solid #f3f4f6;
-      }
-
-      .obs-items-count {
-        background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
-        color: #fff;
-        padding: .35rem .7rem;
+        padding: .5rem .75rem;
+        background: #f8f9fa;
         border-radius: 8px;
-        font-size: .8rem;
-        font-weight: 700;
-        box-shadow: 0 2px 4px rgba(220, 38, 38, .2);
-        display: inline-flex;
-        align-items: center;
-        gap: .35rem;
-      }
-
-      .obs-items-count::before {
-        content: '⚠️';
-        font-size: .85rem;
+        font-weight: 600;
       }
 
       .obs-card-details {
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height .4s cubic-bezier(0.4, 0, 0.2, 1), padding .4s;
-        padding: 0 1.25rem;
+        padding: 1.5rem;
+        background: #ffffff;
       }
 
-      .obs-card.expanded .obs-card-details {
-        max-height: 2500px;
-        padding: 1rem 1.25rem 1.25rem;
+      .obs-items-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-top: 1rem;
       }
 
-      .obs-expand-indicator {
-        font-size: .8rem;
-        color: var(--accent);
+      .obs-items-table thead {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+
+      .obs-items-table thead th {
+        padding: 1rem 1.25rem;
+        text-align: left;
         font-weight: 700;
+        font-size: .85rem;
+        color: #ffffff;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+      }
+
+      .obs-items-table thead th:first-child {
+        border-radius: 8px 0 0 0;
+      }
+
+      .obs-items-table thead th:last-child {
+        border-radius: 0 8px 0 0;
+      }
+
+      .obs-items-table tbody tr {
+        transition: all .2s;
+        border-bottom: 1px solid #e9ecef;
+      }
+
+      .obs-items-table tbody tr:hover {
+        background: #f8f9fa;
+        transform: scale(1.01);
+      }
+
+      .obs-items-table tbody td {
+        padding: 1rem 1.25rem;
+        font-size: .9rem;
+        color: #495057;
+      }
+
+      .obs-items-table tbody td:last-child {
+        text-align: center;
+      }
+
+      .btn-crear-orden-item {
+        padding: .5rem .9rem;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: #ffffff;
+        border: none;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: .75rem;
+        cursor: pointer;
+        transition: all .3s;
+        text-transform: uppercase;
+        letter-spacing: .3px;
         display: inline-flex;
         align-items: center;
         gap: .4rem;
-        padding: .35rem .6rem;
-        background: rgba(0, 89, 150, 0.08);
-        border-radius: 8px;
-        transition: all .3s;
-        border: 1px solid rgba(0, 89, 150, 0.15);
       }
 
-      .obs-expand-indicator:hover {
-        background: rgba(0, 89, 150, 0.12);
-        transform: scale(1.05);
+      .btn-crear-orden-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        background: linear-gradient(135deg, #059669 0%, #10b981 100%);
       }
 
-      .obs-expand-indicator svg {
-        width: 16px;
-        height: 16px;
-        transition: transform .3s;
-      }
-
-      .obs-card.expanded .obs-expand-indicator {
-        color: var(--ok);
-        background: rgba(22, 163, 74, 0.08);
-        border-color: rgba(22, 163, 74, 0.15);
-      }
-
-      .obs-card.expanded .obs-expand-indicator:hover {
-        background: rgba(22, 163, 74, 0.12);
-      }
-
-      .obs-card.expanded .obs-expand-indicator svg {
-        transform: rotate(180deg);
-      }
-
-      .obs-expand-indicator::before {
-        content: '👁️ Ver detalles';
-        font-size: .8rem;
-      }
-
-      .obs-card.expanded .obs-expand-indicator::before {
-        content: '📦 Ocultar';
-      }
-
-      .obs-item {
-        background: linear-gradient(135deg, #fff 0%, #fef9f9 100%);
-        padding: .75rem 1rem;
-        border-radius: 10px;
-        margin-bottom: .65rem;
-        border: 1px solid #fee2e2;
-        border-left: 3px solid var(--danger);
-        transition: all .2s;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, .05);
-      }
-
-      .obs-item:hover {
-        transform: translateX(4px);
-        box-shadow: 0 2px 6px rgba(220, 38, 38, .1);
-        border-left-width: 4px;
-      }
-
-      .obs-item:last-child {
-        margin-bottom: 0;
+      .btn-crear-orden-item:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
       }
 
       .obs-item-name {
         font-weight: 700;
-        color: var(--danger);
-        font-size: .95rem;
-        margin-bottom: .35rem;
+        color: #212529;
         display: flex;
         align-items: center;
         gap: .5rem;
       }
 
       .obs-item-name::before {
-        content: '🔴';
-        font-size: .8rem;
-        animation: pulse 2s ease-in-out infinite;
-      }
-
-      @keyframes pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.6; }
-      }
-
-      .obs-item-obs {
-        font-size: .85rem;
-        color: var(--muted);
-        line-height: 1.5;
-        padding-left: 1.3rem;
-        font-style: italic;
-      }
-
-      .obs-meta {
-        display: flex;
-        gap: 1.25rem;
-        margin-top: 1rem;
-        padding-top: 1rem;
-        border-top: 2px solid #fee2e2;
-        font-size: .8rem;
-        color: var(--muted);
-        flex-wrap: wrap;
-      }
-
-      .obs-meta > div {
-        display: flex;
-        align-items: center;
-        gap: .35rem;
-        font-weight: 600;
-        padding: .25rem .5rem;
-        background: #fafafa;
-        border-radius: 6px;
-      }
-
-      .obs-empty {
-        text-align: center;
-        padding: 3rem 1rem;
-        color: var(--muted);
+        content: '⚠️';
         font-size: 1.1rem;
       }
 
+      .obs-item-obs {
+        color: #6c757d;
+        font-weight: 500;
+        line-height: 1.5;
+      }
+
+      .obs-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        padding: .4rem .8rem;
+        border-radius: 8px;
+        font-size: .8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .3px;
+      }
+
+      .obs-card-footer {
+        padding: .85rem 1.5rem;
+        background: #f8f9fa;
+        border-top: 2px solid #e9ecef;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+
+      .obs-meta-item {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        font-size: .8rem;
+        font-weight: 600;
+        color: #495057;
+      }
+
+      .obs-meta-icon {
+        font-size: 1.1rem;
+      }
+
+      .obs-action-btn {
+        padding: .6rem 1.2rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: .85rem;
+        cursor: pointer;
+        transition: all .3s;
+        text-transform: uppercase;
+        letter-spacing: .3px;
+      }
+
+      .obs-action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      }
+
+      .obs-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 4rem 2rem;
+        text-align: center;
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        border-radius: 16px;
+        border: 2px dashed #dee2e6;
+      }
+
       .obs-empty svg {
-        width: 64px;
-        height: 64px;
-        margin: 0 auto 1rem;
-        opacity: .3;
+        width: 80px;
+        height: 80px;
+        color: #6366f1;
+        margin-bottom: 1.5rem;
+        stroke-width: 1.5;
+      }
+
+      .obs-empty div {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #495057;
+        max-width: 400px;
+      }
+
+      @media (max-width: 768px) {
+        .obs-sections-grid {
+          gap: 1rem;
+        }
+
+        .obs-card-header {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .obs-tipo {
+          grid-template-columns: 1fr;
+        }
+
+        .obs-items-table {
+          font-size: .85rem;
+        }
+
+        .obs-items-table thead th,
+        .obs-items-table tbody td {
+          padding: .75rem;
+        }
+
+        .obs-card-footer {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .obs-action-btn {
+          width: 100%;
+        }
       }
 
       .btn-crear-orden {
@@ -1046,59 +1117,28 @@ session_start();
         width: 0;
         height: 0;
         border-radius: 50%;
-        background: rgba(255, 255, 255, .3);
+        background: rgba(255, 255, 255, .2);
         transform: translate(-50%, -50%);
-        transition: width .4s, height .4s;
+        transition: width .5s, height .5s;
       }
 
       .btn-crear-orden:hover::before {
-        width: 300px;
-        height: 300px;
+        width: 400px;
+        height: 400px;
       }
 
       .btn-crear-orden:hover {
-        background: linear-gradient(135deg, var(--accent) 0%, #004477 100%) !important;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(0, 89, 150, .35);
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%) !important;
       }
 
       .btn-ver-orden {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
         position: relative;
         overflow: hidden;
       }
 
       .btn-ver-orden:hover {
-        background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%) !important;
-        border-color: #94a3b8 !important;
-        color: #1e293b !important;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(71, 85, 105, .25);
-      }
-
-      .obs-card-con-orden {
-        opacity: 0.92;
-      }
-
-      .obs-card-con-orden::before {
-        background: linear-gradient(180deg, #64748b 0%, #94a3b8 100%);
-      }
-
-      .obs-card-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: .5rem;
-        flex-wrap: wrap;
-      }
-
-      .obs-badge {
-        white-space: nowrap;
-        animation: pulse-badge 2s ease-in-out infinite;
-      }
-
-      @keyframes pulse-badge {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.8; }
+        background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%) !important;
       }
 
       @media (max-width:1200px) {
@@ -1852,23 +1892,66 @@ session_start();
             });
           });
 
-          // Generar HTML con buscador
-          let html = `
-            <div class="obs-search-box">
-              <input type="text" id="obs-search" class="obs-search-input" placeholder="🔍 Buscar por placa...">
-              <div class="obs-search-meta" id="obs-search-meta"></div>
-            </div>
-            <div class="obs-sections-grid" id="obs-sections-container">
-          `;
-
           // Iconos para cada tipo de sección
           const sectionIcons = {
             'SISTEMA DE LUCES': '💡',
             'PARTE EXTERNA': '🚗',
             'PARTE INTERNA': '🪑',
             'ESTADO DE LLANTAS': '⚫',
+            'ACCESORIOS DE SEGURIDAD': '🛡️',
             'default': '⚠️'
           };
+
+          // Generar HTML con buscador y filtros
+          // Primero contar vehículos por sección
+          const sectionCounts = {};
+          Object.keys(groupedBySection).forEach(seccion => {
+            sectionCounts[seccion] = Object.keys(groupedBySection[seccion]).length;
+          });
+          const allVehIds = new Set();
+          Object.values(groupedBySection).forEach(map => {
+            Object.keys(map).forEach(id => allVehIds.add(String(id)));
+          });
+          const totalVehiculosAll = allVehIds.size;
+
+          let html = `
+            <div class="obs-sidebar">
+              <div class="obs-filter-buttons">
+                <div class="obs-filter-title">🎯 Filtrar Secciones</div>
+                <button class="obs-filter-btn active" data-filter="all">
+                  <span class="obs-filter-btn-text">
+                    <span class="obs-filter-btn-icon">📊</span>
+                    <span class="obs-filter-btn-label">Todas</span>
+                  </span>
+                  <span class="filter-count">${totalVehiculosAll}</span>
+                </button>
+          `;
+
+          // Generar botones de filtro para cada sección
+          Object.keys(groupedBySection).sort().forEach(seccion => {
+            const icon = sectionIcons[seccion] || sectionIcons['default'];
+            const count = sectionCounts[seccion];
+            html += `
+                <button class="obs-filter-btn" data-filter="${seccion}">
+                  <span class="obs-filter-btn-text">
+                    <span class="obs-filter-btn-icon">${icon}</span>
+                    <span class="obs-filter-btn-label">${seccion}</span>
+                  </span>
+                  <span class="filter-count">${count}</span>
+                </button>
+            `;
+          });
+
+          html += `
+              </div>
+            </div>
+            <div class="obs-main-content">
+              <div class="obs-search-box">
+                <input type="text" id="obs-search" class="obs-search-input" placeholder="🔍 Buscar por placa...">
+                <div class="obs-search-meta" id="obs-search-meta"></div>
+              </div>
+              <div class="obs-sections-grid" id="obs-sections-container">
+          `;
 
           // Generar HTML por sección con cards tipo carpeta
           let sectionIndex = 0;
@@ -1880,8 +1963,8 @@ session_start();
             const currentSectionIndex = sectionIndex; // Guardar el índice actual
 
             html += `
-              <div class="obs-section collapsed" data-seccion="${seccion}" data-section-index="${currentSectionIndex}" id="obs-section-${currentSectionIndex}">
-                <div class="obs-section-header" data-section-toggle="${currentSectionIndex}">
+              <div class="obs-section" data-seccion="${seccion}" id="obs-section-${currentSectionIndex}">
+                <div class="obs-section-header">
                   <div class="obs-section-header-content">
                     <div class="obs-section-header-left">
                       <div class="obs-section-icon">${icon}</div>
@@ -1894,13 +1977,8 @@ session_start();
                         </div>
                       </div>
                     </div>
-                    <div style="display:flex;align-items:center;gap:.5rem">
+                    <div class="obs-section-stats">
                       <span class="obs-section-count">${totalVehiculos}</span>
-                      <div class="obs-section-toggle">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                          <polyline points="6 9 12 15 18 9"></polyline>
-                        </svg>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -1916,68 +1994,96 @@ session_start();
 
               // Colores y etiquetas por estatus
               const estatusInfo = {
-                'Pendiente': { color: '#dc2626', bg: '#fef2f2', label: '⏳ Orden Pendiente' },
-                'Programado': { color: '#d97706', bg: '#fffbeb', label: '📅 Orden Programada' },
-                'EnTaller': { color: '#ea580c', bg: '#fff7ed', label: '🔧 En Taller' }
+                'Pendiente': { color: '#dc2626', bg: '#fef2f2', label: '⏳ Pendiente' },
+                'Programado': { color: '#f59e0b', bg: '#fffbeb', label: '📅 Programada' },
+                'EnTaller': { color: '#f97316', bg: '#fff7ed', label: '🔧 En Taller' }
               };
               const info = estatusInfo[estatusOrden] || estatusInfo['Pendiente'];
-
-              const cardId = `obs-card-${sectionIndex}-${veh.id_vehiculo}`;
-              html += `
-                <div class="obs-card ${tieneOrden ? 'obs-card-con-orden' : ''}" data-placa="${veh.placa || ''}" id="${cardId}" onclick="if(!event.target.closest('button')){document.getElementById('${cardId}').classList.toggle('expanded')}">
-                  <div class="obs-card-header">
-                    <div class="obs-placa">${veh.placa || 'Sin placa'}</div>
-                    ${tieneOrden ? `<span class="obs-badge" style="background:${info.bg};color:${info.color};padding:.25rem .6rem;border-radius:6px;font-size:.75rem;font-weight:700;border:1px solid ${info.color}33;">${info.label}</span>` : ''}
-                  </div>
-                  <div class="obs-tipo">${veh.tipo || 'Sin tipo'} | ${veh.Sucursal || 'Sin sucursal'}</div>
-                  <div class="obs-card-compact-info">
-                    <span class="obs-items-count">${totalItems} ítem${totalItems !== 1 ? 's' : ''} con problemas</span>
-                    <span class="obs-expand-indicator">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="6 9 12 15 18 9"></polyline>
-                      </svg>
-                    </span>
-                  </div>
-
-                  <div class="obs-card-details">
-              `;
-
-              veh.items.forEach(it => {
-                const obs = it.observaciones ? it.observaciones : '';
-                html += `
-                  <div class="obs-item">
-                    <div class="obs-item-name">${it.item || 'Sin descripción'}</div>
-                    ${obs ? `<div class="obs-item-obs">${obs}</div>` : ''}
-                  </div>
-                `;
-              });
 
               const fechaInspeccion = veh.items[0]?.fecha_inspeccion ? new Date(veh.items[0].fecha_inspeccion).toLocaleDateString('es-MX') : 'N/A';
               const kmInspeccion = veh.items[0]?.km_inspeccion ? Number(veh.items[0].km_inspeccion).toLocaleString() : 'N/A';
 
               html += `
-                    <div class="obs-meta">
-                      <div>📅 ${fechaInspeccion}</div>
-                      <div>🚗 ${kmInspeccion} km</div>
-                      <div>📊 Actual: ${kmActual} km</div>
+                <div class="obs-card" data-placa="${veh.placa || ''}">
+                  <div class="obs-card-header">
+                    <div class="obs-placa">${veh.placa || 'Sin placa'}</div>
+                    ${tieneOrden ? `<span class="obs-badge" style="background:${info.bg};color:${info.color};border:2px solid ${info.color};">${info.label}</span>` : ''}
+                  </div>
+                  <div class="obs-tipo">
+                    <div class="obs-tipo-item">
+                      <span>🚙</span>
+                      <span>${veh.tipo || 'Sin tipo'}</span>
                     </div>
+                    <div class="obs-tipo-item">
+                      <span>📍</span>
+                      <span>${veh.Sucursal || 'Sin sucursal'}</span>
+                    </div>
+                    <div class="obs-tipo-item">
+                      <span>📊</span>
+                      <span>${kmActual} km</span>
+                    </div>
+                  </div>
+
+                  <div class="obs-card-details">
+                    <table class="obs-items-table">
+                      <thead>
+                        <tr>
+                          <th>Ítem Inspeccionado</th>
+                          <th>Observaciones</th>
+                          <th style="width: 150px;">Acción</th>
+                        </tr>
+                      </thead>
+                      <tbody>
               `;
 
-              if (tieneOrden) {
+              veh.items.forEach((it, itemIndex) => {
+                const obs = it.observaciones ? it.observaciones : 'Sin observaciones';
                 html += `
-                    <button class="btn-ver-orden" data-orden="${veh.orden_id}" style="width:100%;margin-top:.75rem;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;padding:.6rem 1rem;border-radius:8px;font-weight:600;cursor:pointer;transition:.2s;" onclick="event.stopPropagation()">
-                      👁️ Ver Orden #${veh.orden_id}
-                    </button>
+                        <tr>
+                          <td><div class="obs-item-name">${it.item || 'Sin descripción'}</div></td>
+                          <td><div class="obs-item-obs">${obs}</div></td>
+                          <td>
+                            <button class="btn-crear-orden-item"
+                                    data-vehiculo="${veh.id_vehiculo}"
+                                    data-placa="${veh.placa || 'Sin placa'}"
+                                    data-seccion="${seccion}"
+                                    data-item="${it.item || 'Sin descripción'}"
+                                    data-observaciones="${obs}"
+                                    data-item-index="${itemIndex}">
+                              ➕ Crear Orden
+                            </button>
+                          </td>
+                        </tr>
                 `;
-              } else {
-                html += `
-                    <button class="btn-crear-orden" data-vehiculo="${veh.id_vehiculo}" data-seccion="${seccion}" style="width:100%;margin-top:.75rem;background:var(--accent);color:#fff;border:none;padding:.6rem 1rem;border-radius:8px;font-weight:600;cursor:pointer;transition:.2s;" onclick="event.stopPropagation()">
-                      ➕ Crear Orden de Servicio
-                    </button>
-                `;
-              }
+              });
 
               html += `
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div class="obs-card-footer">
+                    <div style="display:flex;gap:1.5rem;flex-wrap:wrap;width:100%;">
+                      <div class="obs-meta-item">
+                        <span class="obs-meta-icon">📅</span>
+                        <span>Inspección: ${fechaInspeccion}</span>
+                      </div>
+                      <div class="obs-meta-item">
+                        <span class="obs-meta-icon">🛣️</span>
+                        <span>Km Inspección: ${kmInspeccion}</span>
+                      </div>
+                      <div class="obs-meta-item">
+                        <span class="obs-meta-icon">⚠️</span>
+                        <span>${totalItems} problema${totalItems !== 1 ? 's' : ''}</span>
+                      </div>
+                      ${tieneOrden ? `
+                      <div class="obs-meta-item" style="margin-left:auto;">
+                        <button class="obs-action-btn btn-ver-orden" data-orden="${veh.orden_id}" style="font-size:.8rem;padding:.5rem 1rem;">
+                          👁️ Ver Orden #${veh.orden_id}
+                        </button>
+                      </div>
+                      ` : ''}
+                    </div>
                   </div>
                 </div>
               `;
@@ -1994,6 +2100,53 @@ session_start();
           html += `</div>`; // Cierra obs-sections-container
 
           obsContent.innerHTML = html;
+          // Ajustes de UI para textos y estado de filtro
+          let currentFilter = 'all';
+          const titleEl = obsContent.querySelector('.obs-filter-title');
+          if (titleEl) titleEl.textContent = 'Filtrar secciones';
+          const searchInputEl = obsContent.querySelector('#obs-search');
+          if (searchInputEl) searchInputEl.setAttribute('placeholder', 'Buscar por placa...');
+
+          // Reemplazar íconos/textos de placeholders "??" por contenido legible
+          // 1) Limpiar badges de estatus y botones con símbolos extra al inicio
+          obsContent.querySelectorAll('.obs-badge, button').forEach(el => {
+            const t = (el.textContent || '').trim();
+            el.textContent = t.replace(/^[^A-Za-zÁÉÍÓÚÑáéíóú0-9]+\s*/, '');
+          });
+
+          // 2) Colocar íconos claros en placa e items (evita depender de ::before existentes)
+          obsContent.querySelectorAll('.obs-placa').forEach(el => {
+            if (!el.dataset.iconized) {
+              el.dataset.iconized = '1';
+              el.textContent = '🚘 ' + (el.textContent || '');
+            }
+          });
+          obsContent.querySelectorAll('.obs-item-name').forEach(el => {
+            if (!el.dataset.iconized) {
+              el.dataset.iconized = '1';
+              el.textContent = '🔧 ' + (el.textContent || '');
+            }
+          });
+
+          // 3) Asignar íconos a los filtros laterales y encabezados por sección
+          const iconMap = {
+            'SISTEMA DE LUCES': '💡',
+            'PARTE EXTERNA': '🚗',
+            'PARTE INTERNA': '🧰',
+            'ESTADO DE LLANTAS': '🛞',
+            'ACCESORIOS DE SEGURIDAD': '🦺'
+          };
+          obsContent.querySelectorAll('.obs-filter-btn').forEach(btn => {
+            const labelEl = btn.querySelector('.obs-filter-btn-label');
+            const iconEl = btn.querySelector('.obs-filter-btn-icon');
+            const label = (labelEl && labelEl.textContent || '').trim();
+            if (iconEl) iconEl.textContent = iconMap[label] || '📁';
+          });
+          obsContent.querySelectorAll('.obs-section').forEach(sec => {
+            const name = sec.getAttribute('data-seccion') || '';
+            const iconEl = sec.querySelector('.obs-section-icon');
+            if (iconEl) iconEl.textContent = iconMap[name] || '📁';
+          });
 
           // Event listeners para búsqueda
           const searchInput = document.getElementById('obs-search');
@@ -2006,13 +2159,18 @@ session_start();
               const allSections = obsContent.querySelectorAll('.obs-section');
 
               if (query === '') {
-                // Mostrar todo
+                // Mostrar segun el filtro activo
                 allCards.forEach(card => card.style.display = '');
                 allSections.forEach(section => {
-                  section.style.display = '';
-                  const visibleCards = section.querySelectorAll('.obs-card');
-                  const count = visibleCards.length;
-                  section.querySelector('.obs-section-count').textContent = `${count} vehículo${count !== 1 ? 's' : ''}`;
+                  const seccionName = section.getAttribute('data-seccion');
+                  if (currentFilter === 'all' || seccionName === currentFilter) {
+                    section.style.display = '';
+                    const visibleCards = section.querySelectorAll('.obs-card');
+                    const count = visibleCards.length;
+                    section.querySelector('.obs-section-count').textContent = `${count}`;
+                  } else {
+                    section.style.display = 'none';
+                  }
                 });
                 searchMeta.textContent = '';
                 return;
@@ -2039,8 +2197,7 @@ session_start();
                   section.style.display = 'none';
                 } else {
                   section.style.display = '';
-                  section.classList.remove('collapsed'); // Expandir sección con resultados
-                  section.querySelector('.obs-section-count').textContent = `${sectionVisibleCount} vehículo${sectionVisibleCount !== 1 ? 's' : ''}`;
+                  section.querySelector('.obs-section-count').textContent = `${sectionVisibleCount}`;
                 }
               });
 
@@ -2050,35 +2207,16 @@ session_start();
             });
           }
 
-          // Agregar event listeners para el acordeón de secciones
-          obsContent.querySelectorAll('[data-section-toggle]').forEach(header => {
-            header.addEventListener('click', () => {
-              const sectionIndex = header.getAttribute('data-section-toggle');
-              const clickedSection = document.getElementById(`obs-section-${sectionIndex}`);
-              if (!clickedSection) return;
-
-              const isCurrentlyExpanded = clickedSection.classList.contains('expanded');
-
-              // Colapsar todas las secciones
-              obsContent.querySelectorAll('.obs-section').forEach(section => {
-                section.classList.remove('expanded');
-                section.classList.add('collapsed');
-              });
-
-              // Si la sección clickeada estaba colapsada, expandirla
-              if (!isCurrentlyExpanded) {
-                clickedSection.classList.remove('collapsed');
-                clickedSection.classList.add('expanded');
-              }
-            });
-          });
-
-          // Agregar event listeners a los botones de crear orden
-          obsContent.querySelectorAll('.btn-crear-orden').forEach(btn => {
+          // Agregar event listeners a los botones de crear orden por ítem
+          obsContent.querySelectorAll('.btn-crear-orden-item').forEach(btn => {
             btn.addEventListener('click', () => {
               const idVehiculo = parseInt(btn.getAttribute('data-vehiculo'));
+              const placa = btn.getAttribute('data-placa');
               const seccion = btn.getAttribute('data-seccion');
-              crearOrdenDesdeObservacion(idVehiculo, seccion);
+              const item = btn.getAttribute('data-item');
+              const observaciones = btn.getAttribute('data-observaciones');
+
+              crearOrdenDesdeItem(idVehiculo, placa, seccion, item, observaciones);
             });
           });
 
@@ -2089,25 +2227,51 @@ session_start();
               window.location.href = `/Pedidos_GA/Servicios/detalles_orden.php?id=${ordenId}`;
             });
           });
+
+          // Event listeners para los botones de filtro por sección
+          const filterButtons = obsContent.querySelectorAll('.obs-filter-btn');
+          const allSections = obsContent.querySelectorAll('.obs-section');
+
+          filterButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+              const filter = btn.getAttribute('data-filter');
+              currentFilter = filter;
+
+              // Actualizar estado activo de los botones
+              filterButtons.forEach(b => b.classList.remove('active'));
+              btn.classList.add('active');
+
+              // Filtrar secciones
+              if (filter === 'all') {
+                // Mostrar todas las secciones
+                allSections.forEach(section => section.style.display = '');
+              } else {
+                // Mostrar solo la sección seleccionada y hacer scroll
+                allSections.forEach(section => {
+                  const seccionName = section.getAttribute('data-seccion');
+                  if (seccionName === filter) {
+                    section.style.display = '';
+                    // Smooth scroll a la sección
+                    setTimeout(() => {
+                      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 100);
+                  } else {
+                    section.style.display = 'none';
+                  }
+                });
+              }
+            });
+          });
         }
 
-        // Función para crear orden de servicio desde observaciones
-        async function crearOrdenDesdeObservacion(idVehiculo, seccion) {
-          // Encontrar el vehículo en las observaciones
-          const obsVehiculo = state.observaciones.find(o => o.id_vehiculo === idVehiculo && o.seccion === seccion);
-          if (!obsVehiculo) {
-            toast('No se encontró información del vehículo', false);
-            return;
-          }
+        // Función para crear orden de servicio desde un ítem específico
+        async function crearOrdenDesdeItem(idVehiculo, placa, seccion, item, observaciones) {
+          // Crear nota indicando que viene de una observación específica
+          const nota = `[CHECKLIST - ${seccion}]
+Ítem: ${item}
+Observaciones: ${observaciones}
 
-          // Obtener todos los ítems con "Mal" de este vehículo en esta sección
-          const itemsMal = state.observaciones
-            .filter(o => o.id_vehiculo === idVehiculo && o.seccion === seccion)
-            .map(o => o.item)
-            .join(', ');
-
-          // Crear nota indicando que viene de observaciones
-          const nota = `[OBSERVACIONES - ${seccion}] Ítems detectados: ${itemsMal}`;
+Creada automáticamente desde observaciones del checklist vehicular.`;
 
           // Crear la orden de servicio sin servicio asignado (pendiente)
           const payload = {
@@ -2125,11 +2289,13 @@ session_start();
               return;
             }
 
-            toast(`✅ Orden creada para ${obsVehiculo.placa} desde observaciones`);
+            toast(`✅ Orden creada para ${placa} - ${item}`);
 
-            // Recargar la lista y cambiar a vista de tablero
+            // Recargar la lista de observaciones
             await loadList();
-            setTab('board');
+
+            // Mantener en la vista de observaciones para seguir creando órdenes si es necesario
+            renderObservaciones();
           } catch (error) {
             toast('Error al crear la orden', false);
             console.error(error);
