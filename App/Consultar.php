@@ -161,6 +161,102 @@ if ($__grupoId !== null || ($__grupoNombre !== null && $__grupoNombre !== '')) {
     }
 }
 
+// ---------------------
+// Consulta por FACTURA (legacy/nuevo detalle)
+// Si viene ?factura=... y no se usó modo grupo, responde con detalle + bloque grupo si existe
+// ---------------------
+$__factura = isset($__get) ? $__get('factura') : (isset($_GET['factura']) ? trim($_GET['factura']) : null);
+if ($__factura !== null && $__factura !== '') {
+    try {
+        $sqlF = 'SELECT p.* FROM pedidos AS p WHERE p.FACTURA = ? LIMIT 1';
+        $stF = $conn->prepare($sqlF);
+        $stF->bind_param('s', $__factura);
+        $stF->execute();
+        $resF = $stF->get_result();
+        if (!$resF || $resF->num_rows === 0) {
+            ob_clean();
+            echo json_encode(['ok' => true, 'pedido' => null, 'grupo' => null]);
+            exit;
+        }
+        $row = $resF->fetch_assoc();
+        $stF->close();
+
+        // Último enlace de grupo para este pedido
+        $grupoOut = null; $ord = null; $fAsig = null;
+        $sqlL = 'SELECT pg.orden_entrega, pg.fecha_asignacion, gr.id, gr.nombre_grupo, gr.sucursal, gr.chofer_asignado, gr.estado
+                 FROM pedidos_grupos AS pg
+                 INNER JOIN grupos_rutas AS gr ON gr.id = pg.grupo_id
+                 WHERE pg.pedido_id = ?
+                 ORDER BY pg.fecha_asignacion DESC, pg.id DESC
+                 LIMIT 1';
+        $stL = $conn->prepare($sqlL);
+        $pedidoIdTmp = (int)($row['ID'] ?? 0);
+        $stL->bind_param('i', $pedidoIdTmp);
+        $stL->execute();
+        $resL = $stL->get_result();
+        if ($resL && $resL->num_rows > 0) {
+            $lr = $resL->fetch_assoc();
+            $grupoOut = [
+                'id' => isset($lr['id']) ? (int)$lr['id'] : null,
+                'nombre' => $lr['nombre_grupo'] ?? null,
+                'sucursal' => $lr['sucursal'] ?? null,
+                'chofer_asignado' => $lr['chofer_asignado'] ?? null,
+                'estado' => $lr['estado'] ?? null,
+                'orden_entrega' => isset($lr['orden_entrega']) ? (int)$lr['orden_entrega'] : null,
+            ];
+            $ord = $lr['orden_entrega'] ?? null;
+            $fAsig = $lr['fecha_asignacion'] ?? null;
+        }
+        $stL->close();
+
+        // Mapear campos del pedido
+        $pedidoOut = [
+            'ID' => $row['ID'] ?? null,
+            'FACTURA' => $row['FACTURA'] ?? null,
+            'SUCURSAL' => $row['SUCURSAL'] ?? null,
+            'ESTADO' => $row['ESTADO'] ?? null,
+            'CHOFER_ASIGNADO' => $row['CHOFER_ASIGNADO'] ?? null,
+            'VENDEDOR' => $row['VENDEDOR'] ?? null,
+            'NOMBRE_CLIENTE' => $row['NOMBRE_CLIENTE'] ?? null,
+            'DIRECCION' => $row['DIRECCION'] ?? null,
+            'TELEFONO' => $row['TELEFONO'] ?? null,
+            'CONTACTO' => $row['CONTACTO'] ?? null,
+            'FECHA_RECEPCION_FACTURA' => $row['FECHA_RECEPCION_FACTURA'] ?? null,
+            'FECHA_ENTREGA_CLIENTE' => $row['FECHA_ENTREGA_CLIENTE'] ?? null,
+            'FECHA_MIN_ENTREGA' => $row['FECHA_MIN_ENTREGA'] ?? null,
+            'FECHA_MAX_ENTREGA' => $row['FECHA_MAX_ENTREGA'] ?? null,
+            'MIN_VENTANA_HORARIA_1' => $row['MIN_VENTANA_HORARIA_1'] ?? null,
+            'MAX_VENTANA_HORARIA_1' => $row['MAX_VENTANA_HORARIA_1'] ?? null,
+            'Ruta' => $row['Ruta'] ?? null,
+            'Coord_Origen' => $row['Coord_Origen'] ?? null,
+            'Coord_Destino' => $row['Coord_Destino'] ?? null,
+            'Ruta_Fotos' => $row['Ruta_Fotos'] ?? null,
+            'COMENTARIOS' => $row['COMENTARIOS'] ?? null,
+            'estado_factura_caja' => $row['estado_factura_caja'] ?? null,
+            'fecha_entrega_jefe' => $row['fecha_entrega_jefe'] ?? null,
+            'usuario_entrega_jefe' => $row['usuario_entrega_jefe'] ?? null,
+            'fecha_devolucion_caja' => $row['fecha_devolucion_caja'] ?? null,
+            'usuario_devolucion_caja' => $row['usuario_devolucion_caja'] ?? null,
+            'precio_factura_vendedor' => $row['precio_factura_vendedor'] ?? null,
+            'precio_factura_real' => $row['precio_factura_real'] ?? null,
+            'precio_validado_jc' => $row['precio_validado_jc'] ?? null,
+            'fecha_validacion_precio' => $row['fecha_validacion_precio'] ?? null,
+            'usuario_validacion_precio' => $row['usuario_validacion_precio'] ?? null,
+            'tiene_destinatario_capturado' => $row['tiene_destinatario_capturado'] ?? null,
+            'orden_entrega' => isset($ord) ? (is_null($ord) ? null : (int)$ord) : null,
+            'fecha_asignacion' => $fAsig,
+        ];
+
+        ob_clean();
+        echo json_encode(['ok' => true, 'pedido' => $pedidoOut, 'grupo' => $grupoOut]);
+        exit;
+    } catch (Throwable $e) {
+        http_response_code(500);
+        echo json_encode(['ok' => false, 'error' => 'ERROR']);
+        exit;
+    }
+}
+
 // Verificar si se recibió el parámetro 'username'
 if (!isset($_GET['username'])) {
     die("Error: Falta el parámetro 'username'");
@@ -176,44 +272,60 @@ if (empty($username)) {
 
 // Preparar la consulta con un placeholder para evitar inyección SQL
 $sql = "SELECT 
-            pedidos.ID,
-            pedidos.SUCURSAL,
-            pedidos.ESTADO,
-            pedidos.FECHA_RECEPCION_FACTURA,
-            pedidos.FECHA_ENTREGA_CLIENTE,
-            pedidos.CHOFER_ASIGNADO,
-            pedidos.VENDEDOR,
-            pedidos.FACTURA,
-            pedidos.DIRECCION,
-            pedidos.FECHA_MIN_ENTREGA,
-            pedidos.FECHA_MAX_ENTREGA,
-            pedidos.MIN_VENTANA_HORARIA_1,
-            pedidos.MAX_VENTANA_HORARIA_1,
-            pedidos.NOMBRE_CLIENTE,
-            pedidos.TELEFONO,
-            pedidos.CONTACTO,
-            pedidos.COMENTARIOS,
-            pedidos.Ruta,
-            pedidos.Coord_Origen,
-            pedidos.Coord_Destino
-        FROM pedidos
-        JOIN
-        choferes ON pedidos.CHOFER_ASIGNADO = choferes.username
+            p.ID,
+            p.SUCURSAL,
+            p.ESTADO,
+            p.FECHA_RECEPCION_FACTURA,
+            p.FECHA_ENTREGA_CLIENTE,
+            p.CHOFER_ASIGNADO,
+            p.VENDEDOR,
+            p.FACTURA,
+            p.DIRECCION,
+            p.FECHA_MIN_ENTREGA,
+            p.FECHA_MAX_ENTREGA,
+            p.MIN_VENTANA_HORARIA_1,
+            p.MAX_VENTANA_HORARIA_1,
+            p.NOMBRE_CLIENTE,
+            p.TELEFONO,
+            p.CONTACTO,
+            p.COMENTARIOS,
+            p.Ruta,
+            p.Coord_Origen,
+            p.Coord_Destino,
+            lg.orden_entrega AS _g_orden_entrega,
+            lg.fecha_asignacion AS _g_fecha_asignacion,
+            gr.id AS _g_id,
+            gr.nombre_grupo AS _g_nombre,
+            gr.sucursal AS _g_sucursal,
+            gr.chofer_asignado AS _g_chofer,
+            gr.estado AS _g_estado
+        FROM pedidos AS p
+        JOIN choferes ON p.CHOFER_ASIGNADO = choferes.username
+        LEFT JOIN (
+            SELECT pg1.*
+            FROM pedidos_grupos pg1
+            LEFT JOIN pedidos_grupos pg2
+              ON pg1.pedido_id = pg2.pedido_id
+             AND (pg1.fecha_asignacion < pg2.fecha_asignacion
+                  OR (pg1.fecha_asignacion = pg2.fecha_asignacion AND pg1.id < pg2.id))
+            WHERE pg2.pedido_id IS NULL
+        ) AS lg ON lg.pedido_id = p.ID
+        LEFT JOIN grupos_rutas AS gr ON gr.id = lg.grupo_id
         WHERE
             choferes.username = ? 
         ORDER BY 
             CASE 
-                WHEN pedidos.ESTADO = 'Activo' THEN 1
-                WHEN pedidos.ESTADO = 'En Ruta' THEN 2
-                WHEN pedidos.ESTADO = 'En Tienda' THEN 3
-                WHEN pedidos.ESTADO = 'Reprogramado' THEN 4
-                WHEN pedidos.ESTADO = 'En Ruta' THEN 5
-                WHEN pedidos.ESTADO = 'Entregado' THEN 6
-                WHEN pedidos.ESTADO = 'Cancelado' THEN 7
+                WHEN p.ESTADO = 'Activo' THEN 1
+                WHEN p.ESTADO = 'En Ruta' THEN 2
+                WHEN p.ESTADO = 'En Tienda' THEN 3
+                WHEN p.ESTADO = 'Reprogramado' THEN 4
+                WHEN p.ESTADO = 'En Ruta' THEN 5
+                WHEN p.ESTADO = 'Entregado' THEN 6
+                WHEN p.ESTADO = 'Cancelado' THEN 7
                 
                 ELSE 8
             END,
-            pedidos.ESTADO"; // Placeholder
+            p.ESTADO"; // Placeholder
 
 // Preparar la declaración
 $stmt = $conn->prepare($sql);
@@ -258,9 +370,68 @@ if ($stVeh) {
 }
 
 if ($result->num_rows > 0) {
-   
-    // Recorrer los resultados y agregarlos al array de pedidos
-    while($row = $result->fetch_assoc()) {
+    // Primero cachear filas para poder consultar grupos en lote
+    $rows = [];
+    $ids = [];
+    while ($row = $result->fetch_assoc()) {
+        $rows[] = $row;
+        if (isset($row['ID'])) { $ids[] = (int)$row['ID']; }
+    }
+
+    // Mapa pedido_id -> info de grupo más reciente
+    $grupoMap = [];
+    if (count($ids) > 0) {
+        // placeholders dinámicos
+        $ph = implode(',', array_fill(0, count($ids), '?'));
+        $types = str_repeat('i', count($ids));
+        $sqlGrp = "SELECT pg.pedido_id, pg.orden_entrega, pg.fecha_asignacion,
+                           gr.id AS grupo_id, gr.nombre_grupo, gr.sucursal, gr.chofer_asignado, gr.estado
+                    FROM pedidos_grupos AS pg
+                    INNER JOIN grupos_rutas AS gr ON gr.id = pg.grupo_id
+                    LEFT JOIN pedidos_grupos AS newer
+                        ON newer.pedido_id = pg.pedido_id
+                       AND (pg.fecha_asignacion < newer.fecha_asignacion
+                            OR (pg.fecha_asignacion = newer.fecha_asignacion AND pg.id < newer.id))
+                    WHERE newer.pedido_id IS NULL
+                      AND pg.pedido_id IN ($ph)";
+        $stGrp = $conn->prepare($sqlGrp);
+        if ($stGrp) {
+            $stGrp->bind_param($types, ...$ids);
+            if ($stGrp->execute()) {
+                $resGrp = $stGrp->get_result();
+                if ($resGrp) {
+                    while ($gr = $resGrp->fetch_assoc()) {
+                        $grupoMap[(int)$gr['pedido_id']] = [
+                            'id' => isset($gr['grupo_id']) ? (int)$gr['grupo_id'] : null,
+                            'nombre' => $gr['nombre_grupo'] ?? null,
+                            'sucursal' => $gr['sucursal'] ?? null,
+                            'chofer_asignado' => $gr['chofer_asignado'] ?? null,
+                            'estado' => $gr['estado'] ?? null,
+                            'orden_entrega' => isset($gr['orden_entrega']) ? (int)$gr['orden_entrega'] : null,
+                        ];
+                    }
+                }
+            }
+            $stGrp->close();
+        }
+    }
+
+    foreach ($rows as $row) {
+        $pid = isset($row['ID']) ? (int)$row['ID'] : null;
+        $grupoInfo = ($pid !== null && isset($grupoMap[$pid])) ? $grupoMap[$pid] : null;
+        // Fallback: si la consulta principal ya trae alias del grupo, úsalos
+        if ($grupoInfo === null && isset($row['_g_id'])) {
+            if ($row['_g_id'] !== null) {
+                $grupoInfo = [
+                    'id' => (int)$row['_g_id'],
+                    'nombre' => $row['_g_nombre'] ?? null,
+                    'sucursal' => $row['_g_sucursal'] ?? null,
+                    'chofer_asignado' => $row['_g_chofer'] ?? null,
+                    'estado' => $row['_g_estado'] ?? null,
+                    'orden_entrega' => isset($row['_g_orden_entrega']) ? (int)$row['_g_orden_entrega'] : null,
+                ];
+            }
+        }
         $pedido = array(
             'ID' => $row['ID'],
             'SUCURSAL' => $row['SUCURSAL'],
@@ -283,12 +454,12 @@ if ($result->num_rows > 0) {
             'Coord_Origen' => $row['Coord_Origen'],
             'Coord_Destino' => $row['Coord_Destino'],
             'VEHICULO_ASIGNADO' => $vehiculo !== null,
-            'VEHICULO_DETALLE' => $vehiculo
-            
+            'VEHICULO_DETALLE' => $vehiculo,
+            'grupo' => $grupoInfo
         );
         array_push($pedidos, $pedido);
     }
-    
+
 } else {
    
      $pedidos = [];

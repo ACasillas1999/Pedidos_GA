@@ -2080,3 +2080,651 @@ async function crearGrupoRuta(datos, moverDesdeOtrosGrupos = false) {
 
 <!-- Script para modal de destinatario -->
 <script src="js/modal_destinatario.js"></script>
+    // Obtener pedidos de la tabla visible usando los checkboxes
+    const checkboxes = document.querySelectorAll('.pedido-checkbox');
+    const pedidos = [];
+
+    checkboxes.forEach(checkbox => {
+      const coordString = checkbox.dataset.coordenadas;
+
+      if (!coordString || coordString.trim() === '') return;
+
+      // Parsear coordenadas
+      let lat = null, lng = null;
+      try {
+        const coords = JSON.parse(coordString);
+        if (coords && coords.lat && coords.lng) {
+          lat = parseFloat(coords.lat);
+          lng = parseFloat(coords.lng);
+        }
+      } catch {
+        // Intentar formato "lat, lng"
+        if (coordString.includes(',')) {
+          const parts = coordString.split(',');
+          if (parts.length === 2) {
+            lat = parseFloat(parts[0].trim());
+            lng = parseFloat(parts[1].trim());
+          }
+        }
+      }
+
+      if (lat && lng && lat !== 0 && lng !== 0) {
+        pedidos.push({
+          ID: parseInt(checkbox.dataset.id),
+          FACTURA: checkbox.dataset.factura || '',
+          NOMBRE_CLIENTE: checkbox.dataset.cliente || '',
+          DIRECCION: checkbox.dataset.direccion || '',
+          SUCURSAL: checkbox.dataset.sucursal || '',
+          lat: lat,
+          lng: lng,
+          Coord_Destino: coordString
+        });
+      }
+    });
+
+    if (pedidos.length === 0) {
+      Swal.fire({
+        icon: 'info',
+        title: 'Sin pedidos válidos',
+        text: 'No se encontraron pedidos con coordenadas válidas en la tabla actual',
+        confirmButtonColor: '#6f42c1'
+      });
+      return;
+    }
+
+    // Calcular grupos usando clustering
+    const maxPedidosPorGrupo = 10;
+    const radioMaxKm = 5;
+    const gruposSugeridos = agruparPedidosPorProximidad(pedidos, maxPedidosPorGrupo, radioMaxKm);
+
+    if (gruposSugeridos.length === 0) {
+      Swal.fire({
+        icon: 'info',
+        title: 'Sin recomendaciones',
+        text: 'No se pudieron formar grupos con los criterios establecidos (mínimo 2 pedidos por grupo)',
+        confirmButtonColor: '#6f42c1'
+      });
+      return;
+    }
+
+    // Mostrar modal con recomendaciones
+    mostrarModalRecomendaciones({
+      success: true,
+      grupos_sugeridos: gruposSugeridos,
+      total_pedidos: pedidos.length,
+      total_grupos: gruposSugeridos.length
+    });
+
+  } catch (error) {
+    console.error('Error:', error);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: error.message || 'No se pudieron calcular las recomendaciones',
+      confirmButtonColor: '#dc3545'
+    });
+  }
+}
+
+function mostrarModalRecomendaciones(data) {
+  const grupos = data.grupos_sugeridos;
+  const totalPedidos = data.total_pedidos;
+
+  // Guardar datos globalmente para el mapa
+  window.gruposRecomendadosData = grupos;
+
+  // Generar HTML para cada grupo
+  let gruposHTML = '';
+
+  grupos.forEach((grupo, index) => {
+    const colorIndex = index % 8;
+    const colores = [
+      {bg: '#28a745', border: '#20c997'},
+      {bg: '#007bff', border: '#0056b3'},
+      {bg: '#ffc107', border: '#ff9800'},
+      {bg: '#dc3545', border: '#c82333'},
+      {bg: '#6f42c1', border: '#5a32a3'},
+      {bg: '#fd7e14', border: '#e8590c'},
+      {bg: '#20c997', border: '#17a2b8'},
+      {bg: '#e83e8c', border: '#d63384'}
+    ];
+    const color = colores[colorIndex];
+
+    const pedidosIds = grupo.pedidos.map(p => p.ID).join(',');
+
+    gruposHTML += `
+      <div class="grupo-recomendado" data-grupo-index="${index}" style="
+        background: linear-gradient(135deg, ${color.bg} 0%, ${color.border} 100%);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 15px;
+        color: white;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        transition: all 0.2s ease;
+        cursor: pointer;
+      " onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 6px 12px rgba(0,0,0,0.3)'; mostrarGrupoEnMapa(${index})" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.2)'" onclick='crearGrupoDesdeRecomendacion([${pedidosIds}], "${grupo.nombre_sugerido}", "${grupo.sucursal}")'>
+
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+          <div>
+            <h3 style="margin: 0 0 5px 0; font-size: 18px; font-weight: bold;">
+              🚚 ${grupo.nombre_sugerido}
+            </h3>
+            <div style="font-size: 13px; opacity: 0.9;">
+              📍 ${grupo.sucursal} • ${grupo.num_pedidos} pedidos
+            </div>
+          </div>
+          <div style="
+            background: rgba(255,255,255,0.3);
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+          ">
+            ⭐ ${grupo.eficiencia}
+          </div>
+        </div>
+
+        <div style="
+          background: rgba(255,255,255,0.2);
+          border-radius: 8px;
+          padding: 12px;
+          margin-bottom: 12px;
+        ">
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; font-size: 13px;">
+            <div>
+              <div style="opacity: 0.8; font-size: 11px;">Distancia</div>
+              <div style="font-weight: bold;">${grupo.distancia_estimada} km</div>
+            </div>
+            <div>
+              <div style="opacity: 0.8; font-size: 11px;">Radio</div>
+              <div style="font-weight: bold;">${grupo.radio_km} km</div>
+            </div>
+            <div>
+              <div style="opacity: 0.8; font-size: 11px;">Eficiencia</div>
+              <div style="font-weight: bold;">${grupo.eficiencia}/10</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="font-size: 12px; opacity: 0.9;">
+          <strong>Pedidos incluidos:</strong><br>
+          ${grupo.pedidos.slice(0, 5).map(p => `• ${p.FACTURA} - ${p.NOMBRE_CLIENTE}`).join('<br>')}
+          ${grupo.pedidos.length > 5 ? `<br>... y ${grupo.pedidos.length - 5} más` : ''}
+        </div>
+
+        <div style="
+          margin-top: 12px;
+          padding-top: 12px;
+          border-top: 1px solid rgba(255,255,255,0.3);
+          text-align: center;
+          font-size: 13px;
+          font-weight: bold;
+        ">
+          👆 Haz clic para crear este grupo
+        </div>
+      </div>
+    `;
+  });
+
+  Swal.fire({
+    title: '🤖 Grupos Recomendados',
+    html: `
+      <div style="text-align: left;">
+        <div style="
+          background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+          border-radius: 8px;
+          padding: 15px;
+          margin-bottom: 20px;
+        ">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center;">
+            <div>
+              <div style="font-size: 24px; font-weight: bold; color: #6f42c1;">${totalPedidos}</div>
+              <div style="font-size: 12px; color: #666;">Pedidos analizados</div>
+            </div>
+            <div>
+              <div style="font-size: 24px; font-weight: bold; color: #28a745;">${grupos.length}</div>
+              <div style="font-size: 12px; color: #666;">Grupos sugeridos</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <!-- Lista de grupos -->
+          <div style="max-height: 500px; overflow-y: auto; padding-right: 10px;">
+            ${gruposHTML}
+          </div>
+
+          <!-- Mapa -->
+          <div style="position: sticky; top: 0;">
+            <div id="mapa-recomendaciones" style="
+              width: 100%;
+              height: 500px;
+              border-radius: 8px;
+              box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            "></div>
+            <div style="
+              background: white;
+              padding: 10px;
+              margin-top: 10px;
+              border-radius: 5px;
+              font-size: 12px;
+              text-align: center;
+              color: #666;
+            ">
+              <strong>💡 Tip:</strong> Pasa el mouse sobre un grupo para ver su ubicación en el mapa
+            </div>
+          </div>
+        </div>
+
+        <div style="
+          background: #fff3cd;
+          border-left: 4px solid #ffc107;
+          padding: 12px;
+          margin-top: 15px;
+          border-radius: 4px;
+          font-size: 13px;
+          color: #856404;
+        ">
+          <strong>💡 Nota:</strong> Los grupos están ordenados por eficiencia (más pedidos en menos distancia).
+          Haz clic en cualquier grupo para crearlo automáticamente.
+        </div>
+      </div>
+    `,
+    width: '1200px',
+    showConfirmButton: true,
+    confirmButtonText: 'Cerrar',
+    confirmButtonColor: '#6c757d',
+    customClass: {
+      htmlContainer: 'swal-html-no-padding'
+    },
+    didOpen: () => {
+      // Inicializar mapa cuando el modal se abre
+      inicializarMapaRecomendaciones();
+    },
+    willClose: () => {
+      // Limpiar mapa cuando se cierra
+      if (window.mapaRecomendaciones) {
+        window.mapaRecomendaciones.remove();
+        window.mapaRecomendaciones = null;
+      }
+    }
+  });
+}
+
+// Inicializar mapa de recomendaciones
+function inicializarMapaRecomendaciones() {
+  if (!window.gruposRecomendadosData || window.gruposRecomendadosData.length === 0) {
+    return;
+  }
+
+  const mapboxToken = 'pk.eyJ1IjoiYWNhc2lsbGFzNzY2IiwiYSI6ImNsdW12cTZyMjB4NnMya213MDdseXp6ZGgifQ.t7-l1lQfd8mgHILM5YrdNw';
+
+  window.mapaRecomendaciones = new mapboxgl.Map({
+    container: 'mapa-recomendaciones',
+    style: 'mapbox://styles/mapbox/streets-v12',
+    center: [-103.3494, 20.6737], // Guadalajara por defecto
+    zoom: 11,
+    accessToken: mapboxToken
+  });
+
+  window.mapaRecomendaciones.on('load', () => {
+    // Mostrar todos los grupos en el mapa
+    mostrarTodosLosGruposEnMapa();
+  });
+}
+
+// Mostrar todos los grupos en el mapa
+function mostrarTodosLosGruposEnMapa() {
+  if (!window.mapaRecomendaciones || !window.gruposRecomendadosData) return;
+
+  const bounds = new mapboxgl.LngLatBounds();
+  window.marcadoresGrupos = [];
+
+  const colores = [
+    '#28a745', '#007bff', '#ffc107', '#dc3545',
+    '#6f42c1', '#fd7e14', '#20c997', '#e83e8c'
+  ];
+
+  window.gruposRecomendadosData.forEach((grupo, index) => {
+    const color = colores[index % colores.length];
+
+    // Agregar marcadores para cada pedido del grupo
+    grupo.pedidos.forEach((pedido, pedidoIndex) => {
+      const el = document.createElement('div');
+      el.innerHTML = `
+        <div style="
+          background: ${color};
+          color: white;
+          width: 25px;
+          height: 25px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: bold;
+          font-size: 11px;
+          border: 2px solid white;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        ">
+          ${pedidoIndex + 1}
+        </div>
+      `;
+
+      const marker = new mapboxgl.Marker(el)
+        .setLngLat([pedido.lng, pedido.lat])
+        .setPopup(new mapboxgl.Popup().setHTML(`
+          <strong>${grupo.nombre_sugerido}</strong><br>
+          <small>${pedido.FACTURA} - ${pedido.NOMBRE_CLIENTE}</small>
+        `))
+        .addTo(window.mapaRecomendaciones);
+
+      window.marcadoresGrupos.push({marker, grupoIndex: index});
+      bounds.extend([pedido.lng, pedido.lat]);
+    });
+
+    // Agregar círculo del centroide
+    if (grupo.centroide) {
+      const centroMarker = new mapboxgl.Marker({color: color})
+        .setLngLat([grupo.centroide.lng, grupo.centroide.lat])
+        .setPopup(new mapboxgl.Popup().setHTML(`
+          <strong>📍 ${grupo.nombre_sugerido}</strong><br>
+          <small>Centro del grupo</small>
+        `))
+        .addTo(window.mapaRecomendaciones);
+
+      window.marcadoresGrupos.push({marker: centroMarker, grupoIndex: index});
+    }
+  });
+
+  // Ajustar vista para mostrar todos los marcadores
+  if (!bounds.isEmpty()) {
+    window.mapaRecomendaciones.fitBounds(bounds, {padding: 50});
+  }
+}
+
+// Mostrar un grupo específico en el mapa (al hacer hover)
+function mostrarGrupoEnMapa(grupoIndex) {
+  if (!window.mapaRecomendaciones || !window.gruposRecomendadosData) return;
+
+  const grupo = window.gruposRecomendadosData[grupoIndex];
+  if (!grupo) return;
+
+  // Calcular bounds del grupo
+  const bounds = new mapboxgl.LngLatBounds();
+  grupo.pedidos.forEach(pedido => {
+    bounds.extend([pedido.lng, pedido.lat]);
+  });
+
+  // Animar la vista hacia el grupo
+  window.mapaRecomendaciones.fitBounds(bounds, {
+    padding: 80,
+    duration: 1000
+  });
+
+  // Resaltar marcadores del grupo
+  if (window.marcadoresGrupos) {
+    window.marcadoresGrupos.forEach(item => {
+      const element = item.marker.getElement();
+      if (item.grupoIndex === grupoIndex) {
+        element.style.transform = 'scale(1.3)';
+        element.style.zIndex = '1000';
+      } else {
+        element.style.opacity = '0.3';
+      }
+    });
+
+    // Restaurar después de un tiempo
+    setTimeout(() => {
+      window.marcadoresGrupos.forEach(item => {
+        const element = item.marker.getElement();
+        element.style.transform = 'scale(1)';
+        element.style.opacity = '1';
+        element.style.zIndex = '';
+      });
+    }, 2000);
+  }
+}
+
+// Crear un grupo desde la recomendación
+async function crearGrupoDesdeRecomendacion(pedidosIds, nombreSugerido, sucursal) {
+  Swal.close();
+
+  // Mostrar loading mientras obtenemos los datos de los pedidos
+  Swal.fire({
+    title: 'Preparando grupo...',
+    html: 'Obteniendo información de los pedidos',
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  });
+
+  try {
+    // Obtener los datos de los pedidos desde los checkboxes
+    const checkboxes = document.querySelectorAll('.pedido-checkbox');
+    const pedidosFormateados = [];
+
+    pedidosIds.forEach(id => {
+      // Buscar el checkbox correspondiente al ID
+      const checkbox = Array.from(checkboxes).find(cb => parseInt(cb.dataset.id) === id);
+
+      if (checkbox) {
+        pedidosFormateados.push({
+          id: parseInt(checkbox.dataset.id),
+          factura: checkbox.dataset.factura || '',
+          cliente: checkbox.dataset.cliente || '',
+          precioVendedor: parseFloat(checkbox.dataset.precioVendedor) || 0,
+          precioReal: parseFloat(checkbox.dataset.precioReal) || 0,
+          validado: parseInt(checkbox.dataset.validado) || 0
+        });
+      }
+    });
+
+    if (pedidosFormateados.length === 0) {
+      throw new Error('No se encontraron los pedidos seleccionados');
+    }
+
+    console.log('Pedidos formateados:', pedidosFormateados);
+
+    Swal.close();
+
+    // Llamar a la función existente de crear grupo
+    await abrirModalCrearGrupo(pedidosFormateados, false);
+
+    // Después de abrir el modal, prellenar los campos con los datos sugeridos
+    setTimeout(() => {
+      const nombreInput = document.getElementById('grupo-nombre');
+      const sucursalSelect = document.getElementById('grupo-sucursal');
+
+      if (nombreInput) {
+        nombreInput.value = nombreSugerido;
+      }
+
+      if (sucursalSelect) {
+        sucursalSelect.value = sucursal;
+        // Disparar evento change para cargar choferes
+        sucursalSelect.dispatchEvent(new Event('change'));
+      }
+    }, 100);
+
+  } catch (error) {
+    console.error('Error:', error);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'No se pudieron cargar los datos de los pedidos: ' + error.message,
+      confirmButtonColor: '#dc3545'
+    });
+  }
+}
+
+// ========== FUNCIONES DE CLUSTERING ==========
+
+/**
+ * Agrupar pedidos por proximidad geográfica
+ */
+function agruparPedidosPorProximidad(pedidos, maxPedidosPorGrupo, radioMaxKm) {
+  const grupos = [];
+  let pedidosRestantes = [...pedidos];
+  let grupoId = 1;
+
+  while (pedidosRestantes.length > 0) {
+    const centroPedido = pedidosRestantes.shift();
+    const grupoActual = [centroPedido];
+
+    // Buscar pedidos cercanos al centro
+    const nuevosPedidosRestantes = [];
+
+    for (const pedido of pedidosRestantes) {
+      if (grupoActual.length >= maxPedidosPorGrupo) {
+        nuevosPedidosRestantes.push(pedido);
+        continue;
+      }
+
+      // Calcular distancia al centroide del grupo
+      const centroide = calcularCentroide(grupoActual);
+      const distancia = calcularDistanciaHaversine(
+        centroide.lat,
+        centroide.lng,
+        pedido.lat,
+        pedido.lng
+      );
+
+      if (distancia <= radioMaxKm) {
+        grupoActual.push(pedido);
+      } else {
+        nuevosPedidosRestantes.push(pedido);
+      }
+    }
+
+    pedidosRestantes = nuevosPedidosRestantes;
+
+    // Agregar grupo solo si tiene al menos 2 pedidos
+    if (grupoActual.length >= 2) {
+      const centroide = calcularCentroide(grupoActual);
+
+      grupos.push({
+        grupo_id: grupoId++,
+        nombre_sugerido: `Grupo ${grupoActual[0].SUCURSAL} - Zona ${grupoId}`,
+        sucursal: grupoActual[0].SUCURSAL,
+        num_pedidos: grupoActual.length,
+        pedidos: grupoActual,
+        centroide: centroide,
+        radio_km: calcularRadioMaximo(grupoActual, centroide),
+        distancia_estimada: calcularDistanciaTotal(grupoActual),
+        eficiencia: 0
+      });
+    }
+  }
+
+  // Calcular eficiencia para cada grupo
+  grupos.forEach(grupo => {
+    grupo.eficiencia = calcularEficiencia(grupo.pedidos, grupo.distancia_estimada);
+  });
+
+  // Ordenar por eficiencia
+  grupos.sort((a, b) => b.eficiencia - a.eficiencia);
+
+  return grupos;
+}
+
+/**
+ * Calcular el centroide (punto central) de un grupo de pedidos
+ */
+function calcularCentroide(pedidos) {
+  let totalLat = 0;
+  let totalLng = 0;
+  const count = pedidos.length;
+
+  pedidos.forEach(pedido => {
+    totalLat += pedido.lat;
+    totalLng += pedido.lng;
+  });
+
+  return {
+    lat: totalLat / count,
+    lng: totalLng / count
+  };
+}
+
+/**
+ * Calcular el radio máximo del grupo (distancia más lejana al centroide)
+ */
+function calcularRadioMaximo(pedidos, centroide) {
+  let maxDistancia = 0;
+
+  pedidos.forEach(pedido => {
+    const distancia = calcularDistanciaHaversine(
+      centroide.lat,
+      centroide.lng,
+      pedido.lat,
+      pedido.lng
+    );
+
+    if (distancia > maxDistancia) {
+      maxDistancia = distancia;
+    }
+  });
+
+  return Math.round(maxDistancia * 100) / 100;
+}
+
+/**
+ * Calcular distancia entre dos puntos usando fórmula de Haversine
+ */
+function calcularDistanciaHaversine(lat1, lng1, lat2, lng2) {
+  const radioTierra = 6371; // km
+
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLng / 2) * Math.sin(dLng / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return radioTierra * c;
+}
+
+/**
+ * Calcular distancia total aproximada del grupo (suma de distancias consecutivas)
+ */
+function calcularDistanciaTotal(pedidos) {
+  if (pedidos.length < 2) {
+    return 0;
+  }
+
+  let distanciaTotal = 0;
+
+  for (let i = 0; i < pedidos.length - 1; i++) {
+    distanciaTotal += calcularDistanciaHaversine(
+      pedidos[i].lat,
+      pedidos[i].lng,
+      pedidos[i + 1].lat,
+      pedidos[i + 1].lng
+    );
+  }
+
+  return Math.round(distanciaTotal * 100) / 100;
+}
+
+/**
+ * Calcular eficiencia del grupo
+ * Eficiencia = num_pedidos / distancia_total
+ * Mayor eficiencia = más pedidos en menos distancia
+ */
+function calcularEficiencia(pedidos, distanciaTotal) {
+  if (distanciaTotal === 0) {
+    return 0;
+  }
+
+  const numPedidos = pedidos.length;
+  const eficiencia = (numPedidos / distanciaTotal) * 10; // Multiplicar por 10 para obtener un número más legible
+
+  return Math.round(eficiencia * 100) / 100;
+}
+</script>
+
+<!-- Script para modal de destinatario -->
+<script src="js/modal_destinatario.js"></script>

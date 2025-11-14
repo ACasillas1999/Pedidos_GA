@@ -4,6 +4,13 @@ ini_set('session.cookie_httponly', true);
 ini_set('session.cookie_secure', true);
 session_name("GA");
 session_start();
+
+// SEGURIDAD: Verificar que el usuario tenga sesión activa
+if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
+    header("location: /Pedidos_GA/Sesion/login.html");
+    exit;
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -861,13 +868,7 @@ session_start();
       .obs-vehiculos {
         display: grid;
         gap: 1.25rem;
-        grid-template-columns: repeat(3, 1fr);
-      }
-
-      @media (max-width: 1800px) {
-        .obs-vehiculos {
-          grid-template-columns: repeat(2, 1fr);
-        }
+        grid-template-columns: repeat(2, 1fr);
       }
 
       @media (max-width: 1200px) {
@@ -878,17 +879,18 @@ session_start();
 
       .obs-card {
   background: #ffffff;
-  border: 2px solid #e9ecef;
+  border: 2px solid #e38e28;
+
   border-radius: 12px;
   /* overflow: hidden;  <- QUITADO para que no corte la tabla ni el botón */
   transition: all .3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
       .obs-card:hover {
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        box-shadow: 0 8px 24px rgba(0, 89, 150, 0.15);
         transform: translateY(-4px);
-        border-color: #6366f1;
+        border-color: var(--accent);
       }
 
       .obs-card-header {
@@ -1128,13 +1130,16 @@ session_start();
       .obs-badge {
         display: inline-flex;
         align-items: center;
+        justify-content: center;
         gap: .4rem;
-        padding: .4rem .8rem;
+        padding: .5rem .9rem;
         border-radius: 8px;
-        font-size: .8rem;
+        font-size: .75rem;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: .3px;
+        white-space: nowrap;
+        min-width: fit-content;
       }
 
       .obs-card-footer {

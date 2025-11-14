@@ -383,7 +383,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 <body class="bg-gaBg text-slate-900">
 
     <!-- HEADER -->
-    <header class="sticky top-0 z-30 bg-gaBg/95 backdrop-blur flex items-center px-6 py-4 shadow-sm" style="background-color: rgba(243, 156, 43, 0.64);">
+    <header class="sticky top-0 z-30 bg-gaBg/95 backdrop-blur flex items-center px-6 py-4 shadow-sm" style="background-color: rgb(0 90 163 / 91%);">
         <div class="flex items-center gap-4">
             <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/ESTADISTICAS.png"
                  alt="Estadísticas"

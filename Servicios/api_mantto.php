@@ -6,6 +6,11 @@ header('Content-Type: application/json; charset=utf-8');
 @session_name('GA');
 @session_start();
 
+if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
+    header("location: /Pedidos_GA/Sesion/login.html");
+    exit;
+}
+
 $method = $_SERVER['REQUEST_METHOD'];
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
 
@@ -460,40 +465,53 @@ try {
         $notas = (string)($cur['notas'] ?? '');
         // Verificar si es una orden de checklist (contiene [CHECKLIST)
         if (stripos($notas, '[CHECKLIST') !== false) {
-          // Extraer sección (entre [CHECKLIST - y ])
-          if (preg_match('/\[CHECKLIST - (.+?)\]/', $notas, $matchSeccion)) {
-            $seccion = $matchSeccion[1];
-            // Extraer ítem (después de "Ítem: " hasta el salto de línea)
-            if (preg_match('/Ítem: (.+?)(\n|$)/s', $notas, $matchItem)) {
+          // Extraer sección (entre [CHECKLIST - y ]) - usando trim para limpiar espacios
+          if (preg_match('/\[CHECKLIST\s*-\s*(.+?)\]/i', $notas, $matchSeccion)) {
+            $seccion = trim($matchSeccion[1]);
+            // Extraer ítem (después de "Ítem: " hasta el salto de línea o final)
+            // Usando preg_match con DOTALL para capturar todo hasta la siguiente línea que empieza con texto
+            if (preg_match('/Ítem:\s*(.+?)(?:\n[A-Z]|\n\n|$)/s', $notas, $matchItem)) {
               $item = trim($matchItem[1]);
               $idVehiculo = (int)($cur['id_vehiculo'] ?? 0);
 
-              // Marcar TODOS los checklists de este vehículo+sección+ítem como resueltos
-              $sqlUpdate = "
-                UPDATE checklist_vehicular
-                SET resuelto = 1,
-                    fecha_resolucion = NOW(),
-                    orden_resolucion = ?
-                WHERE id_vehiculo = ?
-                  AND seccion = ?
-                  AND item = ?
-                  AND calificacion = 'Mal'
-                  AND COALESCE(resuelto, 0) = 0
-              ";
-              $stmtUpdate = $pdo->prepare($sqlUpdate);
-              $stmtUpdate->execute([$id, $idVehiculo, $seccion, $item]);
-              $affectedRows = $stmtUpdate->rowCount();
+              // Validar que tengamos todos los datos necesarios
+              if ($idVehiculo > 0 && !empty($seccion) && !empty($item)) {
+                // Marcar TODOS los checklists de este vehículo+sección+ítem como resueltos
+                // Usando TRIM y UPPER para hacer la comparación más flexible
+                $sqlUpdate = "
+                  UPDATE checklist_vehicular
+                  SET resuelto = 1,
+                      fecha_resolucion = NOW(),
+                      orden_resolucion = ?
+                  WHERE id_vehiculo = ?
+                    AND UPPER(TRIM(seccion)) = UPPER(TRIM(?))
+                    AND UPPER(TRIM(item)) = UPPER(TRIM(?))
+                    AND calificacion = 'Mal'
+                    AND COALESCE(resuelto, 0) = 0
+                ";
+                $stmtUpdate = $pdo->prepare($sqlUpdate);
+                $stmtUpdate->execute([$id, $idVehiculo, $seccion, $item]);
+                $affectedRows = $stmtUpdate->rowCount();
 
-              // Log opcional de observaciones resueltas
-              if ($affectedRows > 0) {
-                error_log("Orden #{$id} completada: se marcaron {$affectedRows} observaciones como resueltas (Vehículo: {$idVehiculo}, Sección: {$seccion}, Ítem: {$item})");
+                // Log detallado de observaciones resueltas
+                if ($affectedRows > 0) {
+                  error_log("✅ Orden #{$id} completada: se marcaron {$affectedRows} observaciones como resueltas (Vehículo: {$idVehiculo}, Sección: '{$seccion}', Ítem: '{$item}')");
+                } else {
+                  error_log("⚠️ Orden #{$id} completada: no se encontraron observaciones pendientes que marcar como resueltas (Vehículo: {$idVehiculo}, Sección: '{$seccion}', Ítem: '{$item}')");
+                }
+              } else {
+                error_log("⚠️ Orden #{$id}: datos incompletos para marcar como resuelta - Vehículo: {$idVehiculo}, Sección: '{$seccion}', Ítem: '{$item}'");
               }
+            } else {
+              error_log("⚠️ Orden #{$id}: no se pudo extraer el ítem de las notas");
             }
+          } else {
+            error_log("⚠️ Orden #{$id}: no se pudo extraer la sección de las notas");
           }
         }
       } catch (Throwable $e) {
         // No bloquear la finalización de la orden si falla el marcado de resolución
-        error_log("Error al marcar observaciones como resueltas para orden #{$id}: " . $e->getMessage());
+        error_log("❌ Error al marcar observaciones como resueltas para orden #{$id}: " . $e->getMessage());
       }
 
       echo json_encode(['ok'=>true,'msg'=>'Servicio completado']); exit;

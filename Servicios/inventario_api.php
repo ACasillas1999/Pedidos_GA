@@ -4,6 +4,10 @@ ini_set('session.cookie_httponly', true);
 ini_set('session.cookie_secure', true);
 session_name("GA");
 session_start();
+if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
+    header("location: /Pedidos_GA/Sesion/login.html");
+    exit;
+}
 
 // Si quieres exigir login, descomenta este bloque:
 /*

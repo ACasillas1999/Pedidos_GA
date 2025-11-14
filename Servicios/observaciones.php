@@ -4,6 +4,13 @@ ini_set('session.cookie_httponly', true);
 ini_set('session.cookie_secure', true);
 session_name("GA");
 session_start();
+
+// SEGURIDAD: Verificar que el usuario tenga sesión activa
+if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
+    header("location: /Pedidos_GA/Sesion/login.html");
+    exit;
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="es">

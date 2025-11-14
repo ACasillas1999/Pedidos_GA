@@ -353,9 +353,60 @@ $color = $colores[$colorIndex];
 
     <div class="content">
       <div class="pedidos-list">
-        <h2>📋 Orden de Entrega</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+          <h2 style="margin: 0;">📋 Orden de Entrega</h2>
+          <button onclick="optimizarRuta()" class="btn-optimizar" style="
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+          " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.2)'">
+            <span style="font-size: 18px;">🚀</span>
+            Optimizar Ruta
+          </button>
+        </div>
+
+        <div id="stats-container" style="
+          background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+          border-radius: 8px;
+          padding: 15px;
+          margin-bottom: 15px;
+          display: none;
+        ">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+            <div style="text-align: center;">
+              <div style="font-size: 12px; color: #666; margin-bottom: 5px;">📏 Distancia Total</div>
+              <div id="distancia-total" style="font-size: 20px; font-weight: bold; color: #333;">--</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 12px; color: #666; margin-bottom: 5px;">🚦 Con Tráfico</div>
+              <div id="tiempo-total" style="font-size: 20px; font-weight: bold; color: #333;">--</div>
+            </div>
+          </div>
+          <div id="tiempo-ideal-container" style="
+            background: rgba(40, 167, 69, 0.1);
+            padding: 8px;
+            border-radius: 5px;
+            text-align: center;
+            display: none;
+          ">
+            <span style="font-size: 12px; color: #666;">⏱️ Sin tráfico: </span>
+            <span id="tiempo-ideal" style="font-size: 14px; font-weight: bold; color: #28a745;">--</span>
+            <span id="retraso-trafico" style="font-size: 12px; color: #dc3545; margin-left: 10px;">--</span>
+          </div>
+        </div>
+
         <p style="font-size: 13px; color: #666; margin-bottom: 15px;">
-          Arrastra los pedidos para cambiar el orden de entrega. La ruta se actualizará automáticamente.
+          Arrastra los pedidos para cambiar el orden manualmente o usa el botón "Optimizar Ruta" para calcular la mejor ruta automáticamente.
         </p>
 
         <div id="pedidos-sortable">
@@ -380,6 +431,28 @@ $color = $colores[$colorIndex];
 
       <div class="map-container">
         <div id="map"></div>
+
+        <!-- Control de tráfico -->
+        <div style="position: absolute; top: 10px; right: 10px; z-index: 1;">
+          <button id="toggle-trafico" onclick="toggleTrafico()" style="
+            background: white;
+            border: 2px solid #ddd;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+          " onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='white'">
+            <span style="font-size: 16px;">🚦</span>
+            <span id="trafico-text">Ver Tráfico</span>
+          </button>
+        </div>
+
         <div class="map-legend">
           <div class="legend-item">
             <div class="legend-marker" style="background: #28a745;">1</div>
@@ -387,7 +460,19 @@ $color = $colores[$colorIndex];
           </div>
           <div class="legend-item">
             <div style="width: 3px; height: 20px; background: <?php echo $color['bg']; ?>;"></div>
-            <span>Ruta optimizada</span>
+            <span>Ruta de entregas</span>
+          </div>
+          <div class="legend-item">
+            <div style="width: 30px; height: 3px; background: #9e9e9e; margin-top: 8px; background-image: repeating-linear-gradient(to right, #9e9e9e 0px, #9e9e9e 8px, transparent 8px, transparent 16px);"></div>
+            <span>Ruta de regreso</span>
+          </div>
+          <div class="legend-item" id="legend-trafico" style="display: none;">
+            <div style="display: flex; gap: 5px;">
+              <div style="width: 15px; height: 3px; background: #4CAF50; margin-top: 8px;"></div>
+              <div style="width: 15px; height: 3px; background: #FFC107; margin-top: 8px;"></div>
+              <div style="width: 15px; height: 3px; background: #F44336; margin-top: 8px;"></div>
+            </div>
+            <span>Nivel de tráfico</span>
           </div>
         </div>
       </div>
@@ -413,6 +498,58 @@ $color = $colores[$colorIndex];
 
     let markers = [];
     let routeLayer = null;
+    let trafficVisible = false;
+    let estadisticasRutaEntregas = { distancia: 0, duracion: 0 };
+    let estadisticasRutaRegreso = { distancia: 0, duracion: 0 };
+
+    // Toggle de capa de tráfico
+    function toggleTrafico() {
+      trafficVisible = !trafficVisible;
+
+      if (trafficVisible) {
+        // Mostrar tráfico
+        if (!map.getLayer('traffic')) {
+          // Agregar la fuente primero si no existe
+          if (!map.getSource('traffic-source')) {
+            map.addSource('traffic-source', {
+              'type': 'vector',
+              'url': 'mapbox://mapbox.mapbox-traffic-v1'
+            });
+          }
+
+          // Agregar la capa
+          map.addLayer({
+            'id': 'traffic',
+            'type': 'line',
+            'source': 'traffic-source',
+            'source-layer': 'traffic',
+            'paint': {
+              'line-width': 2,
+              'line-color': [
+                'case',
+                ['==', ['get', 'congestion'], 'low'], '#4CAF50',
+                ['==', ['get', 'congestion'], 'moderate'], '#FFC107',
+                ['==', ['get', 'congestion'], 'heavy'], '#F44336',
+                ['==', ['get', 'congestion'], 'severe'], '#B71C1C',
+                '#888888'
+              ]
+            }
+          });
+        } else {
+          // Si la capa ya existe, solo hacerla visible
+          map.setLayoutProperty('traffic', 'visibility', 'visible');
+        }
+        document.getElementById('trafico-text').textContent = 'Ocultar Tráfico';
+        document.getElementById('legend-trafico').style.display = 'flex';
+      } else {
+        // Ocultar tráfico (no remover, solo ocultar)
+        if (map.getLayer('traffic')) {
+          map.setLayoutProperty('traffic', 'visibility', 'none');
+        }
+        document.getElementById('trafico-text').textContent = 'Ver Tráfico';
+        document.getElementById('legend-trafico').style.display = 'none';
+      }
+    }
 
     // Función para actualizar el mapa
     function actualizarMapa() {
@@ -424,6 +561,12 @@ $color = $colores[$colorIndex];
       if (routeLayer && map.getLayer('route')) {
         map.removeLayer('route');
         map.removeSource('route');
+      }
+
+      // Limpiar ruta de regreso anterior
+      if (map.getLayer('route-regreso')) {
+        map.removeLayer('route-regreso');
+        map.removeSource('route-regreso');
       }
 
       const bounds = new mapboxgl.LngLatBounds();
@@ -595,7 +738,13 @@ $color = $colores[$colorIndex];
         // Dibujar ruta entre los puntos (necesitamos al menos 2 puntos: origen + 1 destino)
         if (coordenadas.length > 1) {
           console.log('Obteniendo ruta entre puntos...');
+          // Dibujar la ruta de entregas (origen -> pedidos)
           obtenerRuta(coordenadas);
+
+          // Dibujar la ruta de regreso (último pedido -> origen) con estilo diferente
+          const ultimoPedido = coordenadas[coordenadas.length - 1];
+          const rutaRegreso = [ultimoPedido, coordenadas[0]];
+          obtenerRutaRegreso(rutaRegreso);
         } else {
           console.log('Solo hay 1 punto, no se puede trazar ruta');
         }
@@ -613,7 +762,7 @@ $color = $colores[$colorIndex];
       }
 
       const coordsString = coordenadas.map(c => c.join(',')).join(';');
-      const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${coordsString}?geometries=geojson&access_token=${mapboxgl.accessToken}`;
+      const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${coordsString}?geometries=geojson&overview=full&access_token=${mapboxgl.accessToken}`;
 
       console.log('URL de ruta:', url);
 
@@ -625,7 +774,13 @@ $color = $colores[$colorIndex];
 
         if (data.routes && data.routes.length > 0) {
           const route = data.routes[0].geometry;
+          const distancia = data.routes[0].distance; // en metros
+          const duracion = data.routes[0].duration; // en segundos
+
           console.log('Ruta obtenida exitosamente');
+
+          // Guardar estadísticas de la ruta de entregas
+          estadisticasRutaEntregas = { distancia, duracion };
 
           // Agregar capa de ruta
           if (map.getSource('route')) {
@@ -664,6 +819,348 @@ $color = $colores[$colorIndex];
         }
       } catch (error) {
         console.error('Error obteniendo ruta:', error);
+      }
+    }
+
+    // Obtener ruta de regreso con estilo diferente
+    async function obtenerRutaRegreso(coordenadas) {
+      const coordsString = coordenadas.map(c => c.join(',')).join(';');
+      const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${coordsString}?geometries=geojson&overview=full&access_token=${mapboxgl.accessToken}`;
+
+      console.log('URL de ruta de regreso:', url);
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        console.log('Respuesta de Directions API (regreso):', data);
+
+        if (data.routes && data.routes.length > 0) {
+          const route = data.routes[0].geometry;
+          const distancia = data.routes[0].distance; // en metros
+          const duracion = data.routes[0].duration; // en segundos
+
+          console.log('Ruta de regreso obtenida exitosamente');
+
+          // Guardar estadísticas de la ruta de regreso
+          estadisticasRutaRegreso = { distancia, duracion };
+
+          // Actualizar estadísticas totales (entregas + regreso)
+          const distanciaTotal = estadisticasRutaEntregas.distancia + estadisticasRutaRegreso.distancia;
+          const duracionTotal = estadisticasRutaEntregas.duracion + estadisticasRutaRegreso.duracion;
+          actualizarEstadisticas(distanciaTotal, duracionTotal);
+
+          // Agregar capa de ruta de regreso con estilo diferente
+          if (map.getSource('route-regreso')) {
+            console.log('Actualizando ruta de regreso existente');
+            map.getSource('route-regreso').setData({
+              type: 'Feature',
+              geometry: route
+            });
+          } else {
+            console.log('Creando nueva capa de ruta de regreso');
+            map.addSource('route-regreso', {
+              type: 'geojson',
+              data: {
+                type: 'Feature',
+                geometry: route
+              }
+            });
+
+            map.addLayer({
+              id: 'route-regreso',
+              type: 'line',
+              source: 'route-regreso',
+              layout: {
+                'line-join': 'round',
+                'line-cap': 'round'
+              },
+              paint: {
+                'line-color': '#9e9e9e', // Color gris
+                'line-width': 4,
+                'line-opacity': 0.6,
+                'line-dasharray': [2, 2] // Línea punteada
+              }
+            });
+          }
+        } else {
+          console.error('No se encontraron rutas de regreso en la respuesta:', data);
+        }
+      } catch (error) {
+        console.error('Error obteniendo ruta de regreso:', error);
+      }
+    }
+
+    // Actualizar estadísticas de distancia y tiempo
+    function actualizarEstadisticas(distanciaMetros, duracionSegundos, duracionSinTrafico = null) {
+      const distanciaKm = (distanciaMetros / 1000).toFixed(1);
+      const horas = Math.floor(duracionSegundos / 3600);
+      const minutos = Math.floor((duracionSegundos % 3600) / 60);
+
+      let tiempoTexto = '';
+      if (horas > 0) {
+        tiempoTexto = `${horas}h ${minutos}m`;
+      } else {
+        tiempoTexto = `${minutos} min`;
+      }
+
+      document.getElementById('distancia-total').textContent = `${distanciaKm} km`;
+      document.getElementById('tiempo-total').textContent = tiempoTexto;
+      document.getElementById('stats-container').style.display = 'block';
+
+      // Mostrar comparación con/sin tráfico si está disponible
+      if (duracionSinTrafico && duracionSinTrafico < duracionSegundos) {
+        const horasIdeal = Math.floor(duracionSinTrafico / 3600);
+        const minutosIdeal = Math.floor((duracionSinTrafico % 3600) / 60);
+        let tiempoIdealTexto = horasIdeal > 0 ? `${horasIdeal}h ${minutosIdeal}m` : `${minutosIdeal} min`;
+
+        const retrasoMinutos = Math.round((duracionSegundos - duracionSinTrafico) / 60);
+
+        document.getElementById('tiempo-ideal').textContent = tiempoIdealTexto;
+        document.getElementById('retraso-trafico').textContent = `(+${retrasoMinutos} min de retraso)`;
+        document.getElementById('tiempo-ideal-container').style.display = 'block';
+      } else {
+        document.getElementById('tiempo-ideal-container').style.display = 'none';
+      }
+    }
+
+    // Optimizar ruta usando Mapbox Optimization API
+    async function optimizarRuta() {
+      console.log('Iniciando optimización de ruta...');
+
+      // Validar que tenemos coordenadas válidas
+      const pedidosOrdenados = Array.from(document.querySelectorAll('.pedido-item')).map((item) => {
+        const pedidoId = parseInt(item.dataset.pedidoId);
+        return pedidos.find(p => p.ID === pedidoId);
+      });
+
+      // Filtrar pedidos con coordenadas válidas
+      const pedidosConCoords = pedidosOrdenados.filter(p => {
+        if (!p.Coord_Destino || p.Coord_Destino.trim() === '') return false;
+        try {
+          const coordString = p.Coord_Destino.trim();
+          let lat, lng;
+
+          try {
+            const coords = JSON.parse(coordString);
+            lng = parseFloat(coords.lng);
+            lat = parseFloat(coords.lat);
+          } catch {
+            if (coordString.includes(',')) {
+              const parts = coordString.split(',').map(p => p.trim());
+              if (parts.length === 2) {
+                lat = parseFloat(parts[0]);
+                lng = parseFloat(parts[1]);
+              }
+            }
+          }
+
+          return !isNaN(lng) && !isNaN(lat) && lng !== 0 && lat !== 0;
+        } catch {
+          return false;
+        }
+      });
+
+      if (pedidosConCoords.length === 0) {
+        Swal.fire({
+          icon: 'error',
+          title: 'No hay pedidos con coordenadas',
+          text: 'No se encontraron pedidos con coordenadas válidas para optimizar',
+          confirmButtonColor: grupoColor
+        });
+        return;
+      }
+
+      // Mostrar loading
+      Swal.fire({
+        title: 'Optimizando ruta...',
+        html: 'Calculando la mejor ruta posible',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      try {
+        // Preparar coordenadas para la API
+        const coordenadas = [];
+
+        // Agregar bodega/origen como punto fijo de inicio
+        if (ubicacionOrigen && ubicacionOrigen.coordenadas) {
+          try {
+            let coordString = ubicacionOrigen.coordenadas.trim();
+            let lat, lng;
+
+            if (coordString.includes(',')) {
+              const parts = coordString.split(',').map(p => p.trim());
+              if (parts.length === 2) {
+                lat = parseFloat(parts[0]);
+                lng = parseFloat(parts[1]);
+              }
+            }
+
+            if (!isNaN(lng) && !isNaN(lat) && lng !== 0 && lat !== 0) {
+              coordenadas.push({lng, lat, type: 'origen'});
+            }
+          } catch (e) {
+            console.error('Error procesando coordenadas de bodega:', e);
+          }
+        }
+
+        // Agregar coordenadas de pedidos
+        pedidosConCoords.forEach(pedido => {
+          try {
+            let coordString = pedido.Coord_Destino.trim();
+            let lat, lng;
+
+            try {
+              const coords = JSON.parse(coordString);
+              lng = parseFloat(coords.lng);
+              lat = parseFloat(coords.lat);
+            } catch {
+              if (coordString.includes(',')) {
+                const parts = coordString.split(',').map(p => p.trim());
+                if (parts.length === 2) {
+                  lat = parseFloat(parts[0]);
+                  lng = parseFloat(parts[1]);
+                }
+              }
+            }
+
+            if (!isNaN(lng) && !isNaN(lat) && lng !== 0 && lat !== 0) {
+              coordenadas.push({lng, lat, pedidoId: pedido.ID, type: 'destino'});
+            }
+          } catch (e) {
+            console.error(`Error procesando coordenadas del pedido ${pedido.ID}:`, e);
+          }
+        });
+
+        if (coordenadas.length < 2) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Coordenadas insuficientes',
+            text: 'Se necesitan al menos 2 puntos para optimizar la ruta',
+            confirmButtonColor: grupoColor
+          });
+          return;
+        }
+
+        // Mapbox Optimization API tiene límite de 12 waypoints (incluyendo origen)
+        if (coordenadas.length > 12) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Demasiados puntos',
+            text: 'La API de optimización soporta máximo 12 puntos. Se optimizarán los primeros 12 pedidos.',
+            confirmButtonColor: grupoColor
+          });
+          coordenadas.splice(12); // Limitar a 12 puntos
+        }
+
+        // Construir URL para Optimization API
+        // source=first indica que debe empezar en el primer punto (bodega)
+        // destination=last hace que regrese al último punto agregado (que será la bodega de nuevo)
+        // Para asegurar que regrese a la bodega, agregamos la bodega al final también
+        coordenadas.push(coordenadas[0]); // Agregar la bodega al final para asegurar el regreso
+
+        const coordsString = coordenadas.map(c => `${c.lng},${c.lat}`).join(';');
+        const url = `https://api.mapbox.com/optimized-trips/v1/mapbox/driving/${coordsString}?source=first&destination=last&roundtrip=true&geometries=geojson&overview=full&annotations=duration,distance&access_token=${mapboxgl.accessToken}`;
+
+        console.log('URL de optimización:', url);
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+        console.log('Respuesta de Optimization API:', data);
+
+        if (data.code !== 'Ok' || !data.trips || data.trips.length === 0) {
+          throw new Error(data.message || 'No se pudo optimizar la ruta');
+        }
+
+        const trip = data.trips[0];
+        const waypoints = data.waypoints;
+
+        // El primer waypoint es el origen (bodega), el último también es el origen (regreso)
+        // Los del medio son los destinos en orden optimizado
+        const ordenOptimizado = waypoints.slice(1, -1).map(wp => {
+          // wp.waypoint_index corresponde al índice original en coordenadas
+          const coord = coordenadas[wp.waypoint_index];
+          return coord.pedidoId;
+        }).filter(id => id !== undefined);
+
+        console.log('Orden optimizado:', ordenOptimizado);
+
+        // Reordenar los elementos en la UI
+        const contenedor = document.getElementById('pedidos-sortable');
+        const items = Array.from(document.querySelectorAll('.pedido-item'));
+
+        // Crear un nuevo orden
+        ordenOptimizado.forEach((pedidoId, index) => {
+          const item = items.find(i => parseInt(i.dataset.pedidoId) === pedidoId);
+          if (item) {
+            item.querySelector('.pedido-orden').textContent = index + 1;
+            item.dataset.orden = index + 1;
+            contenedor.appendChild(item); // Mover al final
+          }
+        });
+
+        // Los pedidos sin coordenadas van al final
+        items.forEach(item => {
+          const pedidoId = parseInt(item.dataset.pedidoId);
+          if (!ordenOptimizado.includes(pedidoId)) {
+            contenedor.appendChild(item);
+            const currentIndex = Array.from(contenedor.children).indexOf(item);
+            item.querySelector('.pedido-orden').textContent = currentIndex + 1;
+            item.dataset.orden = currentIndex + 1;
+          }
+        });
+
+        // Actualizar mapa
+        actualizarMapa();
+
+        // Guardar nuevo orden
+        await guardarNuevoOrden();
+
+        // Mostrar resultados
+        const distanciaKm = (trip.distance / 1000).toFixed(1);
+        const horas = Math.floor(trip.duration / 3600);
+        const minutos = Math.floor((trip.duration % 3600) / 60);
+        let tiempoTexto = horas > 0 ? `${horas}h ${minutos}m` : `${minutos} min`;
+
+        Swal.fire({
+          icon: 'success',
+          title: '¡Ruta optimizada!',
+          html: `
+            <div style="text-align: left; padding: 10px;">
+              <p style="margin-bottom: 15px;">La ruta ha sido optimizada exitosamente.</p>
+              <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                <div style="display: flex; justify-content: space-around;">
+                  <div style="text-align: center;">
+                    <div style="font-size: 24px; font-weight: bold; color: #28a745;">${distanciaKm} km</div>
+                    <div style="font-size: 12px; color: #666;">Distancia total</div>
+                  </div>
+                  <div style="text-align: center;">
+                    <div style="font-size: 24px; font-weight: bold; color: #007bff;">${tiempoTexto}</div>
+                    <div style="font-size: 12px; color: #666;">Tiempo estimado</div>
+                  </div>
+                </div>
+              </div>
+              <p style="margin-top: 15px; font-size: 13px; color: #666;">
+                Los pedidos han sido reordenados para minimizar la distancia y el tiempo de entrega.
+              </p>
+            </div>
+          `,
+          confirmButtonColor: grupoColor,
+          confirmButtonText: 'Entendido'
+        });
+
+      } catch (error) {
+        console.error('Error optimizando ruta:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error al optimizar',
+          text: error.message || 'No se pudo optimizar la ruta. Intenta nuevamente.',
+          confirmButtonColor: '#dc3545'
+        });
       }
     }
 
