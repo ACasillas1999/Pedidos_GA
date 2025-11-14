@@ -18,6 +18,149 @@ if ($conn->connect_error) {
 
 //require_once __DIR__ . "/Conexiones/Conexion.php";
 
+// ---------------------
+// Consulta por GRUPO (nuevo)
+// Si vienen grupo_id o grupo_nombre, resolvemos aquí y salimos
+// ---------------------
+// Helpers de parámetros
+$__get = function ($k, $def = null) {
+    if (isset($_POST[$k])) return is_string($_POST[$k]) ? trim($_POST[$k]) : $_POST[$k];
+    if (isset($_GET[$k])) return is_string($_GET[$k]) ? trim($_GET[$k]) : $_GET[$k];
+    return $def;
+};
+function __parse_int($v, $def = null) { if ($v === null || $v === '') return $def; if (!is_numeric($v)) return $def; return (int)$v; }
+function __safe_date($v) { if ($v === null || $v === '') return null; $ts = strtotime($v); if ($ts === false) return null; return date('Y-m-d', $ts); }
+
+$__grupoId = __parse_int($__get('grupo_id'));
+$__grupoNombre = $__get('grupo_nombre');
+if ($__grupoId !== null || ($__grupoNombre !== null && $__grupoNombre !== '')) {
+    $__sucursal = $__get('sucursal');
+    $__chofer = $__get('chofer');
+    $__estado = $__get('estado');
+    $__fDesde = __safe_date($__get('fecha_entrega_desde'));
+    $__fHasta = __safe_date($__get('fecha_entrega_hasta'));
+    $__page = max(1, __parse_int($__get('page'), 1));
+    $__limit = __parse_int($__get('limit'), 100); if ($__limit === null) $__limit = 100; if ($__limit > 1000) $__limit = 1000; $__offset = ($__page - 1) * $__limit;
+
+    try {
+        // Resolver grupo
+        if ($__grupoId === null) {
+            $sqlG = 'SELECT id, nombre_grupo, sucursal, chofer_asignado, fecha_creacion, usuario_creo, estado, notas FROM grupos_rutas WHERE LOWER(nombre_grupo) = LOWER(?) LIMIT 1';
+            $stG = $conn->prepare($sqlG);
+            $stG->bind_param('s', $__grupoNombre);
+        } else {
+            $sqlG = 'SELECT id, nombre_grupo, sucursal, chofer_asignado, fecha_creacion, usuario_creo, estado, notas FROM grupos_rutas WHERE id = ? LIMIT 1';
+            $stG = $conn->prepare($sqlG);
+            $stG->bind_param('i', $__grupoId);
+        }
+        $stG->execute();
+        $resG = $stG->get_result();
+        if (!$resG || $resG->num_rows === 0) {
+            http_response_code(404);
+            echo json_encode(['ok' => false, 'error' => 'GRUPO_NOT_FOUND']);
+            exit;
+        }
+        $grupo = $resG->fetch_assoc();
+        $stG->close();
+        $__grupoId = (int)$grupo['id'];
+
+        // Filtros
+        $where = ['pg.grupo_id = ?'];
+        $types = 'i';
+        $params = [$__grupoId];
+        if ($__sucursal !== null && $__sucursal !== '') { $where[] = 'p.SUCURSAL = ?'; $types .= 's'; $params[] = $__sucursal; }
+        if ($__chofer !== null && $__chofer !== '') { $where[] = 'gr.chofer_asignado = ?'; $types .= 's'; $params[] = $__chofer; }
+        if ($__estado !== null && $__estado !== '') { $where[] = 'p.ESTADO = ?'; $types .= 's'; $params[] = $__estado; }
+        if ($__fDesde !== null) { $where[] = 'p.FECHA_ENTREGA_CLIENTE >= ?'; $types .= 's'; $params[] = $__fDesde; }
+        if ($__fHasta !== null) { $where[] = 'p.FECHA_ENTREGA_CLIENTE <= ?'; $types .= 's'; $params[] = $__fHasta; }
+        $whereSql = implode(' AND ', $where);
+
+        // Total
+        $sqlCount = "SELECT COUNT(*) AS total FROM pedidos_grupos pg INNER JOIN pedidos p ON p.ID = pg.pedido_id INNER JOIN grupos_rutas gr ON gr.id = pg.grupo_id WHERE $whereSql";
+        $stC = $conn->prepare($sqlCount);
+        $stC->bind_param($types, ...$params);
+        $stC->execute();
+        $resC = $stC->get_result();
+        $total = 0; if ($resC && $resC->num_rows > 0) { $tmp = $resC->fetch_assoc(); $total = (int)$tmp['total']; }
+        $stC->close();
+
+        // Datos
+        $sql = "SELECT p.*, pg.orden_entrega, pg.fecha_asignacion FROM pedidos_grupos pg INNER JOIN pedidos p ON p.ID = pg.pedido_id INNER JOIN grupos_rutas gr ON gr.id = pg.grupo_id WHERE $whereSql ORDER BY pg.orden_entrega ASC, p.ID ASC LIMIT ? OFFSET ?";
+        $st = $conn->prepare($sql);
+        $types2 = $types . 'ii';
+        $params2 = array_merge($params, [ $__limit, $__offset ]);
+        $st->bind_param($types2, ...$params2);
+        $st->execute();
+        $res = $st->get_result();
+        $items = [];
+        while ($row = $res->fetch_assoc()) {
+            $items[] = [
+                'ID' => $row['ID'] ?? null,
+                'FACTURA' => $row['FACTURA'] ?? null,
+                'SUCURSAL' => $row['SUCURSAL'] ?? null,
+                'ESTADO' => $row['ESTADO'] ?? null,
+                'CHOFER_ASIGNADO' => $row['CHOFER_ASIGNADO'] ?? null,
+                'VENDEDOR' => $row['VENDEDOR'] ?? null,
+                'NOMBRE_CLIENTE' => $row['NOMBRE_CLIENTE'] ?? null,
+                'DIRECCION' => $row['DIRECCION'] ?? null,
+                'TELEFONO' => $row['TELEFONO'] ?? null,
+                'CONTACTO' => $row['CONTACTO'] ?? null,
+                'FECHA_RECEPCION_FACTURA' => $row['FECHA_RECEPCION_FACTURA'] ?? null,
+                'FECHA_ENTREGA_CLIENTE' => $row['FECHA_ENTREGA_CLIENTE'] ?? null,
+                'FECHA_MIN_ENTREGA' => $row['FECHA_MIN_ENTREGA'] ?? null,
+                'FECHA_MAX_ENTREGA' => $row['FECHA_MAX_ENTREGA'] ?? null,
+                'MIN_VENTANA_HORARIA_1' => $row['MIN_VENTANA_HORARIA_1'] ?? null,
+                'MAX_VENTANA_HORARIA_1' => $row['MAX_VENTANA_HORARIA_1'] ?? null,
+                'Ruta' => $row['Ruta'] ?? null,
+                'Coord_Origen' => $row['Coord_Origen'] ?? null,
+                'Coord_Destino' => $row['Coord_Destino'] ?? null,
+                'Ruta_Fotos' => $row['Ruta_Fotos'] ?? null,
+                'COMENTARIOS' => $row['COMENTARIOS'] ?? null,
+                'estado_factura_caja' => $row['estado_factura_caja'] ?? null,
+                'fecha_entrega_jefe' => $row['fecha_entrega_jefe'] ?? null,
+                'usuario_entrega_jefe' => $row['usuario_entrega_jefe'] ?? null,
+                'fecha_devolucion_caja' => $row['fecha_devolucion_caja'] ?? null,
+                'usuario_devolucion_caja' => $row['usuario_devolucion_caja'] ?? null,
+                'precio_factura_vendedor' => $row['precio_factura_vendedor'] ?? null,
+                'precio_factura_real' => $row['precio_factura_real'] ?? null,
+                'precio_validado_jc' => $row['precio_validado_jc'] ?? null,
+                'fecha_validacion_precio' => $row['fecha_validacion_precio'] ?? null,
+                'usuario_validacion_precio' => $row['usuario_validacion_precio'] ?? null,
+                'tiene_destinatario_capturado' => $row['tiene_destinatario_capturado'] ?? null,
+                'orden_entrega' => isset($row['orden_entrega']) ? (int)$row['orden_entrega'] : null,
+                'fecha_asignacion' => $row['fecha_asignacion'] ?? null,
+            ];
+        }
+        $st->close();
+
+        $grupoOut = [
+            'id' => (int)$grupo['id'],
+            'nombre' => $grupo['nombre_grupo'] ?? null,
+            'sucursal' => $grupo['sucursal'] ?? null,
+            'chofer_asignado' => $grupo['chofer_asignado'] ?? null,
+            'fecha_creacion' => $grupo['fecha_creacion'] ?? null,
+            'usuario_creo' => $grupo['usuario_creo'] ?? null,
+            'estado' => $grupo['estado'] ?? null,
+            'notas' => $grupo['notas'] ?? null,
+        ];
+
+        ob_clean();
+        echo json_encode([
+            'ok' => true,
+            'grupo' => $grupoOut,
+            'page' => (int)$__page,
+            'limit' => (int)$__limit,
+            'total' => (int)$total,
+            'pedidos' => $items,
+        ]);
+        exit;
+    } catch (Throwable $e) {
+        http_response_code(500);
+        echo json_encode(['ok' => false, 'error' => 'ERROR']);
+        exit;
+    }
+}
+
 // Verificar si se recibió el parámetro 'username'
 if (!isset($_GET['username'])) {
     die("Error: Falta el parámetro 'username'");
