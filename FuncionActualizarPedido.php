@@ -55,6 +55,31 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 echo '<script>alert("ERROR: No puedes asignar un chofer sin antes validar el precio de la factura."); window.history.back();</script>';
                 exit;
             }
+
+            // VALIDACIÓN: Verificar que el chofer tenga un vehículo asignado
+            $sqlVerificarVehiculo = "SELECT COUNT(v.id_vehiculo) AS tiene_vehiculo
+                                     FROM choferes c
+                                     LEFT JOIN vehiculos v ON v.id_chofer_asignado = c.ID AND v.Sucursal = c.Sucursal
+                                     WHERE c.username = ? AND c.Estado = 'ACTIVO'
+                                     GROUP BY c.ID";
+            $stmtVerificar = $conn->prepare($sqlVerificarVehiculo);
+            $stmtVerificar->bind_param("s", $nuevo_valor);
+            $stmtVerificar->execute();
+            $resultVerificar = $stmtVerificar->get_result();
+
+            if ($rowVerificar = $resultVerificar->fetch_assoc()) {
+                $tieneVehiculo = (int)$rowVerificar['tiene_vehiculo'];
+                if ($tieneVehiculo == 0) {
+                    $stmtVerificar->close();
+                    echo '<script>alert("ERROR: El chofer ' . $nuevo_valor . ' no tiene un vehículo asignado. Debe asignarle un vehículo antes de asignarlo a un pedido."); window.history.back();</script>';
+                    exit;
+                }
+            } else {
+                $stmtVerificar->close();
+                echo '<script>alert("ERROR: El chofer ' . $nuevo_valor . ' no existe o no está activo."); window.history.back();</script>';
+                exit;
+            }
+            $stmtVerificar->close();
         }
 
         if($valor_actual !== $nuevo_valor){

@@ -588,7 +588,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
       </div>
 
       <!-- 2. Filtrar por Grupo -->
-      <div style="margin-bottom: 15px; padding-bottom: 12px; border-bottom: 1px solid #dee2e6;">
+      <div style="margin-bottom: 15px; padding-bottom: 12px; border-bottom: 1px solid #dee2e6;    margin-left: 37px;">
         <label class="label" style="font-weight: bold; font-size: 13px; margin-bottom: 8px; display: block; color: #495057;">Filtrar por Grupo:</label>
         <select id="filtroGrupo" name="filtroGrupo" style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 13px; box-sizing: border-box; margin-bottom: 8px;">
           <option value="">Todos los pedidos</option>
@@ -599,7 +599,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
       </div>
 
       <!-- 3. Rango de Fechas -->
-      <div style="margin-bottom: 15px; padding-bottom: 12px; border-bottom: 1px solid #dee2e6;     padding-right: 79px;">
+      <div style="margin-bottom: 15px; padding-bottom: 12px; border-bottom: 1px solid #dee2e6;     padding-right: 79px;margin-left: 74px;">
         <label class="label" style="font-weight: bold; font-size: 13px; margin-bottom: 8px; display: block; color: #495057;">Rango de Fechas:</label>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
           <div>

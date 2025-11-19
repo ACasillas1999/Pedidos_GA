@@ -125,6 +125,25 @@ if ($checklist_obs && $checklist_obs instanceof mysqli_result) {
 // Lista de sucursales disponibles (para cambiar sucursal)
 $lista_sucursales = $conn->query("SELECT DISTINCT Sucursal AS suc FROM choferes WHERE Sucursal IS NOT NULL AND Sucursal<>'' ORDER BY Sucursal");
 
+// Historial de servicios realizados al vehículo
+$hist_servicios = $conn->query("
+  SELECT
+    os.id,
+    os.id_servicio,
+    s.nombre AS nombre_servicio,
+    os.duracion_minutos,
+    os.notas,
+    os.creado_en,
+    os.estatus,
+    os.fecha_programada,
+    s.costo_mano_obra,
+    s.precio
+  FROM orden_servicio os
+  LEFT JOIN servicios s ON os.id_servicio = s.id
+  WHERE os.id_vehiculo = {$id_vehiculo}
+  ORDER BY os.creado_en DESC
+");
+
 // ------- WhatsApp (igual que tenías) -------
 $whatsapp_token  = "EAAGacaATjwEBOZBgqhohcVk1ZBGEAbiTl7i86qESvSPjdllaomwzIG7LmOOvyTFpzyIlXX6dtTYTVTLLuw6SjaLoh2rec07I8qu1nGNYSVZAmQTGNa3QCQjujTqfd7QuLLwFNQllnX2z1V7JvToDhEi5KVqUWXHSqgSETvGyU7S2SN2fpXW0NpQaRI48pwZAgGS7A1BQMjLl5ZBjy";
 $phone_number_id = "335894526282507";
@@ -1181,8 +1200,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'desas
             <a href="#obs" class="tab" data-tab="obs">Observaciones</a>
 
             <a href="#gas" class="tab" data-tab="gas">Gasolina</a>
-            <a href="#ext" class="tab" data-tab="ext">MAPA GPS</a>
-
+            <!--<a href="#ext" class="tab" data-tab="ext">MAPA GPS</a>
+                -->   <a href="#serv" class="tab" data-tab="serv">Servicios</a>
 
         </div>
 
@@ -1523,7 +1542,118 @@ function fmtDuracion($min){
         </p>
     </section>
 
-    
+    <!-- Historial de Servicios -->
+    <section id="pane-serv" class="tab-pane" style="display:none">
+        <h3 style="margin:0 0 15px 0">Historial de Servicios</h3>
+
+        <?php
+        $total_servicios = 0;
+        $costo_total = 0;
+        $servicios_array = [];
+
+        if ($hist_servicios && $hist_servicios->num_rows > 0) {
+            while ($srv = $hist_servicios->fetch_assoc()) {
+                $servicios_array[] = $srv;
+                $total_servicios++;
+                $costo_total += floatval($srv['precio'] ?? 0);
+            }
+        }
+        ?>
+
+        <!-- Resumen -->
+        <div style="display:flex;gap:15px;margin-bottom:20px;flex-wrap:wrap">
+            <div style="background:#f0f9ff;padding:15px 20px;border-radius:10px;border-left:4px solid #0ea5e9">
+                <div style="font-size:0.85rem;color:#64748b">Total de servicios</div>
+                <div style="font-size:1.5rem;font-weight:600;color:#0369a1"><?= $total_servicios ?></div>
+            </div>
+            <div style="background:#f0fdf4;padding:15px 20px;border-radius:10px;border-left:4px solid #22c55e">
+                <div style="font-size:0.85rem;color:#64748b">Costo total</div>
+                <div style="font-size:1.5rem;font-weight:600;color:#15803d">$<?= number_format($costo_total, 2) ?></div>
+            </div>
+        </div>
+
+        <?php if (count($servicios_array) > 0): ?>
+        <div style="overflow-x:auto">
+            <table class="tbl-km" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Servicio</th>
+                        <th>Duración</th>
+                        <th>Costo</th>
+                        <th>Estatus</th>
+                        <th>Fecha Programada</th>
+                        <th>Creado</th>
+                        <th>Notas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($servicios_array as $srv): ?>
+                    <tr>
+                        <td><?= htmlspecialchars($srv['id']) ?></td>
+                        <td>
+                            <?php if ($srv['nombre_servicio']): ?>
+                                <strong><?= htmlspecialchars($srv['nombre_servicio']) ?></strong>
+                            <?php else: ?>
+                                <span style="color:#94a3b8;font-style:italic">Sin especificar</span>
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <?php if ($srv['duracion_minutos']): ?>
+                                <?= $srv['duracion_minutos'] ?> min
+                            <?php else: ?>
+                                -
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <?php if ($srv['precio']): ?>
+                                $<?= number_format($srv['precio'], 2) ?>
+                            <?php else: ?>
+                                -
+                            <?php endif; ?>
+                        </td>
+                        <td>
+                            <?php
+                            $estatus = $srv['estatus'] ?? 'Pendiente';
+                            $color = match($estatus) {
+                                'Completado' => '#22c55e',
+                                'EnTaller' => '#f59e0b',
+                                'Programado' => '#3b82f6',
+                                'Cancelado' => '#ef4444',
+                                default => '#64748b'
+                            };
+                            ?>
+                            <span style="background:<?= $color ?>22;color:<?= $color ?>;padding:4px 8px;border-radius:6px;font-size:0.85rem;font-weight:500">
+                                <?= htmlspecialchars($estatus) ?>
+                            </span>
+                        </td>
+                        <td>
+                            <?php if ($srv['fecha_programada']): ?>
+                                <?= date('d/m/Y', strtotime($srv['fecha_programada'])) ?>
+                            <?php else: ?>
+                                -
+                            <?php endif; ?>
+                        </td>
+                        <td><?= date('d/m/Y H:i', strtotime($srv['creado_en'])) ?></td>
+                        <td style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="<?= htmlspecialchars($srv['notas'] ?? '') ?>">
+                            <?= htmlspecialchars($srv['notas'] ?? '-') ?>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <?php else: ?>
+        <div style="text-align:center;padding:40px;color:#64748b;background:#f8fafc;border-radius:10px">
+            <svg style="width:48px;height:48px;margin-bottom:10px;opacity:0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+            </svg>
+            <p style="margin:0;font-size:1.1rem">No hay servicios registrados para este vehículo</p>
+        </div>
+        <?php endif; ?>
+    </section>
+
+
 
 
     <!-- ================= MODALES ================= -->
@@ -1761,7 +1891,7 @@ function fmtDuracion($min){
             obs: document.getElementById('pane-obs'),
             gas: document.getElementById('pane-gas'),
             ext: document.getElementById('pane-ext'),
-            
+            serv: document.getElementById('pane-serv'),
         };
         tabs.forEach(btn => {
             btn.addEventListener('click', e => {

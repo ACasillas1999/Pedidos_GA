@@ -542,7 +542,7 @@ $seccion = isset($_GET['seccion']) ? $_GET['seccion'] : 'resumen';
     }
     ?>
 
-    <div style="text-align: center; margin-top: 30px;">
+    <div style="position: absolute; top: 20px; left: 20px; z-index: 999;">
         <a href="Pedidos_GA.php" style="background: #6c757d; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none;">← Volver al Inicio</a>
     </div>
 </div>

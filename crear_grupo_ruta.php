@@ -57,6 +57,37 @@ if (empty($chofer)) {
     exit;
 }
 
+// VALIDACIÓN: Verificar que el chofer tenga un vehículo asignado
+$sqlVerificarVehiculo = "SELECT COUNT(v.id_vehiculo) AS tiene_vehiculo
+                         FROM choferes c
+                         LEFT JOIN vehiculos v ON v.id_chofer_asignado = c.ID AND v.Sucursal = c.Sucursal
+                         WHERE c.username = ? AND c.Estado = 'ACTIVO'
+                         GROUP BY c.ID";
+$stmtVerificar = $conn->prepare($sqlVerificarVehiculo);
+$stmtVerificar->bind_param("s", $chofer);
+$stmtVerificar->execute();
+$resultVerificar = $stmtVerificar->get_result();
+
+if ($rowVerificar = $resultVerificar->fetch_assoc()) {
+    $tieneVehiculo = (int)$rowVerificar['tiene_vehiculo'];
+    if ($tieneVehiculo == 0) {
+        $stmtVerificar->close();
+        echo json_encode([
+            "success" => false,
+            "message" => "El chofer '$chofer' no tiene un vehículo asignado. Debe asignarle un vehículo antes de crear un grupo."
+        ]);
+        exit;
+    }
+} else {
+    $stmtVerificar->close();
+    echo json_encode([
+        "success" => false,
+        "message" => "El chofer '$chofer' no existe o no está activo."
+    ]);
+    exit;
+}
+$stmtVerificar->close();
+
 // VALIDACIÓN: Verificar que todos los pedidos sean de la misma sucursal
 // Excepción: ILUMINACION y TAPATIA se pueden mezclar
 $pedidosIds = array_column($pedidos, 'id');
@@ -175,7 +206,7 @@ try {
         }
         $stmtAsociar->close();
 
-        // 2c. Registrar en historial de cambios
+        // 2d. Registrar en historial de cambios
         $sqlHistorial = "INSERT INTO historial_cambios (Pedido_ID, Usuario_ID, Cambio, Fecha_Hora) VALUES (?, ?, ?, NOW())";
         $descripcionCambio = "Asignado a chofer '$chofer' en grupo '$nombreGrupo'";
         $stmtHistorial = $conn->prepare($sqlHistorial);
@@ -183,39 +214,48 @@ try {
         $stmtHistorial->execute();
         $stmtHistorial->close();
 
-        // 2d. Obtener información del pedido para notificación WhatsApp
-        $sqlPedido = "SELECT FACTURA, NOMBRE_CLIENTE, DIRECCION FROM pedidos WHERE ID = ?";
-        $stmtPedido = $conn->prepare($sqlPedido);
-        $stmtPedido->bind_param("i", $pedidoId);
-        $stmtPedido->execute();
-        $resultPedido = $stmtPedido->get_result();
-
-        if ($rowPedido = $resultPedido->fetch_assoc()) {
-            // 2e. Obtener teléfono del chofer
-            $sqlChofer = "SELECT Numero FROM choferes WHERE username = ?";
-            $stmtChofer = $conn->prepare($sqlChofer);
-            $stmtChofer->bind_param("s", $chofer);
-            $stmtChofer->execute();
-            $resultChofer = $stmtChofer->get_result();
-
-            if ($rowChofer = $resultChofer->fetch_assoc()) {
-                $telefonoChofer = $rowChofer['Numero'];
-
-                // Preparar mensaje para WhatsApp (opcional - se puede implementar después)
-                // $mensaje = "Nuevo pedido asignado en grupo '$nombreGrupo':\n";
-                // $mensaje .= "Factura: " . $rowPedido['FACTURA'] . "\n";
-                // $mensaje .= "Cliente: " . $rowPedido['NOMBRE_CLIENTE'] . "\n";
-                // $mensaje .= "Dirección: " . $rowPedido['DIRECCION'] . "\n";
-                // $mensaje .= "Total de pedidos en ruta: " . count($pedidos);
-
-                // TODO: Implementar envío de WhatsApp si se requiere
-                // Se puede agregar aquí la integración con API de WhatsApp
-            }
-            $stmtChofer->close();
-        }
-        $stmtPedido->close();
-
         $pedidosActualizados++;
+    }
+
+    // 3. Enviar notificación de WhatsApp al chofer (una sola vez después de procesar todos los pedidos)
+    if ($pedidosActualizados > 0) {
+        // Obtener teléfono del chofer
+        $sqlChofer = "SELECT Numero FROM choferes WHERE username = ?";
+        $stmtChofer = $conn->prepare($sqlChofer);
+        $stmtChofer->bind_param("s", $chofer);
+        $stmtChofer->execute();
+        $resultChofer = $stmtChofer->get_result();
+
+        if ($rowChofer = $resultChofer->fetch_assoc()) {
+            $telefonoChofer = $rowChofer['Numero'];
+            $telefono = "52{$telefonoChofer}";
+
+            // TOKEN Y URL de WhatsApp (mismo que en FuncionActualizarPedido.php)
+            $token = 'EAAGacaATjwEBOZBgqhohcVk1ZBGEAbiTl7i86qESvSPjdllaomwzIG7LmOOvyTFpzyIlXX6dtTYTVTLLuw6SjaLoh2rec07I8qu1nGNYSVZAmQTGNa3QCQjujTqfd7QuLLwFNQllnX2z1V7JvToDhEi5KVqUWXHSqgSETvGyU7S2SN2fpXW0NpQaRI48pwZAgGS7A1BQMjLl5ZBjy';
+            $url = 'https://graph.facebook.com/v19.0/335894526282507/messages';
+
+            // Configuración del mensaje (mismo template que cuando se asigna chofer individual)
+            $mensaje = json_encode([
+                "messaging_product" => "whatsapp",
+                "to" => $telefono,
+                "type" => "template",
+                "template" => [
+                    "name" => "ga_notificarchofer",
+                    "language" => ["code" => "en_US"],
+                ]
+            ]);
+
+            // Enviar mensaje
+            $header = ["Authorization: Bearer {$token}", "Content-Type: application/json"];
+            $curl = curl_init();
+            curl_setopt($curl, CURLOPT_URL, $url);
+            curl_setopt($curl, CURLOPT_POSTFIELDS, $mensaje);
+            curl_setopt($curl, CURLOPT_HTTPHEADER, $header);
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+            $response = json_decode(curl_exec($curl), true);
+            curl_close($curl);
+        }
+        $stmtChofer->close();
     }
 
     // Commit de la transacción

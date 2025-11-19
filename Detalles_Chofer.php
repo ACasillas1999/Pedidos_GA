@@ -181,6 +181,36 @@ while ($row = $r->fetch_assoc()) {
 }
 $stmt->close();
 
+// Observaciones del checklist vehicular hechas por el chofer
+$observacionesChofer = [];
+$stmt = $conn->prepare("
+  SELECT
+    cv.id,
+    cv.id_vehiculo,
+    v.placa,
+    v.numero_serie,
+    cv.fecha_inspeccion,
+    cv.kilometraje,
+    cv.seccion,
+    cv.item,
+    cv.calificacion,
+    cv.observaciones_rotulado,
+    cv.resuelto,
+    cv.fecha_resolucion
+  FROM checklist_vehicular cv
+  LEFT JOIN vehiculos v ON v.id_vehiculo = cv.id_vehiculo
+  WHERE cv.id_chofer = ?
+  ORDER BY cv.fecha_inspeccion DESC, cv.id DESC
+  LIMIT 200
+");
+$stmt->bind_param("i", $idChofer);
+$stmt->execute();
+$r = $stmt->get_result();
+while ($row = $r->fetch_assoc()) {
+  $observacionesChofer[] = $row;
+}
+$stmt->close();
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -609,6 +639,7 @@ $stmt->close();
         <button data-tab="pedidos">Pedidos recientes</button>
         <button data-tab="vehiculos">Vehículos (sucursal)</button>
         <button data-tab="historial">Historial vehículos</button>
+        <button data-tab="observaciones">Observaciones</button>
         <button data-tab="contacto">Contacto</button>
       </div>
 
@@ -899,6 +930,200 @@ $stmt->close();
 
 
 
+      <!-- Sección de Observaciones del Chofer -->
+      <section id="tab-observaciones" class="tab">
+        <h3 style="margin:0 0 15px 0">Observaciones realizadas por el chofer</h3>
+
+        <?php
+        $total_obs = count($observacionesChofer);
+        $obs_mal = 0;
+        $obs_resueltas = 0;
+        foreach ($observacionesChofer as $obs) {
+          if ($obs['calificacion'] === 'Mal') $obs_mal++;
+          if ($obs['resuelto']) $obs_resueltas++;
+        }
+        ?>
+
+        <!-- Resumen -->
+        <div style="display:flex;gap:15px;margin-bottom:20px;flex-wrap:wrap">
+          <div style="background:#f0f9ff;padding:15px 20px;border-radius:10px;border-left:4px solid #0ea5e9">
+            <div style="font-size:0.85rem;color:#64748b">Total inspecciones</div>
+            <div style="font-size:1.5rem;font-weight:600;color:#0369a1"><?= $total_obs ?></div>
+          </div>
+          <div style="background:#fef2f2;padding:15px 20px;border-radius:10px;border-left:4px solid #ef4444">
+            <div style="font-size:0.85rem;color:#64748b">Reportes "Mal"</div>
+            <div style="font-size:1.5rem;font-weight:600;color:#dc2626"><?= $obs_mal ?></div>
+          </div>
+          <div style="background:#f0fdf4;padding:15px 20px;border-radius:10px;border-left:4px solid #22c55e">
+            <div style="font-size:0.85rem;color:#64748b">Resueltas</div>
+            <div style="font-size:1.5rem;font-weight:600;color:#15803d"><?= $obs_resueltas ?></div>
+          </div>
+        </div>
+
+        <?php if ($total_obs > 0): ?>
+        <!-- Controles de paginación -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;flex-wrap:wrap;gap:10px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <label style="font-size:0.9rem;color:#64748b">Mostrar:</label>
+            <select id="obs-per-page" style="padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:0.9rem">
+              <option value="10">10</option>
+              <option value="20" selected>20</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </div>
+          <div id="obs-pagination-info" style="font-size:0.9rem;color:#64748b"></div>
+          <div id="obs-pagination-controls" style="display:flex;gap:5px"></div>
+        </div>
+
+        <div style="overflow-x:auto">
+          <table class="table" style="width:100%" id="obs-table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Vehículo</th>
+                <th>Km</th>
+                <th>Sección</th>
+                <th>Item</th>
+                <th>Calificación</th>
+                <th>Observaciones</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody id="obs-tbody">
+              <?php foreach ($observacionesChofer as $idx => $obs): ?>
+              <tr class="obs-row" data-index="<?= $idx ?>">
+                <td><?= date('d/m/Y H:i', strtotime($obs['fecha_inspeccion'])) ?></td>
+                <td>
+                  <?php if ($obs['id_vehiculo']): ?>
+                    <a href="detalles_vehiculo.php?id=<?= $obs['id_vehiculo'] ?>" style="color:#0369a1;text-decoration:none">
+                      <?= e($obs['placa'] ?: $obs['numero_serie'] ?: 'ID: '.$obs['id_vehiculo']) ?>
+                    </a>
+                  <?php else: ?>
+                    -
+                  <?php endif; ?>
+                </td>
+                <td><?= $obs['kilometraje'] ? number_format($obs['kilometraje']) : '-' ?></td>
+                <td><?= e($obs['seccion']) ?></td>
+                <td><?= e($obs['item']) ?></td>
+                <td>
+                  <?php
+                  $calif = $obs['calificacion'];
+                  $color = match($calif) {
+                    'Bien' => '#22c55e',
+                    'Mal' => '#ef4444',
+                    'N/A' => '#64748b',
+                    default => '#64748b'
+                  };
+                  ?>
+                  <span style="background:<?= $color ?>22;color:<?= $color ?>;padding:4px 8px;border-radius:6px;font-size:0.85rem;font-weight:500">
+                    <?= e($calif) ?>
+                  </span>
+                </td>
+                <td style="max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="<?= e($obs['observaciones_rotulado'] ?? '') ?>">
+                  <?= e($obs['observaciones_rotulado'] ?: '-') ?>
+                </td>
+                <td>
+                  <?php if ($obs['resuelto']): ?>
+                    <span style="background:#22c55e22;color:#22c55e;padding:4px 8px;border-radius:6px;font-size:0.85rem">
+                      Resuelto
+                      <?php if ($obs['fecha_resolucion']): ?>
+                        <br><small><?= date('d/m/Y', strtotime($obs['fecha_resolucion'])) ?></small>
+                      <?php endif; ?>
+                    </span>
+                  <?php else: ?>
+                    <?php if ($calif === 'Mal'): ?>
+                      <span style="background:#f59e0b22;color:#f59e0b;padding:4px 8px;border-radius:6px;font-size:0.85rem">Pendiente</span>
+                    <?php else: ?>
+                      -
+                    <?php endif; ?>
+                  <?php endif; ?>
+                </td>
+              </tr>
+              <?php endforeach; ?>
+            </tbody>
+          </table>
+        </div>
+
+        <script>
+        (function() {
+          const rows = document.querySelectorAll('.obs-row');
+          const totalRows = rows.length;
+          const perPageSelect = document.getElementById('obs-per-page');
+          const info = document.getElementById('obs-pagination-info');
+          const controls = document.getElementById('obs-pagination-controls');
+          let currentPage = 1;
+          let perPage = parseInt(perPageSelect.value);
+
+          function render() {
+            const totalPages = Math.ceil(totalRows / perPage);
+            const start = (currentPage - 1) * perPage;
+            const end = start + perPage;
+
+            // Mostrar/ocultar filas
+            rows.forEach((row, i) => {
+              row.style.display = (i >= start && i < end) ? '' : 'none';
+            });
+
+            // Info
+            const showing = Math.min(end, totalRows);
+            info.textContent = `Mostrando ${start + 1}-${showing} de ${totalRows}`;
+
+            // Controles
+            let html = '';
+
+            // Anterior
+            html += `<button onclick="obsGoPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}
+                     style="padding:6px 12px;border:1px solid #e2e8f0;border-radius:6px;background:${currentPage === 1 ? '#f1f5f9' : '#fff'};cursor:${currentPage === 1 ? 'not-allowed' : 'pointer'}">
+                     &laquo;
+                     </button>`;
+
+            // Páginas
+            for (let i = 1; i <= totalPages; i++) {
+              if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                html += `<button onclick="obsGoPage(${i})"
+                         style="padding:6px 12px;border:1px solid ${i === currentPage ? '#0369a1' : '#e2e8f0'};border-radius:6px;background:${i === currentPage ? '#0369a1' : '#fff'};color:${i === currentPage ? '#fff' : '#333'};cursor:pointer">
+                         ${i}
+                         </button>`;
+              } else if (i === currentPage - 3 || i === currentPage + 3) {
+                html += `<span style="padding:6px">...</span>`;
+              }
+            }
+
+            // Siguiente
+            html += `<button onclick="obsGoPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}
+                     style="padding:6px 12px;border:1px solid #e2e8f0;border-radius:6px;background:${currentPage === totalPages ? '#f1f5f9' : '#fff'};cursor:${currentPage === totalPages ? 'not-allowed' : 'pointer'}">
+                     &raquo;
+                     </button>`;
+
+            controls.innerHTML = html;
+          }
+
+          window.obsGoPage = function(page) {
+            const totalPages = Math.ceil(totalRows / perPage);
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            render();
+          };
+
+          perPageSelect.addEventListener('change', () => {
+            perPage = parseInt(perPageSelect.value);
+            currentPage = 1;
+            render();
+          });
+
+          render();
+        })();
+        </script>
+        <?php else: ?>
+        <div style="text-align:center;padding:40px;color:#64748b;background:#f8fafc;border-radius:10px">
+          <svg style="width:48px;height:48px;margin-bottom:10px;opacity:0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+          </svg>
+          <p style="margin:0;font-size:1.1rem">Este chofer no ha realizado inspecciones de vehículos</p>
+        </div>
+        <?php endif; ?>
+      </section>
 
       <section id="tab-contacto" class="tab">
         <?php if ($telDigits): ?>
