@@ -301,7 +301,7 @@ $nuevo_kilometraje = $kmActualNuevo;
 // ------- Valores visuales -------
 $rawFoto = (string)($vehiculo['foto_path'] ?? '');
 $vehImg  = $rawFoto !== '' ? '/Pedidos_GA/' . ltrim($rawFoto, '/')
-    : '/Pedidos_GA/Img/vehiculos/placeholder_car.png';
+    : '//Img/vehiculos/placeholder_car.png';
 
 $placa = (string)($vehiculo['placa'] ?? '');
 $tipoV = (string)($vehiculo['tipo'] ?? '');
@@ -560,7 +560,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'desas
 <head>
     <meta charset="utf-8">
     <title>Detalles del Vehículo</title>
-    <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+    <link rel="icon" type="image/png" href="//Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
     <style>
         :root {
             --brand: #005aa3;

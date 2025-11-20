@@ -158,7 +158,7 @@ $Tiempo_Requerido_Aproximado = [
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detalle del Servicio</title>
     <link rel="stylesheet" href="styles7.css">
-    <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png"> 
+    <link rel="icon" type="image/png" href="//Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png"> 
    
     <style>
         body {
@@ -216,14 +216,14 @@ $Tiempo_Requerido_Aproximado = [
         <div class="logo">
     
 <a>Servicio</a>
-      <!--  <img src="\Pedidos_GA\Img\Botones entregas\RegistrarChofer\REGCHOFTIT.png" alt="Estadísticas " style="max-width: 15%; height: auto;">
+      <!--  <img src="/Img/Botones entregas\RegistrarChofer\REGCHOFTIT.png" alt="Estadísticas " style="max-width: 15%; height: auto;">
     -->
     </div>
         <nav class="navbar">
             <ul>
                 <li class="nav-item"><a href='detalles_vehiculo.php?id=<?= htmlspecialchars($servicio['id_vehiculo']) ?>' class="nav-link">
 
-                <img src="\Pedidos_GA\Img\Botones entregas\RegistrarChofer\VOLVAZ.png" alt="Choferes"class = "icono-Volver"style="max-width: 5%; height: auto; position:absolute; top: 70px; left: 25px;">
+                <img src="/Img/Botones entregas\RegistrarChofer\VOLVAZ.png" alt="Choferes"class = "icono-Volver"style="max-width: 5%; height: auto; position:absolute; top: 70px; left: 25px;">
                </a></li>
                <p></p>
             </ul>

@@ -34,7 +34,7 @@ while ($v = $qVehiculos->fetch_assoc()) {
   <meta charset="utf-8">
   <title>Inventario</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+  <link rel="icon" type="image/png" href="//Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
   <link rel="stylesheet" href="../styles.css">
 <style>
   /* ===== Paleta
@@ -156,8 +156,8 @@ while ($v = $qVehiculos->fetch_assoc()) {
   document.addEventListener("DOMContentLoaded", function () {
     var iconoAgregarSer = document.querySelector(".icono-agregar_servicio");
     if (iconoAgregarSer) {
-        var imgNormalAgregarSer = "/Pedidos_GA/Img/SVG/CrearSerN.svg";
-        var imgHoverAgregarSer  = "/Pedidos_GA/Img/SVG/CrearSerB.svg";
+        var imgNormalAgregarSer = "//Img/SVG/CrearSerN.svg";
+        var imgHoverAgregarSer  = "//Img/SVG/CrearSerB.svg";
        iconoAgregarSer.addEventListener("mouseover", function(){ this.src = imgHoverAgregarSer; });
        iconoAgregarSer.addEventListener("mouseout",  function(){ this.src = imgNormalAgregarSer ; });
       }
@@ -165,8 +165,8 @@ while ($v = $qVehiculos->fetch_assoc()) {
 
     var iconoInvEstadisticas = document.querySelector(".icono-invEstadisticas");
     if (iconoInvEstadisticas) {
-        var imgNormalInvEstadisticas = "/Pedidos_GA/Img/SVG/EstaInventarioN.svg";
-        var imgHoverInvEstadisticas  = "/Pedidos_GA/Img/SVG/EstaInventarioB.svg";
+        var imgNormalInvEstadisticas = "//Img/SVG/EstaInventarioN.svg";
+        var imgHoverInvEstadisticas  = "//Img/SVG/EstaInventarioB.svg";
        iconoInvEstadisticas.addEventListener("mouseover", function(){ this.src = imgHoverInvEstadisticas ; });
        iconoInvEstadisticas.addEventListener("mouseout",  function(){ this.src = imgNormalInvEstadisticas  ; });
       }
@@ -179,17 +179,17 @@ while ($v = $qVehiculos->fetch_assoc()) {
     <ul>
       <li>
         <a href="agregar_servicio.php">
-          <img src="/Pedidos_GA/Img/SVG/CrearSerN.svg" class="icono-agregar_servicio sidebar-icon" alt="Agregar">
+          <img src="//Img/SVG/CrearSerN.svg" class="icono-agregar_servicio sidebar-icon" alt="Agregar">
         </a>
       </li>
       <li>
         <a href="inventario_estadisticas.php">
-          <img src="/Pedidos_GA/Img/SVG/EstaInventarioN.svg" class="icono-invEstadisticas sidebar-icon" alt="Inventario Estadistica">
+          <img src="//Img/SVG/EstaInventarioN.svg" class="icono-invEstadisticas sidebar-icon" alt="Inventario Estadistica">
         </a>
       </li>
       <li class="corner-left-bottom">
         <a href="../Servicios/Servicios.php">
-          <img src="/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Volver" class="icono-Volver" style="max-width:35%;height:auto;">
+          <img src="//Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Volver" class="icono-Volver" style="max-width:35%;height:auto;">
         </a>
       </li>
     </ul>

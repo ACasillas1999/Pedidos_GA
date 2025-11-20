@@ -20,7 +20,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 <html lang="es">
 <head>
     <title>Pedidos GA</title>
-    <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+    <link rel="icon" type="image/png" href="//Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="styles1.css">
@@ -35,8 +35,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         var iconoVChoferes = document.querySelector(".icono-VChoferes");
         
 
-        var imgNormalPVolver = "/Pedidos_GA/Img/Botones%20entregas/Inicio/VOLVER/VOLPEDNA.png";
-        var imgHoverPVolvers = "/Pedidos_GA/Img/Botones%20entregas/Inicio/VOLVER/VOLPEDBL.png";
+        var imgNormalPVolver = "//Img/Botones%20entregas/Inicio/VOLVER/VOLPEDNA.png";
+        var imgHoverPVolvers = "//Img/Botones%20entregas/Inicio/VOLVER/VOLPEDBL.png";
 
         // Cambiar la imagen al pasar el mouse para icono-PVovler
         if (iconoPVovler) {
@@ -48,8 +48,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
             });
         }
 
-        var imgNormalVChoferes = "/Pedidos_GA/Img/Botones%20entregas/Inicio/VOLVER/VOLCHOFNA.png";
-        var imgHoverVChoferes = "/Pedidos_GA/Img/Botones%20entregas/Inicio/VOLVER/VOLCHOFBL.png";
+        var imgNormalVChoferes = "//Img/Botones%20entregas/Inicio/VOLVER/VOLCHOFNA.png";
+        var imgHoverVChoferes = "//Img/Botones%20entregas/Inicio/VOLVER/VOLCHOFBL.png";
 
         // Cambiar la imagen al pasar el mouse para icono-VChoferes
         if (iconoVChoferes) {
@@ -70,15 +70,15 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
       <nav class="navbar">
             <ul>
                 <li class="nav-item "><a href="Pedidos_GA.php" class="nav-link ">
-                      <img src="\Pedidos_GA\Img\Botones entregas\Inicio\VOLVER\VOLPEDNA.png" alt="iconoVPedidos "class= "icono-PVovler" style="max-width: 30%; height: auto; "></a></li>
+                      <img src="/Img/Botones entregas\Inicio\VOLVER\VOLPEDNA.png" alt="iconoVPedidos "class= "icono-PVovler" style="max-width: 30%; height: auto; "></a></li>
                 
-        <div >  <img src="\Pedidos_GA\Img\Botones entregas\Inicio\DETPED2.png" alt="iconoVPedidos "class= "icono-registro" style="max-width: 40%; height: auto; "></div>
+        <div >  <img src="/Img/Botones entregas\Inicio\DETPED2.png" alt="iconoVPedidos "class= "icono-registro" style="max-width: 40%; height: auto; "></div>
                 
                 <li class="nav-item"><a href="Choferes.php" class="nav-link back-button">
                     
                     
                     
-                     <img src="\Pedidos_GA\Img\Botones entregas\Inicio\VOLVER\VOLCHOFNA.png" alt="AddRegistro "class= "icono-VChoferes" style="max-width: 30%; height: auto; ">
+                     <img src="/Img/Botones entregas\Inicio\VOLVER\VOLCHOFNA.png" alt="AddRegistro "class= "icono-VChoferes" style="max-width: 30%; height: auto; ">
                    </a></li>
             </ul>
         </nav>
@@ -135,7 +135,7 @@ document.addEventListener("DOMContentLoaded", function() {
     <p></p>
 
     <button class="icono-Maps" style="background: none; border: none; padding: 0;" onclick="openGoogleMaps()">
-        <img src="/Pedidos_GA/Img/Botones%20entregas/Inicio/DETPED/MAPSNA.png" alt="icono-Maps" class="icono-Maps-img" style="max-width: 50%; height: auto;">
+        <img src="//Img/Botones%20entregas/Inicio/DETPED/MAPSNA.png" alt="icono-Maps" class="icono-Maps-img" style="max-width: 50%; height: auto;">
     </button>
     
    
@@ -145,7 +145,7 @@ document.addEventListener("DOMContentLoaded", function() {
         <ul class="menu">
         <li class="icono-Home">
                 <a href="#">
-                <img src="/Pedidos_GA/Img/Botones%20entregas/Inicio/DETPED/HOMEBL.png" alt="icono-Home" class="icono-Home-img" style="max-width: 10%;">
+                <img src="//Img/Botones%20entregas/Inicio/DETPED/HOMEBL.png" alt="icono-Home" class="icono-Home-img" style="max-width: 10%;">
                </a><!--HOMEBL-->
             </li>
         </ul>
@@ -161,11 +161,11 @@ document.addEventListener("DOMContentLoaded", function() {
            
             var iconoHome = document.querySelector(".icono-Home-img");
 
-            var imgNormalMaps = "/Pedidos_GA/Img/Botones%20entregas/Inicio/DETPED/MAPSNA.png";
-            var imgHoverMaps = "/Pedidos_GA/Img/Botones%20entregas/Inicio/DETPED/ABRGMAZ.png";
+            var imgNormalMaps = "//Img/Botones%20entregas/Inicio/DETPED/MAPSNA.png";
+            var imgHoverMaps = "//Img/Botones%20entregas/Inicio/DETPED/ABRGMAZ.png";
 
-            var imgNormalHome = "/Pedidos_GA/Img/Botones%20entregas/Inicio/DETPED/HOMEBL.png";
-            var imgHoverHome = "/Pedidos_GA/Img/Botones%20entregas/Inicio/DETPED/HOMENA.png";
+            var imgNormalHome = "//Img/Botones%20entregas/Inicio/DETPED/HOMEBL.png";
+            var imgHoverHome = "//Img/Botones%20entregas/Inicio/DETPED/HOMENA.png";
 
             // Hover para el botón "Abrir en Google Maps"
             if (iconoMaps) {

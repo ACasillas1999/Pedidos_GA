@@ -68,11 +68,11 @@ $estadosPedidos = array();
 if ($result->num_rows > 0) {
     // Recorrer los resultados y agregarlos al array de estados de pedidos
     while($row = $result->fetch_assoc()) {
-        $estadoPedido = array(
+        $estadopedido = array(
             'estado' => $row['Estado'],
             'cantidad' => $row['cantidad']
         );
-        array_push($estadosPedidos, $estadoPedido);
+        array_push($estadosPedidos, $estadopedido);
     }
 } else {
     echo "No se encontraron pedidos asignados";

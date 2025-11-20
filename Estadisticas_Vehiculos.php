@@ -110,7 +110,7 @@ $conn->close();
     <title>Estadísticas de Vehículos</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+    <link rel="icon" type="image/png" href="//Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
         .container { width: 80%; margin: auto; }
@@ -253,14 +253,14 @@ $conn->close();
         <div class="logo">
     
 <h3>Estadísticas de Vehículos</h3>
-      <!--  <img src="\Pedidos_GA\Img\Botones entregas\RegistrarChofer\REGCHOFTIT.png" alt="Estadísticas " style="max-width: 15%; height: auto;">
+      <!--  <img src="/Img/Botones entregas\RegistrarChofer\REGCHOFTIT.png" alt="Estadísticas " style="max-width: 15%; height: auto;">
     -->
     </div>
         <nav class="navbar">
             <ul>
                 <li class="nav-item"><a href='vehiculos.php' class="nav-link">
                     
-                <img src="\Pedidos_GA\Img\Botones entregas\RegistrarChofer\VOLVAZ.png" alt="Choferes"class = "icono-Volver"style="max-width: 5%; height: auto; position:absolute; top: 70px; left: 25px;">
+                <img src="/Img/Botones entregas\RegistrarChofer\VOLVAZ.png" alt="Choferes"class = "icono-Volver"style="max-width: 5%; height: auto; position:absolute; top: 70px; left: 25px;">
                 
 
                 </a></li>

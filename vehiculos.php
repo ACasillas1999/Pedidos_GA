@@ -424,7 +424,7 @@ while ($c = $choferes->fetch_assoc()) {
 <head>
   <meta charset="utf-8" />
   <title>Gestión de Vehículos</title>
-  <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+  <link rel="icon" type="image/png" href="//Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     :root {
@@ -1026,26 +1026,26 @@ while ($c = $choferes->fetch_assoc()) {
       <?php if (($_SESSION["Rol"] ?? '') === "Admin"): ?>
         <li>
           <a href="NuevoVehiculo.php" title="Agregar Vehículo">
-            <img src="/Pedidos_GA/Img/Botones%20entregas/Choferes/ADDSERVMECNA.png" class="icono-AddChofer sidebar-icon" alt="Agregar">
+            <img src="//Img/Botones%20entregas/Choferes/ADDSERVMECNA.png" class="icono-AddChofer sidebar-icon" alt="Agregar">
           </a>
         </li>
       <?php endif; ?>
       <li>
         <a href="Estadisticas_Vehiculos.php" title="Estadísticas">
-          <img src="/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/ESTNA2.png" class="icono-estadisticas sidebar-icon" alt="Estadísticas">
+          <img src="//Img/Botones%20entregas/Pedidos_GA/ESTNA2.png" class="icono-estadisticas sidebar-icon" alt="Estadísticas">
         </a>
       </li>
 
       <li>
         <a href="/Pedidos_GA/Servicios/Servicios.php" title="servicios" aria-label="Servicios">
           <!--<i class="fa-sharp fa-solid fa-gears sidebar-icon small" style="font-size:48px;color:orange;"></i>-->
-          <img src="/Pedidos_GA/Img/SVG/ServiciosN.svg"  class="icono-servicios sidebar-icon" alt="Servicios">
+          <img src="//Img/SVG/ServiciosN.svg"  class="icono-servicios sidebar-icon" alt="Servicios">
         </a>
       </li>
 
       <li class="sidebar-bottom">
         <a href="Pedidos_GA.php" title="Volver">
-          <img src="/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVAZ.png" class="icono-Volver sidebar-icon small" alt="Volver">
+          <img src="//Img/Botones%20entregas/Usuario/VOLVAZ.png" class="icono-Volver sidebar-icon small" alt="Volver">
         </a>
       </li>
     </ul>
@@ -1495,26 +1495,26 @@ while ($c = $choferes->fetch_assoc()) {
       const iconoEstadisticas = document.querySelector(".icono-estadisticas");
       const iconoServicios = document.querySelector(".icono-servicios");
       if (iconoAddChofer) {
-        const n = "/Pedidos_GA/Img/Botones%20entregas/Choferes/ADDSERVMECNA.png",
-          h = "/Pedidos_GA/Img/Botones%20entregas/Choferes/ADDSERVMECBLANC.png";
+        const n = "//Img/Botones%20entregas/Choferes/ADDSERVMECNA.png",
+          h = "//Img/Botones%20entregas/Choferes/ADDSERVMECBLANC.png";
         iconoAddChofer.addEventListener("mouseover", () => iconoAddChofer.src = h);
         iconoAddChofer.addEventListener("mouseout", () => iconoAddChofer.src = n);
       }
       if (iconoVolver) {
-        const n = "/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVAZ.png",
-          h = "/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVNA.png";
+        const n = "//Img/Botones%20entregas/Usuario/VOLVAZ.png",
+          h = "//Img/Botones%20entregas/Usuario/VOLVNA.png";
         iconoVolver.addEventListener("mouseover", () => iconoVolver.src = h);
         iconoVolver.addEventListener("mouseout", () => iconoVolver.src = n);
       }
       if (iconoEstadisticas) {
-        const n = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/ESTNA2.png",
-          h = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/ESTBL2.png";
+        const n = "//Img/Botones%20entregas/Pedidos_GA/ESTNA2.png",
+          h = "//Img/Botones%20entregas/Pedidos_GA/ESTBL2.png";
         iconoEstadisticas.addEventListener("mouseover", () => iconoEstadisticas.src = h);
         iconoEstadisticas.addEventListener("mouseout", () => iconoEstadisticas.src = n);
       }
       if (iconoServicios) {
-        const n = "/Pedidos_GA/Img/SVG/ServiciosN.svg",
-          h = "/Pedidos_GA/Img/SVG/ServiciosB.svg";
+        const n = "//Img/SVG/ServiciosN.svg",
+          h = "//Img/SVG/ServiciosB.svg";
         iconoServicios.addEventListener("mouseover", () => iconoServicios.src = h);
         iconoServicios.addEventListener("mouseout", () => iconoServicios.src = n);
       }

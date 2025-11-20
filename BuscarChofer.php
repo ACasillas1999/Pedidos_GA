@@ -68,7 +68,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['busqueda'])) {
                 if($_SESSION["Rol"]=== "Admin"||$_SESSION["Rol"] === "JC"){
                    echo "<td><a href='Actualizar_choferes.php?id=" . $row["ID"] . "'>
                    
-                   '<img src='/Pedidos_GA/Img/Botones%20entregas/RegistrarChofer/ACTCHOFAZ.png' alt='Estaditicas ' class = 'icono-AddChofer'style='max-width: 50%; height: auto;'>
+                   '<img src='//Img/Botones%20entregas/RegistrarChofer/ACTCHOFAZ.png' alt='Estaditicas ' class = 'icono-AddChofer'style='max-width: 50%; height: auto;'>
                    
                    </a></td>"; 
                 }

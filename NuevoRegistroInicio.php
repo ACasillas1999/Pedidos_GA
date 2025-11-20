@@ -22,7 +22,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+    <link rel="icon" type="image/png" href="//Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
     <link rel="stylesheet" href="styles3.css">
     <title>Pedidos GA</title>
 
@@ -39,8 +39,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     var iconoVolver = document.querySelector(".icono-Volver");
     var iconoFAP = document.querySelector(".icono-FAP-img");
 
-    var imgNormalVolver = "/Pedidos_GA/Img/Botones%20entregas/RegistrarChofer/VOLVAZ.png";
-    var imgHoverVolver = "/Pedidos_GA/Img/Botones%20entregas/RegistrarChofer/VOLVNA.png";
+    var imgNormalVolver = "//Img/Botones%20entregas/RegistrarChofer/VOLVAZ.png";
+    var imgHoverVolver = "//Img/Botones%20entregas/RegistrarChofer/VOLVNA.png";
 
     // Cambiar la imagen al pasar el mouse para Volver
     if (iconoVolver) {
@@ -53,8 +53,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         });
     }
 
-    var imgNormalFAP = "/Pedidos_GA/Img/Botones%20entregas/Inicio/DETPED/AGPEDNA.png";
-    var imgHoverFAP = "/Pedidos_GA/Img/Botones%20entregas/Inicio/DETPED/AGPEDAZ.png";
+    var imgNormalFAP = "//Img/Botones%20entregas/Inicio/DETPED/AGPEDNA.png";
+    var imgHoverFAP = "//Img/Botones%20entregas/Inicio/DETPED/AGPEDAZ.png";
 
     // Cambiar la imagen al pasar el mouse para FAP
     if (iconoFAP) {
@@ -75,13 +75,13 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     
     
      <header class="header">
-        <div class="logo"><img src="\Pedidos_GA\Img\Botones entregas\NuevoRegistroInicio\AGPED2.png" alt="iconoVPedidos "class= "icono-registro" style="max-width: 15%; height: auto; "></div>
+        <div class="logo"><img src="/Img/Botones entregas\NuevoRegistroInicio\AGPED2.png" alt="iconoVPedidos "class= "icono-registro" style="max-width: 15%; height: auto; "></div>
         <nav class="navbar">
             <ul>
                 <li class="nav-item"><a href='Pedidos_GA.php' class="nav-link">
                     
                     
-                     <img src="\Pedidos_GA\Img\Botones entregas\RegistrarChofer\VOLVAZ.png" alt="Choferes"class = "icono-Volver"style="max-width: 5%; height: auto; position:absolute; top: 70px; left: 35px;">
+                     <img src="/Img/Botones entregas\RegistrarChofer\VOLVAZ.png" alt="Choferes"class = "icono-Volver"style="max-width: 5%; height: auto; position:absolute; top: 70px; left: 35px;">
                     </a></li>
             </ul>
         </nav>
@@ -270,7 +270,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 
         
         <button type="submit" class="icono-FAP" style="background: none; border: none; padding: 0;">
-    <img src="/Pedidos_GA/Img/Botones%20entregas/Inicio/DETPED/AGPEDNA.png" class="icono-FAP-img" alt="Actualizar Pedido" style="max-width: 50%; height: auto; display: flex;">
+    <img src="//Img/Botones%20entregas/Inicio/DETPED/AGPEDNA.png" class="icono-FAP-img" alt="Actualizar Pedido" style="max-width: 50%; height: auto; display: flex;">
 </button>
     </form>
 

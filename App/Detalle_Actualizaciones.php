@@ -19,7 +19,7 @@ if (isset($_GET['id_pedido'])) {
     $idPedido = $_GET['id_pedido'];
 
     // Consulta SQL para obtener la información del pedido con el ID recibido
-    $sql = "SELECT * FROM EstadoPedido WHERE ID_Pedido = ?";
+    $sql = "SELECT * FROM estadopedido WHERE ID_Pedido = ?";
 
     // Preparar la consulta
     $stmt = $conn->prepare($sql);

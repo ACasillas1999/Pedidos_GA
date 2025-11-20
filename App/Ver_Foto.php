@@ -44,10 +44,10 @@ if ($resultado->num_rows > 0) {
         $url_imagen_completa = "https://pedidos.grupoascencio.com.mx/Pedidos_GA" . ltrim($ruta_imagen, '.');
         $response[] = ["ruta_imagen" => $url_imagen_completa, "found" => true];
     } else {
-        $response[] = ["ruta_imagen" => 'https://pedidos.grupoascencio.com.mx/Pedidos_GA/Img/Error.ico', "found" => false]; // Imagen alternativa si no hay ruta en la base de datos
+        $response[] = ["ruta_imagen" => 'https://pedidos.grupoascencio.com.mx//Img/Error.ico', "found" => false]; // Imagen alternativa si no hay ruta en la base de datos
     }
 } else {
-    $response[] = ["ruta_imagen" => 'https://pedidos.grupoascencio.com.mx/Pedidos_GA/Img/Error.ico', "found" => false]; // Imagen alternativa si no se encuentra el ID
+    $response[] = ["ruta_imagen" => 'https://pedidos.grupoascencio.com.mx//Img/Error.ico', "found" => false]; // Imagen alternativa si no se encuentra el ID
 }
 
 // Cerrar la conexión

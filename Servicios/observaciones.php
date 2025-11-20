@@ -19,7 +19,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
   <meta charset="utf-8">
   <title>Observaciones Vehículos</title>
   <link rel="stylesheet" href="../styles.css">
-  <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+  <link rel="icon" type="image/png" href="//Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
 </head>
 
@@ -28,8 +28,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     document.addEventListener("DOMContentLoaded", function() {
       var iconoVolver = document.querySelector(".icono-Volver");
       if (iconoVolver) {
-        var imgNormalVolver = "/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVAZ.png";
-        var imgHoverVolver = "/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVNA.png";
+        var imgNormalVolver = "//Img/Botones%20entregas/Usuario/VOLVAZ.png";
+        var imgHoverVolver = "//Img/Botones%20entregas/Usuario/VOLVNA.png";
         iconoVolver.addEventListener("mouseover", function() {
           this.src = imgHoverVolver;
         });
@@ -40,8 +40,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 
       var iconoServicios = document.querySelector(".icono-servicios");
       if (iconoServicios) {
-        var imgNormalServicios = "/Pedidos_GA/Img/SVG/ServiciosN.svg";
-        var imgHoverServicios = "/Pedidos_GA/Img/SVG/ServiciosB.svg";
+        var imgNormalServicios = "//Img/SVG/ServiciosN.svg";
+        var imgHoverServicios = "//Img/SVG/ServiciosB.svg";
         iconoServicios.addEventListener("mouseover", function() {
           this.src = imgHoverServicios;
         });
@@ -56,12 +56,12 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     <ul>
       <li>
         <a href="Servicios.php">
-          <img src="/Pedidos_GA/Img/SVG/ServiciosN.svg" class="icono-servicios sidebar-icon" alt="Servicios">
+          <img src="//Img/SVG/ServiciosN.svg" class="icono-servicios sidebar-icon" alt="Servicios">
         </a>
       </li>
       <li class="corner-left-bottom">
         <a href="../vehiculos.php">
-          <img src="/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Volver" class="icono-Volver" style="max-width:35%;height:auto;">
+          <img src="//Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Volver" class="icono-Volver" style="max-width:35%;height:auto;">
         </a>
       </li>
     </ul>

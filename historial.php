@@ -47,7 +47,7 @@ if (!$consultaHistorial) {
     <title>Historial de Cambios</title>
 
     <link rel="stylesheet" href="styles.css">
-    <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+    <link rel="icon" type="image/png" href="//Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
 
    
     <style>
@@ -208,7 +208,7 @@ if (!$consultaHistorial) {
     <ul>
         <li class="corner-left-bottom">
             <a href="Pedidos_GA.php">
-                <img src="/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Volver" class="icono-Volver" style="max-width: 35%; height: auto;">
+                <img src="//Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Volver" class="icono-Volver" style="max-width: 35%; height: auto;">
             </a>
         </li>
     </ul>

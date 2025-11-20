@@ -14,7 +14,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 <!DOCTYPE html>
 <html>
 <head>
-   <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+   <link rel="icon" type="image/png" href="//Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
     <title>Estadísticas del Chofer</title>
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -211,8 +211,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     var iconoVolver = document.querySelector(".icono-Volver");
     
 
-    var imgNormalImprimir = "/Pedidos_GA/Img/Botones%20entregas/Estadisticas/IMPAZ.png";
-    var imgHoverImprimir = "/Pedidos_GA/Img/Botones%20entregas/Estadisticas/IMPNA.png";
+    var imgNormalImprimir = "//Img/Botones%20entregas/Estadisticas/IMPAZ.png";
+    var imgHoverImprimir = "//Img/Botones%20entregas/Estadisticas/IMPNA.png";
 
     // Cambiar la imagen al pasar el mouse
     if (iconoImprimir) {
@@ -225,8 +225,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         });
     }
 
-    var imgNormalVolver = "/Pedidos_GA/Img/Botones%20entregas/RegistrarChofer/VOLVAZ.png";
-    var imgHoverVolver = "/Pedidos_GA/Img/Botones%20entregas/RegistrarChofer/VOLVNA.png";
+    var imgNormalVolver = "//Img/Botones%20entregas/RegistrarChofer/VOLVAZ.png";
+    var imgHoverVolver = "//Img/Botones%20entregas/RegistrarChofer/VOLVNA.png";
 
     // Cambiar la imagen al pasar el mouse para Volver
     if (iconoVolver) {
@@ -246,13 +246,13 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 <body>
     <header class="header">
         <div class="logo">
-            <img src="/Pedidos_GA/Img/Botones%20entregas/Choferes/ESTADISTICAS.png" alt="Estaditicas " class="icono-estadisticas" style="max-width: 20%; height: auto;">
+            <img src="//Img/Botones%20entregas/Choferes/ESTADISTICAS.png" alt="Estaditicas " class="icono-estadisticas" style="max-width: 20%; height: auto;">
         </div>
         <nav class="navbar">
             <ul>
                 <li class="nav-item"><a href='Choferes.php' class="nav-link">
                     
-                <img src="\Pedidos_GA\Img\Botones entregas\RegistrarChofer\VOLVAZ.png" alt="Choferes"class = "icono-Volver"style="max-width: 5%; height: auto; position:absolute; top: 70px; left: 25px;">
+                <img src="/Img/Botones entregas\RegistrarChofer\VOLVAZ.png" alt="Choferes"class = "icono-Volver"style="max-width: 5%; height: auto; position:absolute; top: 70px; left: 25px;">
                 
 
                 </a></li>
@@ -280,7 +280,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 
     <p></p>
     <button type="submit" class="icono-Imprimir" style="background: none; border: none; padding: 0;">
-    <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/IMPAZ.png" alt="iconoVPedidos" class="icono-Imprimir-img" style="max-width: 50%; height: auto;">
+    <img src="//Img/Botones%20entregas/Estadisticas/IMPAZ.png" alt="iconoVPedidos" class="icono-Imprimir-img" style="max-width: 50%; height: auto;">
 </button>
 
      <!--   <button class="pdf-button" onclick="exportPDF()">Exportar como PDF</button>-->

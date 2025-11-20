@@ -5,12 +5,12 @@
 <html lang="es">
 <head>
      <title>Pedidos GA</title>
-    <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+    <link rel="icon" type="image/png" href="//Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="styles1.css">
     <link href='https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css' rel='stylesheet' />
-    <link rel="icon" href="Pedidos_GA/Img/Paquete.ico" type="image/x-icon">
+    <link rel="icon" href="/Img/Paquete.ico" type="image/x-icon">
     <script src='https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.js'></script>
     
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
@@ -58,8 +58,8 @@ document.addEventListener("DOMContentLoaded", function() {
     var iconoActP = document.querySelector(".icono-ActP");
     var iconoImprimir = document.querySelector(".icono-imprimir")
     
-    var imgNormalActP = "/Pedidos_GA/Img/Botones%20entregas/Inicio/DETPED/AZTPEDNA.png";
-    var imgHoverActP = "/Pedidos_GA/Img/Botones%20entregas/Inicio/DETPED/ACTPEDAZ.png";
+    var imgNormalActP = "//Img/Botones%20entregas/Inicio/DETPED/AZTPEDNA.png";
+    var imgHoverActP = "//Img/Botones%20entregas/Inicio/DETPED/ACTPEDAZ.png";
 //AZTPEDNA
     // Cambiar la imagen al pasar el mouse
     iconoActP.addEventListener("mouseover", function() {
@@ -72,8 +72,8 @@ document.addEventListener("DOMContentLoaded", function() {
     });
     
     
-    var imgNormalImprimir = "/Pedidos_GA/Img/Botones%20entregas/Inicio/DETPED/IMPNA.png";
-    var imgHoverImprimir = "/Pedidos_GA/Img/Botones%20entregas/Inicio/DETPED/IMPAZ.png";
+    var imgNormalImprimir = "//Img/Botones%20entregas/Inicio/DETPED/IMPNA.png";
+    var imgHoverImprimir = "//Img/Botones%20entregas/Inicio/DETPED/IMPAZ.png";
 
     // Cambiar la imagen al pasar el mouse
     iconoImprimir.addEventListener("mouseover", function() {
@@ -252,7 +252,7 @@ $tipoEnvioTexto = strtoupper($tipoEnvio);
     
             <button type="submit" class="icono-ActualizarP" style="background: none; border: none; padding: 0;">
                 
-        <img src="/Pedidos_GA/Img/Botones%20entregas/Inicio/DETPED/AZTPEDNA.png" alt="Estaditicas" class="icono-ActP" style="max-width: 50%; height: auto;">
+        <img src="//Img/Botones%20entregas/Inicio/DETPED/AZTPEDNA.png" alt="Estaditicas" class="icono-ActP" style="max-width: 50%; height: auto;">
                 
           </button>
 </form>
@@ -293,7 +293,7 @@ $tipoEnvioTexto = strtoupper($tipoEnvio);
          <div class="container2">
         
         <h1>
-        <img src="/Pedidos_GA/Img/Botones%20entregas/Inicio/DETPED/DOCAZ.png" alt="Estaditicas" class="icono-ActP" style="max-width: 30%; height: auto;">
+        <img src="//Img/Botones%20entregas/Inicio/DETPED/DOCAZ.png" alt="Estaditicas" class="icono-ActP" style="max-width: 30%; height: auto;">
              
         </h1>
     
@@ -305,7 +305,7 @@ $tipoEnvioTexto = strtoupper($tipoEnvio);
 <div class="accion-container">
     <h2>            
         
-    <img src="/Pedidos_GA/Img/Botones%20entregas/Inicio/DETPED/CARARAZ.png" alt="Estaditicas" class="icono-ActP" style="max-width:60%; height: auto;">
+    <img src="//Img/Botones%20entregas/Inicio/DETPED/CARARAZ.png" alt="Estaditicas" class="icono-ActP" style="max-width:60%; height: auto;">
     
     </h2>
     <?php
@@ -329,7 +329,7 @@ $tipoEnvioTexto = strtoupper($tipoEnvio);
                   <!--  <div class="accion-container">
                         <h2>
                         
-                        <img src="/Pedidos_GA/Img/Botones%20entregas/Inicio/DETPED/DESCARAZ.png" alt="Estaditicas" class="icono-ActP" style="max-width: 100%; height: auto;">
+                        <img src="//Img/Botones%20entregas/Inicio/DETPED/DESCARAZ.png" alt="Estaditicas" class="icono-ActP" style="max-width: 100%; height: auto;">
                         
                         </h2>
                         <form action="detalle_pedido.php" method="post">
@@ -343,7 +343,7 @@ $tipoEnvioTexto = strtoupper($tipoEnvio);
                     <div class="accion-container">
                         <h2>
                         
-                        <img src="/Pedidos_GA/Img/Botones%20entregas/Inicio/DETPED/CONSTARCAZ.png" alt="Estaditicas" class="icono-ActP" style="max-width: 100%; height: auto;">
+                        <img src="//Img/Botones%20entregas/Inicio/DETPED/CONSTARCAZ.png" alt="Estaditicas" class="icono-ActP" style="max-width: 100%; height: auto;">
                         
                         </h2>
                         <form action="detalle_pedido.php?id=<?php echo $pedidoId; ?>" method="post">
@@ -369,7 +369,7 @@ $tipoEnvioTexto = strtoupper($tipoEnvio);
              
              <button class="icono-Imprimir"  style="background: none; border: none; padding: 0;" onclick="imprimirPagina()">
                  
-                  <img src="/Pedidos_GA/Img/Botones%20entregas/Inicio/DETPED/IMPNA.png" alt="Estaditicas" class="icono-imprimir" style="max-width: 50%; height: auto;">
+                  <img src="//Img/Botones%20entregas/Inicio/DETPED/IMPNA.png" alt="Estaditicas" class="icono-imprimir" style="max-width: 50%; height: auto;">
                  
                 </button>
              </div>
@@ -383,7 +383,7 @@ $tipoEnvioTexto = strtoupper($tipoEnvio);
     
             <button type="submit" class="icono-ActualizarP" style="background: none; border: none; padding: 0;">
                 
-        <img src="/Pedidos_GA/Img/Botones%20entregas/Inicio/DETPED/ACTPEDAZ.png" alt="Estaditicas" class="icono-ActP" style="max-width: 50%; height: auto;">
+        <img src="//Img/Botones%20entregas/Inicio/DETPED/ACTPEDAZ.png" alt="Estaditicas" class="icono-ActP" style="max-width: 50%; height: auto;">
                 
           </button>
 </form>
@@ -396,7 +396,7 @@ $tipoEnvioTexto = strtoupper($tipoEnvio);
                 echo "No se encontraron detalles para el pedido con el ID proporcionado.";
             }
         } else {
-            echo '<img src="\Pedidos_GA\Img\Encabezado.png" alt="Descripción de la imagen">';
+            echo '<img src="/Img/Encabezado.png" alt="Descripción de la imagen">';
             //javascript:history.go(-1)
             echo '<button onclick="javascript:history.go(-1);">Volver</button>';
             
@@ -409,7 +409,7 @@ $tipoEnvioTexto = strtoupper($tipoEnvio);
         
         <h1>
         
-         <img src="/Pedidos_GA/Img/Botones%20entregas/Inicio/DETPED/MOSTIMAZ.png" alt="Imagen" class="icono-Imagen" style="max-width: 50%; height: auto;">
+         <img src="//Img/Botones%20entregas/Inicio/DETPED/MOSTIMAZ.png" alt="Imagen" class="icono-Imagen" style="max-width: 50%; height: auto;">
         
         </h1>
     <div id="imagen-container">
@@ -489,7 +489,7 @@ $tipoEnvioTexto = strtoupper($tipoEnvio);
         
          <h2>
         
-        <img src="/Pedidos_GA/Img/Botones%20entregas/Inicio/DETPED/DETACTAZ.png" alt="Estaditicas" class="icono-imprimir" style="max-width: 50%; height: auto;">
+        <img src="//Img/Botones%20entregas/Inicio/DETPED/DETACTAZ.png" alt="Estaditicas" class="icono-imprimir" style="max-width: 50%; height: auto;">
         
         </h2>
             <table class="table-custom">
@@ -508,7 +508,7 @@ $tipoEnvioTexto = strtoupper($tipoEnvio);
                     <?php
 
 // Consulta SQL para obtener los detalles del pedido desde estadopedido
-$detalleSql = "SELECT Estado, Fecha, Hora, Coordenada FROM EstadoPedido WHERE ID_Pedido = ?";
+$detalleSql = "SELECT Estado, Fecha, Hora, Coordenada FROM estadopedido WHERE ID_Pedido = ?";
 $detalleStmt = $conn->prepare($detalleSql);
 $detalleStmt->bind_param("i", $pedidoId);
 
@@ -534,7 +534,7 @@ while ($detalleRow = $detalleResult->fetch_assoc()) {
         echo "<td><a href='$googleMapsLink' target='_blank'>
         <button style=".'background: none; border: none; padding: 0;'."> 
         Ver en Google Maps
-          <!-- <img src=".'/Pedidos_GA/Img/Botones%20entregas/Inicio/DETPED/'." alt=".'icono-Maps2'." class=".'icono-Maps2-img'." style=".'max-width: 10%;'.">-->
+          <!-- <img src=".'//Img/Botones%20entregas/Inicio/DETPED/'." alt=".'icono-Maps2'." class=".'icono-Maps2-img'." style=".'max-width: 10%;'.">-->
          
         </button></a></td>";
     } else {

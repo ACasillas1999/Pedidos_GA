@@ -130,7 +130,7 @@ $vehiculos = $conn->query("SELECT * FROM vehiculos");
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nuevo Vehículo</title>
-    <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+    <link rel="icon" type="image/png" href="//Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
     <link rel="stylesheet" href="styles3.css">
 
     <style>
@@ -175,7 +175,7 @@ $vehiculos = $conn->query("SELECT * FROM vehiculos");
                 <li class="nav-item"><a href='vehiculos.php' class="nav-link">
 
 
-                        <img src="\Pedidos_GA\Img\Botones entregas\RegistrarChofer\VOLVAZ.png" alt="Choferes" class="icono-Volver" style="max-width: 5%; height: auto; position:absolute; top: 70px; left: 35px;">
+                        <img src="/Img/Botones entregas\RegistrarChofer\VOLVAZ.png" alt="Choferes" class="icono-Volver" style="max-width: 5%; height: auto; position:absolute; top: 70px; left: 35px;">
                     </a></li>
             </ul>
         </nav>

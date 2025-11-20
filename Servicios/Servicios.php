@@ -20,7 +20,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
   <title>Detalles Chofer</title>
   <link rel="stylesheet" href="../styles.css">
   <link rel="stylesheet" href="style_servicios_cards.css">
-  <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+  <link rel="icon" type="image/png" href="//Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
 
   <script>
     window.PEDIDOS_CHOFER = <?= json_encode($pedidosAll ?? [], JSON_UNESCAPED_UNICODE) ?>;
@@ -35,8 +35,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     document.addEventListener("DOMContentLoaded", function() {
       var iconoInventario = document.querySelector(".icono-inventario");
       if (iconoInventario) {
-        var imgNormalInventario = "/Pedidos_GA/Img/SVG/InventarioN.svg";
-        var imgHoverInventario = "/Pedidos_GA/Img/SVG/InventarioB.svg";
+        var imgNormalInventario = "//Img/SVG/InventarioN.svg";
+        var imgHoverInventario = "//Img/SVG/InventarioB.svg";
         iconoInventario.addEventListener("mouseover", function() {
           this.src = imgHoverInventario;
         });
@@ -47,8 +47,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 
       var iconoVolver = document.querySelector(".icono-Volver");
       if (iconoVolver) {
-        var imgNormalVolver = "/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVAZ.png";
-        var imgHoverVolver = "/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVNA.png";
+        var imgNormalVolver = "//Img/Botones%20entregas/Usuario/VOLVAZ.png";
+        var imgHoverVolver = "//Img/Botones%20entregas/Usuario/VOLVNA.png";
         iconoVolver.addEventListener("mouseover", function() {
           this.src = imgHoverVolver;
         });
@@ -59,8 +59,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 
       var iconoAgregar = document.querySelector(".icono-agregar_servicio");
       if (iconoAgregar) {
-        var imgNormalAgregar = "/Pedidos_GA/Img/SVG/CrearSerN.svg";
-        var imgHoverAgregar = "/Pedidos_GA/Img/SVG/CrearSerB.svg";
+        var imgNormalAgregar = "//Img/SVG/CrearSerN.svg";
+        var imgHoverAgregar = "//Img/SVG/CrearSerB.svg";
         iconoAgregar.addEventListener("mouseover", function() {
           this.src = imgHoverAgregar;
         });
@@ -85,18 +85,18 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     <ul>
       <li>
         <a href="inventario.php">
-          <img src="/Pedidos_GA/Img/SVG/InventarioN.svg" class="icono-inventario sidebar-icon" alt="Inventario">
+          <img src="//Img/SVG/InventarioN.svg" class="icono-inventario sidebar-icon" alt="Inventario">
         </a>
       </li>
       <li>
         <a href="agregar_servicio.php">
-          <img src="/Pedidos_GA/Img/SVG/CrearSerN.svg" class="icono-agregar_servicio sidebar-icon" alt="Agregar">
+          <img src="//Img/SVG/CrearSerN.svg" class="icono-agregar_servicio sidebar-icon" alt="Agregar">
         </a>
       </li>
       
       <li class="corner-left-bottom">
         <a href="../vehiculos.php">
-          <img src="/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Volver" class="icono-Volver" style="max-width:35%;height:auto;">
+          <img src="//Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Volver" class="icono-Volver" style="max-width:35%;height:auto;">
         </a>
       </li>
     </ul>

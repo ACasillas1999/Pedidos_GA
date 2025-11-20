@@ -89,7 +89,7 @@ try {
   <meta charset="utf-8">
   <title>Estadísticas de Inventario</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+  <link rel="icon" type="image/png" href="//Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
   <link rel="stylesheet" href="../styles.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -167,8 +167,8 @@ try {
     document.addEventListener("DOMContentLoaded", function () {
       var iconoInventario = document.querySelector(".icono-inventario");
       if (iconoInventario) {
-        var imgNormalInventario = "/Pedidos_GA/Img/SVG/InventarioN.svg";
-        var imgHoverInventario  = "/Pedidos_GA/Img/SVG/InventarioB.svg";
+        var imgNormalInventario = "//Img/SVG/InventarioN.svg";
+        var imgHoverInventario  = "//Img/SVG/InventarioB.svg";
         iconoInventario.addEventListener("mouseover", function(){ this.src = imgHoverInventario; });
         iconoInventario.addEventListener("mouseout",  function(){ this.src = imgNormalInventario ; });
       }
@@ -181,11 +181,11 @@ try {
     <div class="sidebar">
       <ul>
         <li><a href="inventario.php">
-                   <img src="/Pedidos_GA/Img/SVG/InventarioN.svg" class="icono-inventario sidebar-icon" alt="Inventario">
+                   <img src="//Img/SVG/InventarioN.svg" class="icono-inventario sidebar-icon" alt="Inventario">
 
         </a>
       </li>
-        <li class="corner-left-bottom"><a href="../Servicios/Servicios.php"><img src="/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Volver" style="max-width:35%;height:auto;"></a></li>
+        <li class="corner-left-bottom"><a href="../Servicios/Servicios.php"><img src="//Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Volver" style="max-width:35%;height:auto;"></a></li>
       </ul>
     </div>
     <main class="content">

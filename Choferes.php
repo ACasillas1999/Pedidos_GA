@@ -16,12 +16,12 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+    <link rel="icon" type="image/png" href="//Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pedidos GA</title>
     <link rel="stylesheet" type="text/css" href="styles.css">
-    <link rel="icon" href="Pedidos_GA/Img/Paquete.ico" type="image/x-icon">
+    <link rel="icon" href="/Img/Paquete.ico" type="image/x-icon">
 </head>
     
     
@@ -31,8 +31,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         var iconoAddChofer = document.querySelector(".icono-AddChofer");
         var iconoVolver = document.querySelector(".icono-Volver");
     
-            var imgNormalAddChoferes ="/Pedidos_GA/Img/Botones%20entregas/Choferes/AGCHOF2.png";
-            var imgHoverCAddhoferes = "/Pedidos_GA/Img/Botones%20entregas/Choferes/AGCHOFBL2.png";
+            var imgNormalAddChoferes ="//Img/Botones%20entregas/Choferes/AGCHOF2.png";
+            var imgHoverCAddhoferes = "//Img/Botones%20entregas/Choferes/AGCHOFBL2.png";
 
             // Cambiar la imagen al pasar el mouse para Pendientes
             iconoAddChofer.addEventListener("mouseover", function() {
@@ -44,8 +44,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
                 iconoAddChofer.src = imgNormalAddChoferes;
             });
         
-        var imgNormalVolver="/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVAZ.png";
-            var imgHoverVolver = "/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVNA.png";
+        var imgNormalVolver="//Img/Botones%20entregas/Usuario/VOLVAZ.png";
+            var imgHoverVolver = "//Img/Botones%20entregas/Usuario/VOLVNA.png";
 
             // Cambiar la imagen al pasar el mouse para Pendientes
             iconoVolver.addEventListener("mouseover", function() {
@@ -71,7 +71,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     <ul>
          <?php if ($_SESSION["Rol"] === "Admin"||$_SESSION["Rol"] === "JC" ): ?>
         <li><a href="/Pedidos_GA/RegistrarChofer">
-            <img src="\Pedidos_GA\Img\Botones entregas\Choferes\AGCHOF2.png" alt="Estaditicas " class = "icono-AddChofer"style="max-width: 80%; height: auto;">
+            <img src="/Img/Botones entregas\Choferes\AGCHOF2.png" alt="Estaditicas " class = "icono-AddChofer"style="max-width: 80%; height: auto;">
             
            </a></li>
          <?php endif; ?>
@@ -79,7 +79,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         
         
                <li class="corner-left-bottom"><a href="Pedidos_GA.php">
-            <img src="/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Estaditicas " class = "icono-Volver"style="max-width: 35%; height: auto;">
+            <img src="//Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Estaditicas " class = "icono-Volver"style="max-width: 35%; height: auto;">
             
            </a></li>
     </ul>
@@ -94,7 +94,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 <div class="container">
           <h2 class="titulo">
             <div class="chart-title">
-                <img src="/Pedidos_GA/Img/Botones%20entregas/Choferes/CONCHOF3.png" alt="iconoVPedidos "class= "icono-registro" style="max-width: 20%; height: auto; ">
+                <img src="//Img/Botones%20entregas/Choferes/CONCHOF3.png" alt="iconoVPedidos "class= "icono-registro" style="max-width: 20%; height: auto; ">
               </div>
 
     
