@@ -83,10 +83,10 @@ INSERT INTO `choferes` (`ID`, `username`, `password`, `Sucursal`, `Numero`, `Est
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `estadopedido`
+-- Estructura de tabla para la tabla `EstadoPedido`
 --
 
-CREATE TABLE `estadopedido` (
+CREATE TABLE `EstadoPedido` (
   `ID` int(11) NOT NULL,
   `ID_Pedido` int(11) NOT NULL,
   `Estado` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL,
@@ -96,10 +96,10 @@ CREATE TABLE `estadopedido` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
--- Volcado de datos para la tabla `estadopedido`
+-- Volcado de datos para la tabla `EstadoPedido`
 --
 
-INSERT INTO `estadopedido` (`ID`, `ID_Pedido`, `Estado`, `Fecha`, `Hora`, `Coordenada`) VALUES
+INSERT INTO `EstadoPedido` (`ID`, `ID_Pedido`, `Estado`, `Fecha`, `Hora`, `Coordenada`) VALUES
 (1, 4, 'ACTIVO', '2024-07-23', '11:56:36', ''),
 (2, 5, 'ACTIVO', '2024-07-23', '13:14:39', ''),
 (3, 6, 'ACTIVO', '2024-07-23', '15:33:31', ''),
@@ -871,7 +871,7 @@ INSERT INTO `estadopedido` (`ID`, `ID_Pedido`, `Estado`, `Fecha`, `Hora`, `Coord
 (769, 314, 'ENTREGADO', '2025-02-04', '17:17:37', '20.6626433, -103.3555517'),
 (770, 316, 'ENTREGADO', '2025-02-04', '17:17:44', '20.6626433, -103.3555517'),
 (771, 319, 'ENTREGADO', '2025-02-04', '17:17:51', '20.6626401, -103.3555723');
-INSERT INTO `estadopedido` (`ID`, `ID_Pedido`, `Estado`, `Fecha`, `Hora`, `Coordenada`) VALUES
+INSERT INTO `EstadoPedido` (`ID`, `ID_Pedido`, `Estado`, `Fecha`, `Hora`, `Coordenada`) VALUES
 (772, 321, 'ENTREGADO', '2025-02-04', '17:18:33', '20.662825, -103.3554'),
 (773, 321, 'ENTREGADO', '2025-02-04', '17:18:43', '20.662795, -103.3555109'),
 (774, 322, 'ENTREGADO', '2025-02-04', '17:18:52', '20.6629744, -103.3558192'),
@@ -1623,7 +1623,7 @@ INSERT INTO `estadopedido` (`ID`, `ID_Pedido`, `Estado`, `Fecha`, `Hora`, `Coord
 (1520, 626, 'ENTREGADO', '2025-03-26', '14:32:57', '20.6942034, -103.3883789'),
 (1521, 630, 'ACTIVO', '2025-03-26', '15:35:53', ''),
 (1522, 618, 'ENTREGADO', '2025-03-26', '14:46:06', '20.6795612, -103.3337155');
-INSERT INTO `estadopedido` (`ID`, `ID_Pedido`, `Estado`, `Fecha`, `Hora`, `Coordenada`) VALUES
+INSERT INTO `EstadoPedido` (`ID`, `ID_Pedido`, `Estado`, `Fecha`, `Hora`, `Coordenada`) VALUES
 (1523, 631, 'ACTIVO', '2025-03-26', '15:46:16', ''),
 (1524, 608, 'ENTREGADO', '2025-03-26', '14:46:42', '20.509616, -103.198994'),
 (1525, 616, 'ENTREGADO', '2025-03-26', '15:11:03', '20.7006561, -103.44553'),
@@ -2360,7 +2360,7 @@ INSERT INTO `estadopedido` (`ID`, `ID_Pedido`, `Estado`, `Fecha`, `Hora`, `Coord
 (2256, 890, 'ACTIVO', '2025-04-09', '10:34:29', ''),
 (2257, 883, 'EN RUTA', '2025-04-09', '09:50:39', '20.6802389, -103.3673197'),
 (2258, 889, 'EN RUTA', '2025-04-09', '09:51:09', '20.6800376, -103.3674174');
-INSERT INTO `estadopedido` (`ID`, `ID_Pedido`, `Estado`, `Fecha`, `Hora`, `Coordenada`) VALUES
+INSERT INTO `EstadoPedido` (`ID`, `ID_Pedido`, `Estado`, `Fecha`, `Hora`, `Coordenada`) VALUES
 (2259, 875, 'EN RUTA', '2025-04-09', '09:51:44', '20.6791587, -103.3690175'),
 (2260, 879, 'EN RUTA', '2025-04-09', '09:51:54', '20.6791587, -103.3690175'),
 (2261, 880, 'EN RUTA', '2025-04-09', '09:52:03', '20.6791587, -103.3690175'),
@@ -3098,7 +3098,7 @@ INSERT INTO `estadopedido` (`ID`, `ID_Pedido`, `Estado`, `Fecha`, `Hora`, `Coord
 (2993, 1165, 'ENTREGADO', '2025-04-23', '10:10:17', '20.700984, -103.4461469'),
 (2994, 1170, 'ACTIVO', '2025-04-23', '11:11:15', ''),
 (2995, 1162, 'EN RUTA', '2025-04-23', '10:17:47', '20.6806198, -103.3661819');
-INSERT INTO `estadopedido` (`ID`, `ID_Pedido`, `Estado`, `Fecha`, `Hora`, `Coordenada`) VALUES
+INSERT INTO `EstadoPedido` (`ID`, `ID_Pedido`, `Estado`, `Fecha`, `Hora`, `Coordenada`) VALUES
 (2996, 1152, 'EN RUTA', '2025-04-23', '10:21:26', '20.619575, -103.2799767'),
 (2997, 1166, 'ENTREGADO', '2025-04-23', '10:22:53', '20.6762839, -103.3578231'),
 (2998, 1171, 'ACTIVO', '2025-04-23', '11:39:14', ''),
@@ -3844,7 +3844,7 @@ INSERT INTO `estadopedido` (`ID`, `ID_Pedido`, `Estado`, `Fecha`, `Hora`, `Coord
 (3738, 1488, 'ACTIVO', '2025-05-06', '11:29:28', ''),
 (3739, 1480, 'EN RUTA', '2025-05-06', '10:38:23', '20.6884217, -103.3690733'),
 (3740, 1483, 'EN RUTA', '2025-05-06', '10:38:31', '20.6807567, -103.367315');
-INSERT INTO `estadopedido` (`ID`, `ID_Pedido`, `Estado`, `Fecha`, `Hora`, `Coordenada`) VALUES
+INSERT INTO `EstadoPedido` (`ID`, `ID_Pedido`, `Estado`, `Fecha`, `Hora`, `Coordenada`) VALUES
 (3741, 1481, 'EN RUTA', '2025-05-06', '10:38:38', '20.6807891, -103.367303'),
 (3742, 1484, 'EN RUTA', '2025-05-06', '10:38:47', '20.6807917, -103.3672986'),
 (3743, 1489, 'ACTIVO', '2025-05-06', '11:40:24', ''),
@@ -4587,7 +4587,7 @@ INSERT INTO `estadopedido` (`ID`, `ID_Pedido`, `Estado`, `Fecha`, `Hora`, `Coord
 (4480, 1779, 'ENTREGADO', '2025-05-16', '11:35:06', '20.6820817, -103.33838'),
 (4481, 1780, 'ENTREGADO', '2025-05-16', '11:35:20', '20.6820817, -103.33838'),
 (4482, 1782, 'ENTREGADO', '2025-05-16', '11:35:39', '20.6820848, -103.3374424');
-INSERT INTO `estadopedido` (`ID`, `ID_Pedido`, `Estado`, `Fecha`, `Hora`, `Coordenada`) VALUES
+INSERT INTO `EstadoPedido` (`ID`, `ID_Pedido`, `Estado`, `Fecha`, `Hora`, `Coordenada`) VALUES
 (4483, 1796, 'ACTIVO', '2025-05-16', '12:43:23', ''),
 (4484, 1797, 'ACTIVO', '2025-05-16', '12:44:46', ''),
 (4485, 1798, 'ACTIVO', '2025-05-16', '12:46:53', ''),
@@ -5340,7 +5340,7 @@ INSERT INTO `estadopedido` (`ID`, `ID_Pedido`, `Estado`, `Fecha`, `Hora`, `Coord
 (5232, 2133, 'ACTIVO', '2025-05-27', '18:38:47', ''),
 (5233, 2111, 'EN TIENDA', '2025-05-27', '17:39:31', '20.6426107, -103.3272704'),
 (5234, 2111, 'ENTREGADO', '2025-05-27', '17:39:55', '20.6425923, -103.3272852');
-INSERT INTO `estadopedido` (`ID`, `ID_Pedido`, `Estado`, `Fecha`, `Hora`, `Coordenada`) VALUES
+INSERT INTO `EstadoPedido` (`ID`, `ID_Pedido`, `Estado`, `Fecha`, `Hora`, `Coordenada`) VALUES
 (5235, 2134, 'ACTIVO', '2025-05-27', '18:42:26', ''),
 (5236, 2135, 'ACTIVO', '2025-05-27', '18:44:30', ''),
 (5237, 2136, 'ACTIVO', '2025-05-27', '19:00:34', ''),
@@ -6093,7 +6093,7 @@ INSERT INTO `estadopedido` (`ID`, `ID_Pedido`, `Estado`, `Fecha`, `Hora`, `Coord
 (5984, 2469, 'ACTIVO', '2025-06-06', '14:55:43', ''),
 (5985, 2470, 'ACTIVO', '2025-06-06', '14:58:27', ''),
 (5986, 2471, 'ACTIVO', '2025-06-06', '15:23:45', '');
-INSERT INTO `estadopedido` (`ID`, `ID_Pedido`, `Estado`, `Fecha`, `Hora`, `Coordenada`) VALUES
+INSERT INTO `EstadoPedido` (`ID`, `ID_Pedido`, `Estado`, `Fecha`, `Hora`, `Coordenada`) VALUES
 (5987, 2472, 'ACTIVO', '2025-06-06', '15:25:16', ''),
 (5988, 2467, 'ENTREGADO', '2025-06-06', '14:40:09', '20.6852195, -103.3628969'),
 (5989, 2463, 'ENTREGADO', '2025-06-06', '14:45:58', '20.7026333, -103.423005'),
@@ -6901,7 +6901,7 @@ INSERT INTO `estadopedido` (`ID`, `ID_Pedido`, `Estado`, `Fecha`, `Hora`, `Coord
 (6791, 2973, 'ACTIVO', '2025-07-04', '16:37:33', ''),
 (6792, 2974, 'ACTIVO', '2025-07-04', '16:38:59', ''),
 (6793, 2975, 'ACTIVO', '2025-07-04', '16:40:26', '');
-INSERT INTO `estadopedido` (`ID`, `ID_Pedido`, `Estado`, `Fecha`, `Hora`, `Coordenada`) VALUES
+INSERT INTO `EstadoPedido` (`ID`, `ID_Pedido`, `Estado`, `Fecha`, `Hora`, `Coordenada`) VALUES
 (6794, 2976, 'ACTIVO', '2025-07-04', '16:45:03', ''),
 (6795, 2977, 'ACTIVO', '2025-07-04', '16:46:33', ''),
 (6796, 2978, 'ACTIVO', '2025-07-04', '17:35:10', ''),
@@ -7729,7 +7729,7 @@ INSERT INTO `estadopedido` (`ID`, `ID_Pedido`, `Estado`, `Fecha`, `Hora`, `Coord
 (7618, 3541, 'ACTIVO', '2025-07-29', '18:52:43', ''),
 (7619, 3542, 'ACTIVO', '2025-07-29', '18:59:22', ''),
 (7620, 3543, 'ACTIVO', '2025-07-29', '19:01:15', '');
-INSERT INTO `estadopedido` (`ID`, `ID_Pedido`, `Estado`, `Fecha`, `Hora`, `Coordenada`) VALUES
+INSERT INTO `EstadoPedido` (`ID`, `ID_Pedido`, `Estado`, `Fecha`, `Hora`, `Coordenada`) VALUES
 (7621, 3544, 'ACTIVO', '2025-07-30', '09:30:32', ''),
 (7622, 3545, 'ACTIVO', '2025-07-30', '09:32:22', ''),
 (7623, 3546, 'ACTIVO', '2025-07-30', '09:37:12', ''),
@@ -14757,7 +14757,7 @@ INSERT INTO `pedidos` (`ID`, `SUCURSAL`, `ESTADO`, `FECHA_RECEPCION_FACTURA`, `F
 --
 DELIMITER $$
 CREATE TRIGGER `AfterInsertPedido` AFTER INSERT ON `pedidos` FOR EACH ROW BEGIN
-    INSERT INTO estadopedido (ID_Pedido, Estado, Fecha, Hora, Coordenada)
+    INSERT INTO EstadoPedido (ID_Pedido, Estado, Fecha, Hora, Coordenada)
     VALUES (NEW.ID, NEW.ESTADO, CURDATE(), CURTIME(), '');
 END
 $$
@@ -15427,9 +15427,9 @@ ALTER TABLE `choferes`
   ADD PRIMARY KEY (`ID`);
 
 --
--- Indices de la tabla `estadopedido`
+-- Indices de la tabla `EstadoPedido`
 --
-ALTER TABLE `estadopedido`
+ALTER TABLE `EstadoPedido`
   ADD PRIMARY KEY (`ID`);
 
 --
@@ -15489,9 +15489,9 @@ ALTER TABLE `choferes`
   MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
 
 --
--- AUTO_INCREMENT de la tabla `estadopedido`
+-- AUTO_INCREMENT de la tabla `EstadoPedido`
 --
-ALTER TABLE `estadopedido`
+ALTER TABLE `EstadoPedido`
   MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7954;
 
 --

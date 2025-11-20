@@ -3,7 +3,7 @@ INSTRUCCIONES PARA CREAR ICONOS DE REPORTE DE PRECIOS
 ===========================================================
 
 UBICACIÓN:
-/Img/Botones entregas\Pedidos_GA\
+\Pedidos_GA\Img\Botones entregas\Pedidos_GA\
 
 ARCHIVOS NECESARIOS:
 1. REPRECIOSNA.png  - Icono normal (naranja)
@@ -27,7 +27,12 @@ ALTERNATIVA TEMPORAL:
 Si no tienes las imágenes, puedes usar temporalmente otro icono existente
 cambiando las rutas en Pedidos_GA.php líneas 158-159:
 
+<<<<<<< HEAD
 var imgNormalReportePrecios = "/Img/Botones%20entregas/Pedidos_GA/ESTNA2.png";
 var imgHoverReportePrecios = "/Img/Botones%20entregas/Pedidos_GA/ESTBL2.png";
+=======
+var imgNormalReportePrecios = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/ESTNA2.png";
+var imgHoverReportePrecios = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/ESTBL2.png";
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
 
 ===========================================================

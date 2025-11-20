@@ -60,7 +60,7 @@ try {
     $hora = date("H:i:s");
 
     // Inserta un nuevo registro en la tabla estadopedido
-    $sql_insert = "INSERT INTO estadopedido (ID_Pedido, Estado, Fecha, Hora, Coordenada) VALUES (?, ?, ?, ?, ?)";
+    $sql_insert = "INSERT INTO EstadoPedido (ID_Pedido, Estado, Fecha, Hora, Coordenada) VALUES (?, ?, ?, ?, ?)";
     $stmt_insert = $conn->prepare($sql_insert);
     if (!$stmt_insert) {
         throw new Exception("Error en la preparación de la consulta de inserción: " . $conn->error);

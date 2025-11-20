@@ -47,7 +47,11 @@ if (!$consultaHistorial) {
     <title>Historial de Cambios</title>
 
     <link rel="stylesheet" href="styles.css">
+<<<<<<< HEAD
     <link rel="icon" type="image/png" href="/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+=======
+    <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
 
    
     <style>
@@ -208,7 +212,11 @@ if (!$consultaHistorial) {
     <ul>
         <li class="corner-left-bottom">
             <a href="Pedidos_GA.php">
+<<<<<<< HEAD
                 <img src="/Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Volver" class="icono-Volver" style="max-width: 35%; height: auto;">
+=======
+                <img src="/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Volver" class="icono-Volver" style="max-width: 35%; height: auto;">
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
             </a>
         </li>
     </ul>

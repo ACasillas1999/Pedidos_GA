@@ -112,7 +112,11 @@ $conn->close();
     <title>Detalles de <?= htmlspecialchars($nombre) ?></title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="styles7.css" type="text/css">
+<<<<<<< HEAD
     <link rel="icon" type="image/png" href="/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+=======
+    <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
         .container { width: 80%; margin: auto; }
@@ -133,14 +137,14 @@ $conn->close();
         <div class="logo">
     
 <h3>Estadística</h3>
-      <!--  <img src="/Img/Botones entregas\RegistrarChofer\REGCHOFTIT.png" alt="Estadísticas " style="max-width: 15%; height: auto;">
+      <!--  <img src="\Pedidos_GA\Img\Botones entregas\RegistrarChofer\REGCHOFTIT.png" alt="Estadísticas " style="max-width: 15%; height: auto;">
     -->
     </div>
         <nav class="navbar">
             <ul>
                 <li class="nav-item"><a href='Estadisticas_Vehiculos.php' class="nav-link">
                     
-                <img src="/Img/Botones entregas\RegistrarChofer\VOLVAZ.png" alt="Choferes"class = "icono-Volver"style="max-width: 5%; height: auto; position:absolute; top: 70px; left: 25px;">
+                <img src="\Pedidos_GA\Img\Botones entregas\RegistrarChofer\VOLVAZ.png" alt="Choferes"class = "icono-Volver"style="max-width: 5%; height: auto; position:absolute; top: 70px; left: 25px;">
                 
 
                 </a></li>

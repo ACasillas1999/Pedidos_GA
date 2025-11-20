@@ -18,7 +18,11 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mapa de Calor - Pedidos GA</title>
+<<<<<<< HEAD
     <link rel="icon" type="image/png" href="/Img/logo empresa/LOGO_GPO_A.png">
+=======
+    <link rel="icon" type="image/png" href="/Pedidos_GA/Img/logo empresa/LOGO_GPO_A.png">
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="styles_mapa.css">
 
@@ -33,7 +37,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         <ul>
             <li>
                 <a href="Pedidos_GA.php">
-                    <img src="/Img/Botones entregas\Pedidos_GA\INICIO_NA.png" alt="Inicio" style="max-width: 80%; height: auto;">
+                    <img src="\Pedidos_GA\Img\Botones entregas\Pedidos_GA\INICIO_NA.png" alt="Inicio" style="max-width: 80%; height: auto;">
                 </a>
             </li>
         </ul>

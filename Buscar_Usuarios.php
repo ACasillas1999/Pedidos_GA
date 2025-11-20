@@ -43,7 +43,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['busqueda'])) {
                     <td>{$Rol}</td>
                     <td>
                       <a href='Actualizar_usuarios.php?id={$ID}'>
-                        <img src='//Img/Botones%20entregas/Usuario/ACTUZAZ.png' style='max-width:35px'>
+                        <img src='/Pedidos_GA/Img/Botones%20entregas/Usuario/ACTUZAZ.png' style='max-width:35px'>
                       </a>
                       <button class='btn-regenerar' data-id='{$ID}' data-user='{$username}'
                               style='background:#005aa3;color:#fff;border:0;border-radius:6px;padding:6px 10px;cursor:pointer'>

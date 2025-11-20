@@ -330,7 +330,11 @@ while ($c = $choferes->fetch_assoc()) {
 <head>
   <meta charset="utf-8" />
   <title>Gestión de Vehículos</title>
+<<<<<<< HEAD
   <link rel="icon" type="image/png" href="/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+=======
+  <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
   :root{
@@ -431,18 +435,30 @@ while ($c = $choferes->fetch_assoc()) {
       <?php if (($_SESSION["Rol"] ?? '') === "Admin"): ?>
         <li>
           <a href="NuevoVehiculo.php" title="Agregar Vehículo">
+<<<<<<< HEAD
             <img src="/Img/Botones%20entregas/Choferes/ADDSERVMECNA.png" class="icono-AddChofer sidebar-icon" alt="Agregar">
+=======
+            <img src="/Pedidos_GA/Img/Botones%20entregas/Choferes/ADDSERVMECNA.png" class="icono-AddChofer sidebar-icon" alt="Agregar">
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
           </a>
         </li>
       <?php endif; ?>
       <li>
         <a href="Estadisticas_Vehiculos.php" title="Estadísticas">
+<<<<<<< HEAD
           <img src="/Img/Botones%20entregas/Pedidos_GA/ESTNA2.png" class="icono-estadisticas sidebar-icon" alt="Estadísticas">
+=======
+          <img src="/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/ESTNA2.png" class="icono-estadisticas sidebar-icon" alt="Estadísticas">
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
         </a>
       </li>
       <li class="sidebar-bottom">
         <a href="Pedidos_GA.php" title="Volver">
+<<<<<<< HEAD
           <img src="/Img/Botones%20entregas/Usuario/VOLVAZ.png" class="icono-Volver sidebar-icon small" alt="Volver">
+=======
+          <img src="/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVAZ.png" class="icono-Volver sidebar-icon small" alt="Volver">
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
         </a>
       </li>
     </ul>
@@ -735,9 +751,15 @@ $$('.tab').forEach(btn => {
     const iconoAddChofer   = document.querySelector(".icono-AddChofer");
     const iconoVolver      = document.querySelector(".icono-Volver");
     const iconoEstadisticas= document.querySelector(".icono-estadisticas");
+<<<<<<< HEAD
     if (iconoAddChofer) { const n="/Img/Botones%20entregas/Choferes/ADDSERVMECNA.png", h="/Img/Botones%20entregas/Choferes/ADDSERVMECBLANC.png"; iconoAddChofer.addEventListener("mouseover", () => iconoAddChofer.src=h); iconoAddChofer.addEventListener("mouseout",  () => iconoAddChofer.src=n); }
     if (iconoVolver)      { const n="/Img/Botones%20entregas/Usuario/VOLVAZ.png", h="/Img/Botones%20entregas/Usuario/VOLVNA.png"; iconoVolver.addEventListener("mouseover", () => iconoVolver.src=h);      iconoVolver.addEventListener("mouseout",  () => iconoVolver.src=n); }
     if (iconoEstadisticas){ const n="/Img/Botones%20entregas/Pedidos_GA/ESTNA2.png", h="/Img/Botones%20entregas/Pedidos_GA/ESTBL2.png"; iconoEstadisticas.addEventListener("mouseover", () => iconoEstadisticas.src=h); iconoEstadisticas.addEventListener("mouseout",  () => iconoEstadisticas.src=n); }
+=======
+    if (iconoAddChofer) { const n="/Pedidos_GA/Img/Botones%20entregas/Choferes/ADDSERVMECNA.png", h="/Pedidos_GA/Img/Botones%20entregas/Choferes/ADDSERVMECBLANC.png"; iconoAddChofer.addEventListener("mouseover", () => iconoAddChofer.src=h); iconoAddChofer.addEventListener("mouseout",  () => iconoAddChofer.src=n); }
+    if (iconoVolver)      { const n="/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVAZ.png", h="/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVNA.png"; iconoVolver.addEventListener("mouseover", () => iconoVolver.src=h);      iconoVolver.addEventListener("mouseout",  () => iconoVolver.src=n); }
+    if (iconoEstadisticas){ const n="/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/ESTNA2.png", h="/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/ESTBL2.png"; iconoEstadisticas.addEventListener("mouseover", () => iconoEstadisticas.src=h); iconoEstadisticas.addEventListener("mouseout",  () => iconoEstadisticas.src=n); }
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
   });
 
   // ==== APIs de asignación (igual que antes) ====

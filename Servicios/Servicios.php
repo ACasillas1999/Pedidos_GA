@@ -20,7 +20,11 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
   <title>Detalles Chofer</title>
   <link rel="stylesheet" href="../styles.css">
   <link rel="stylesheet" href="style_servicios_cards.css">
+<<<<<<< HEAD
   <link rel="icon" type="image/png" href="/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+=======
+  <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
 
   <script>
     window.PEDIDOS_CHOFER = <?= json_encode($pedidosAll ?? [], JSON_UNESCAPED_UNICODE) ?>;
@@ -35,8 +39,13 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     document.addEventListener("DOMContentLoaded", function() {
       var iconoInventario = document.querySelector(".icono-inventario");
       if (iconoInventario) {
+<<<<<<< HEAD
         var imgNormalInventario = "/Img/SVG/InventarioN.svg";
         var imgHoverInventario = "/Img/SVG/InventarioB.svg";
+=======
+        var imgNormalInventario = "/Pedidos_GA/Img/SVG/InventarioN.svg";
+        var imgHoverInventario = "/Pedidos_GA/Img/SVG/InventarioB.svg";
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
         iconoInventario.addEventListener("mouseover", function() {
           this.src = imgHoverInventario;
         });
@@ -47,8 +56,13 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 
       var iconoVolver = document.querySelector(".icono-Volver");
       if (iconoVolver) {
+<<<<<<< HEAD
         var imgNormalVolver = "/Img/Botones%20entregas/Usuario/VOLVAZ.png";
         var imgHoverVolver = "/Img/Botones%20entregas/Usuario/VOLVNA.png";
+=======
+        var imgNormalVolver = "/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVAZ.png";
+        var imgHoverVolver = "/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVNA.png";
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
         iconoVolver.addEventListener("mouseover", function() {
           this.src = imgHoverVolver;
         });
@@ -59,8 +73,13 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 
       var iconoAgregar = document.querySelector(".icono-agregar_servicio");
       if (iconoAgregar) {
+<<<<<<< HEAD
         var imgNormalAgregar = "/Img/SVG/CrearSerN.svg";
         var imgHoverAgregar = "/Img/SVG/CrearSerB.svg";
+=======
+        var imgNormalAgregar = "/Pedidos_GA/Img/SVG/CrearSerN.svg";
+        var imgHoverAgregar = "/Pedidos_GA/Img/SVG/CrearSerB.svg";
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
         iconoAgregar.addEventListener("mouseover", function() {
           this.src = imgHoverAgregar;
         });
@@ -85,18 +104,30 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     <ul>
       <li>
         <a href="inventario.php">
+<<<<<<< HEAD
           <img src="/Img/SVG/InventarioN.svg" class="icono-inventario sidebar-icon" alt="Inventario">
+=======
+          <img src="/Pedidos_GA/Img/SVG/InventarioN.svg" class="icono-inventario sidebar-icon" alt="Inventario">
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
         </a>
       </li>
       <li>
         <a href="agregar_servicio.php">
+<<<<<<< HEAD
           <img src="/Img/SVG/CrearSerN.svg" class="icono-agregar_servicio sidebar-icon" alt="Agregar">
+=======
+          <img src="/Pedidos_GA/Img/SVG/CrearSerN.svg" class="icono-agregar_servicio sidebar-icon" alt="Agregar">
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
         </a>
       </li>
       
       <li class="corner-left-bottom">
         <a href="../vehiculos.php">
+<<<<<<< HEAD
           <img src="/Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Volver" class="icono-Volver" style="max-width:35%;height:auto;">
+=======
+          <img src="/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Volver" class="icono-Volver" style="max-width:35%;height:auto;">
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
         </a>
       </li>
     </ul>

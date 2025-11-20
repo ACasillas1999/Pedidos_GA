@@ -14,7 +14,11 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Estadísticas - Pedidos GA</title>
 
+<<<<<<< HEAD
     <link rel="icon" type="image/png" href="/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+=======
+    <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
 
     <!-- Tailwind CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -318,15 +322,25 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
             const iconoImprimir = document.querySelector(".icono-Imprimir");
 
             if (iconoVolver) {
+<<<<<<< HEAD
                 const normal = "/Img/Botones%20entregas/RegistrarChofer/VOLVAZ.png";
                 const hover  = "/Img/Botones%20entregas/RegistrarChofer/VOLVNA.png";
+=======
+                const normal = "/Pedidos_GA/Img/Botones%20entregas/RegistrarChofer/VOLVAZ.png";
+                const hover  = "/Pedidos_GA/Img/Botones%20entregas/RegistrarChofer/VOLVNA.png";
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
                 iconoVolver.addEventListener('mouseover', () => iconoVolver.src = hover);
                 iconoVolver.addEventListener('mouseout',  () => iconoVolver.src = normal);
             }
 
             if (iconoImprimir) {
+<<<<<<< HEAD
                 const normal = "/Img/Botones%20entregas/Estadisticas/IMPAZ.png";
                 const hover  = "/Img/Botones%20entregas/Estadisticas/IMPNA.png";
+=======
+                const normal = "/Pedidos_GA/Img/Botones%20entregas/Estadisticas/IMPAZ.png";
+                const hover  = "/Pedidos_GA/Img/Botones%20entregas/Estadisticas/IMPNA.png";
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
                 iconoImprimir.addEventListener('mouseover', () => iconoImprimir.src = hover);
                 iconoImprimir.addEventListener('mouseout',  () => iconoImprimir.src = normal);
             }
@@ -385,13 +399,21 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     <!-- HEADER -->
     <header class="sticky top-0 z-30 bg-gaBg/95 backdrop-blur flex items-center px-6 py-4 shadow-sm" style="background-color: rgb(0 90 163 / 91%);">
         <div class="flex items-center gap-4">
+<<<<<<< HEAD
             <img src="/Img/Botones%20entregas/Estadisticas/ESTADISTICAS.png"
+=======
+            <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/ESTADISTICAS.png"
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
                  alt="Estadísticas"
                  class="h-14 object-contain drop-shadow">
         </div>
         <nav class="ml-auto">
             <a href="Pedidos_GA.php" title="Volver">
+<<<<<<< HEAD
                 <img src="/Img/Botones%20entregas/RegistrarChofer/VOLVAZ.png"
+=======
+                <img src="/Pedidos_GA/Img/Botones%20entregas/RegistrarChofer/VOLVAZ.png"
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
                      alt="Volver"
                      class="icono-Volver h-9 w-auto hover:scale-105 transition-transform">
             </a>
@@ -469,7 +491,11 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
             <!-- AIESA -->
             <div class="bg-white rounded-3xl shadow-gaCard p-3 card-sucursal hover:shadow-2xl hover:-translate-y-1 transition">
                 <div class="flex justify-center items-center pb-2 border-b border-slate-100 flex-shrink-0">
+<<<<<<< HEAD
                     <img src="/Img/Botones%20entregas/Estadisticas/aiesa.png" alt="AIESA"
+=======
+                    <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/aiesa.png" alt="AIESA"
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
                          class="h-9 object-contain">
                 </div>
                 <div class="chart-container pt-2">
@@ -481,7 +507,11 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
             <!-- DEASA -->
             <div class="bg-white rounded-3xl shadow-gaCard p-3 card-sucursal hover:shadow-2xl hover:-translate-y-1 transition">
                 <div class="flex justify-center items-center pb-2 border-b border-slate-100 flex-shrink-0">
+<<<<<<< HEAD
                     <img src="/Img/Botones%20entregas/Estadisticas/deasa.png" alt="DEASA" class="h-9 object-contain">
+=======
+                    <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/deasa.png" alt="DEASA" class="h-9 object-contain">
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
                 </div>
                 <div class="chart-container pt-2">
                     <div id="piechart2" class="w-full h-full"></div>
@@ -492,7 +522,11 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
             <!-- DIMEGSA -->
             <div class="bg-white rounded-3xl shadow-gaCard p-3 card-sucursal hover:shadow-2xl hover:-translate-y-1 transition">
                 <div class="flex justify-center items-center pb-2 border-b border-slate-100 flex-shrink-0">
+<<<<<<< HEAD
                     <img src="/Img/Botones%20entregas/Estadisticas/dimegsa.png" alt="DIMEGSA" class="h-9 object-contain">
+=======
+                    <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/dimegsa.png" alt="DIMEGSA" class="h-9 object-contain">
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
                 </div>
                 <div class="chart-container pt-2">
                     <div id="piechart3" class="w-full h-full"></div>
@@ -503,7 +537,11 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
             <!-- GABSA -->
             <div class="bg-white rounded-3xl shadow-gaCard p-3 card-sucursal hover:shadow-2xl hover:-translate-y-1 transition">
                 <div class="flex justify-center items-center pb-2 border-b border-slate-100 flex-shrink-0">
+<<<<<<< HEAD
                     <img src="/Img/Botones%20entregas/Estadisticas/gabajio.png" alt="GABSA" class="h-9 object-contain">
+=======
+                    <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/gabajio.png" alt="GABSA" class="h-9 object-contain">
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
                 </div>
                 <div class="chart-container pt-2">
                     <div id="piechart4" class="w-full h-full"></div>
@@ -514,7 +552,11 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
             <!-- ILUMINACION -->
             <div class="bg-white rounded-3xl shadow-gaCard p-3 card-sucursal hover:shadow-2xl hover:-translate-y-1 transition">
                 <div class="flex justify-center items-center pb-2 border-b border-slate-100 flex-shrink-0">
+<<<<<<< HEAD
                     <img src="/Img/Botones%20entregas/Estadisticas/iluminacion_1.png" alt="ILUMINACION" class="h-9 object-contain">
+=======
+                    <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/iluminacion_1.png" alt="ILUMINACION" class="h-9 object-contain">
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
                 </div>
                 <div class="chart-container pt-2">
                     <div id="piechart5" class="w-full h-full"></div>
@@ -525,7 +567,11 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
             <!-- SEGSA -->
             <div class="bg-white rounded-3xl shadow-gaCard p-3 card-sucursal hover:shadow-2xl hover:-translate-y-1 transition">
                 <div class="flex justify-center items-center pb-2 border-b border-slate-100 flex-shrink-0">
+<<<<<<< HEAD
                     <img src="/Img/Botones%20entregas/Estadisticas/segsa.png" alt="SEGSA" class="h-9 object-contain">
+=======
+                    <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/segsa.png" alt="SEGSA" class="h-9 object-contain">
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
                 </div>
                 <div class="chart-container pt-2">
                     <div id="piechart6" class="w-full h-full"></div>
@@ -536,7 +582,11 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
             <!-- FESA -->
             <div class="bg-white rounded-3xl shadow-gaCard p-3 card-sucursal hover:shadow-2xl hover:-translate-y-1 transition">
                 <div class="flex justify-center items-center pb-2 border-b border-slate-100 flex-shrink-0">
+<<<<<<< HEAD
                     <img src="/Img/Botones%20entregas/Estadisticas/fesa.png" alt="FESA" class="h-9 object-contain">
+=======
+                    <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/fesa.png" alt="FESA" class="h-9 object-contain">
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
                 </div>
                 <div class="chart-container pt-2">
                     <div id="piechart7" class="w-full h-full"></div>
@@ -547,7 +597,11 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
             <!-- TAPATIA -->
             <div class="bg-white rounded-3xl shadow-gaCard p-3 card-sucursal hover:shadow-2xl hover:-translate-y-1 transition">
                 <div class="flex justify-center items-center pb-2 border-b border-slate-100 flex-shrink-0">
+<<<<<<< HEAD
                     <img src="/Img/Botones%20entregas/Estadisticas/eitsa.png" alt="TAPATIA" class="h-9 object-contain">
+=======
+                    <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/eitsa.png" alt="TAPATIA" class="h-9 object-contain">
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
                 </div>
                 <div class="chart-container pt-2">
                     <div id="piechart8" class="w-full h-full"></div>
@@ -558,7 +612,11 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
             <!-- VALLARTA -->
             <div class="bg-white rounded-3xl shadow-gaCard p-3 card-sucursal hover:shadow-2xl hover:-translate-y-1 transition">
                 <div class="flex justify-center items-center pb-2 border-b border-slate-100 flex-shrink-0">
+<<<<<<< HEAD
                     <img src="/Img/Botones%20entregas/Estadisticas/gavallarta.png" alt="VALLARTA" class="h-9 object-contain">
+=======
+                    <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/gavallarta.png" alt="VALLARTA" class="h-9 object-contain">
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
                 </div>
                 <div class="chart-container pt-2">
                     <div id="piechart9" class="w-full h-full"></div>
@@ -569,7 +627,11 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
             <!-- CODI -->
             <div class="bg-white rounded-3xl shadow-gaCard p-3 card-sucursal hover:shadow-2xl hover:-translate-y-1 transition">
                 <div class="flex justify-center items-center pb-2 border-b border-slate-100 flex-shrink-0">
+<<<<<<< HEAD
                     <img src="/Img/Botones%20entregas/Estadisticas/codi.png" alt="CODI" class="h-9 object-contain">
+=======
+                    <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/codi.png" alt="CODI" class="h-9 object-contain">
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
                 </div>
                 <div class="chart-container pt-2">
                     <div id="piechart10" class="w-full h-full"></div>
@@ -580,7 +642,11 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
             <!-- QUERETARO -->
             <div class="bg-white rounded-3xl shadow-gaCard p-3 card-sucursal hover:shadow-2xl hover:-translate-y-1 transition">
                 <div class="flex justify-center items-center pb-2 border-b border-slate-100 flex-shrink-0">
+<<<<<<< HEAD
                     <img src="/Img/Botones%20entregas/Estadisticas/QRO.png" alt="QUERÉTARO" class="h-9 object-contain">
+=======
+                    <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/QRO.png" alt="QUERÉTARO" class="h-9 object-contain">
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
                 </div>
                 <div class="chart-container pt-2">
                     <div id="piechart11" class="w-full h-full"></div>
@@ -594,7 +660,11 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     <div class="max-w-6xl mx-auto px-4 pb-10 text-center">
         <button onclick="window.print()" title="Imprimir estadísticas"
                 class="inline-flex items-center justify-center mt-2">
+<<<<<<< HEAD
             <img src="/Img/Botones%20entregas/Estadisticas/IMPAZ.png"
+=======
+            <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/IMPAZ.png"
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
                  alt="Imprimir"
                  class="icono-Imprimir h-12 w-auto hover:scale-105 transition-transform">
         </button>

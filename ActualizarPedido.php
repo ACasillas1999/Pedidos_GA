@@ -17,7 +17,11 @@ $id_pedido = $_GET['id'];
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<<<<<<< HEAD
     <link rel="icon" type="image/png" href="/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+=======
+    <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
     <link rel="stylesheet" href="styles3.css">
     <title>Formulario de Pedidos</title>
 </head>
@@ -28,8 +32,13 @@ $id_pedido = $_GET['id'];
         var iconoVolver = document.querySelector(".icono-Volver");
         
         
+<<<<<<< HEAD
         var imgNormalAP = "/Img/Botones%20entregas/Inicio/DETPED/AGPEDNA.png";
         var imgHoverAP = "/Img/Botones%20entregas/Inicio/DETPED/AGPEDAZ.png";
+=======
+        var imgNormalAP = "/Pedidos_GA/Img/Botones%20entregas/Inicio/DETPED/AGPEDNA.png";
+        var imgHoverAP = "/Pedidos_GA/Img/Botones%20entregas/Inicio/DETPED/AGPEDAZ.png";
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
 
         // Cambiar la imagen al pasar el mouse
         iconoAP.addEventListener("mouseover", function() {
@@ -41,8 +50,13 @@ $id_pedido = $_GET['id'];
             iconoAP.src = imgNormalAP;
         });
 
+<<<<<<< HEAD
         var imgNormalVolver = "/Img/Botones%20entregas/RegistrarChofer/VOLVAZ.png";
     var imgHoverVolver = "/Img/Botones%20entregas/RegistrarChofer/VOLVNA.png";
+=======
+        var imgNormalVolver = "/Pedidos_GA/Img/Botones%20entregas/RegistrarChofer/VOLVAZ.png";
+    var imgHoverVolver = "/Pedidos_GA/Img/Botones%20entregas/RegistrarChofer/VOLVNA.png";
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
 
     // Cambiar la imagen al pasar el mouse para Volver
     if (iconoVolver) {
@@ -66,14 +80,18 @@ $id_pedido = $_GET['id'];
      <header class="header">
         <div class="logo">
          
+<<<<<<< HEAD
           <img src="/Img/Botones%20entregas/Inicio/DETPED/ACTPED.png" alt="Estaditicas" class="icono-imprimir" style="max-width: 15%; height: auto;">
+=======
+          <img src="/Pedidos_GA/Img/Botones%20entregas/Inicio/DETPED/ACTPED.png" alt="Estaditicas" class="icono-imprimir" style="max-width: 15%; height: auto;">
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
          
          </div>
         <nav class="navbar">
             <ul>
                 <li class="nav-item"><a href='Inicio.php?id=<?php echo $id_pedido?>' class="nav-link">
                     
-                <img src="/Img/Botones entregas\RegistrarChofer\VOLVAZ.png" alt="Choferes"class = "icono-Volver"style="max-width: 5%; height: auto; position:absolute; top: 90px; left: 35px;">
+                <img src="\Pedidos_GA\Img\Botones entregas\RegistrarChofer\VOLVAZ.png" alt="Choferes"class = "icono-Volver"style="max-width: 5%; height: auto; position:absolute; top: 90px; left: 35px;">
                     
 
                 </a></li>
@@ -486,7 +504,11 @@ $precio_esta_validado = isset($row['precio_validado_jc']) && $row['precio_valida
        <form action="ActualizarPedido.php" method="GET">
             <input type="hidden" name="id" value="<?php echo $row['ID']; ?>">
             <button type="submit" class="icono-AP" style="background: none; border: none; padding: 0;">
+<<<<<<< HEAD
                 <img src="/Img/Botones%20entregas/Inicio/DETPED/AGPEDNA.png" alt="Actualizar Pedido" style="max-width: 50%; height: auto; Display: Flex;">
+=======
+                <img src="/Pedidos_GA/Img/Botones%20entregas/Inicio/DETPED/AGPEDNA.png" alt="Actualizar Pedido" style="max-width: 50%; height: auto; Display: Flex;">
+>>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
             </button>
         </form>
 
