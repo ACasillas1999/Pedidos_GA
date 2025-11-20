@@ -157,7 +157,7 @@ if ($pedidos_creados > 0) {
     echo '  html: "' . addslashes($mensajeHTML) . '",';
     echo '  confirmButtonColor: "#005aa3"';
     echo '}).then(() => {';
-    echo '  window.location.href = "/Mensajes_WP/Mensaje_WP_Notificacion.php?pedido_id=' . $primer_pedido_id . '";';
+echo '  window.location.href = "/Pedidos_GA/Mensajes_WP/Mensaje_WP_Notificacion.php?pedido_id=' . $primer_pedido_id . '";';
     echo '});';
 } else {
     $erroresTexto = implode("<br>", array_map('htmlspecialchars', $errores));
