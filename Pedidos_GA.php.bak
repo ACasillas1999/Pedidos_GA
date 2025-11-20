@@ -447,7 +447,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
   <!-- Botón para Mensajería WhatsApp (sin cambios) -->
   <?php if ($_SESSION["Rol"] === "JC") : ?>
   <div class="WP-button">
-    <form id="wpForm" action="/Pedidos_GA/Mensajes_WP/Mensaje_WP_NotificarChoferes.php" method="post" onsubmit="return false;">
+    <form id="wpForm" action="/Mensajes_WP/Mensaje_WP_NotificarChoferes.php" method="post" onsubmit="return false;">
       <button type="button" onclick="confirmSubmit()" value="WP" style="background: none; border: none; padding: 0;">
         <img src="/Img/Botones entregas/Whatsapp/WWSPAZ.png" alt="icono-WP" class="icono-WP" style="max-width: 45%; height: auto;">
       </button>
@@ -458,7 +458,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
   <!-- Botón para Descargar App Móvil (Admin y JC) -->
   <?php if ($_SESSION["Rol"] === "Admin" || $_SESSION["Rol"] === "JC") : ?>
   <div class="download-app-button">
-    <a href="/Pedidos_GA/App/PedidosGA.apk" download="PedidosGA.apk" title="Descargar App Móvil">
+    <a href="/App/PedidosGA.apk" download="PedidosGA.apk" title="Descargar App Móvil">
       <div class="download-icon">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="35px" height="35px">
           <path d="M0 0h24v24H0z" fill="none"/>

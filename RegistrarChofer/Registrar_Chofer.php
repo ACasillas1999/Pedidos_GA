@@ -88,7 +88,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     // Rutas
     $dirAbs  = dirname(__DIR__) . "/uploads/choferes";   // carpeta física (uploads en minúsculas)
-    $webBase = "/Pedidos_GA/uploads/choferes";           // ruta pública base
+    $webBase = "/uploads/choferes";           // ruta pública base
     if (!is_dir($dirAbs)) { @mkdir($dirAbs, 0775, true); }
 
     if ($row) {

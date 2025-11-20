@@ -46,7 +46,7 @@ if (!isset($allow[$mime])) {
 $ext = $allow[$mime];
 
 // Rutas
-$publicBase = "/Pedidos_GA/uploads/choferes";           // URL pública
+$publicBase = "/uploads/choferes";           // URL pública
 $diskBase   = __DIR__ . "/uploads/choferes";            // ruta en disco
 
 // Asegurar carpeta

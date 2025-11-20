@@ -1037,7 +1037,7 @@ while ($c = $choferes->fetch_assoc()) {
       </li>
 
       <li>
-        <a href="/Pedidos_GA/Servicios/Servicios.php" title="servicios" aria-label="Servicios">
+        <a href="/Servicios/Servicios.php" title="servicios" aria-label="Servicios">
           <!--<i class="fa-sharp fa-solid fa-gears sidebar-icon small" style="font-size:48px;color:orange;"></i>-->
           <img src="/Img/SVG/ServiciosN.svg"  class="icono-servicios sidebar-icon" alt="Servicios">
         </a>

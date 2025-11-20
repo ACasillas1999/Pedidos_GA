@@ -70,7 +70,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
      
     <ul>
          <?php if ($_SESSION["Rol"] === "Admin"||$_SESSION["Rol"] === "JC" ): ?>
-        <li><a href="/Pedidos_GA/RegistrarChofer">
+        <li><a href="/RegistrarChofer">
             <img src="/Img/Botones entregas\Choferes\AGCHOF2.png" alt="Estaditicas " class = "icono-AddChofer"style="max-width: 80%; height: auto;">
             
            </a></li>

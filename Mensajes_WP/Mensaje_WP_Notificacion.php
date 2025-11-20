@@ -78,7 +78,7 @@ if ($pedido_id) {
             echo '  timer: 2000,';
             echo '  showConfirmButton: false';
             echo '}).then(() => {';
-            echo '  window.location.href = "/Pedidos_GA/Inicio.php?id=' . $pedido_id . '";';
+            echo '  window.location.href = "/Inicio.php?id=' . $pedido_id . '";';
             echo '});';
             echo '</script>';
         }
