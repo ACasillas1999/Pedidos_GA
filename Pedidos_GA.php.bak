@@ -309,8 +309,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
       var iconoWP = document.querySelector(".icono-WP");
       
       if (iconoChoferes) {
-        var imgNormalChoferes = "//Img/Botones%20entregas/Pedidos_GA/CHOFNA2.png";
-        var imgHoverChoferes = "//Img/Botones%20entregas/Pedidos_GA/CHOFBL2.png";
+        var imgNormalChoferes = "/Img/Botones%20entregas/Pedidos_GA/CHOFNA2.png";
+        var imgHoverChoferes = "/Img/Botones%20entregas/Pedidos_GA/CHOFBL2.png";
         iconoChoferes.addEventListener("mouseover", function() {
             iconoChoferes.src = imgHoverChoferes;
         });
@@ -320,8 +320,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
       }
 
       if (iconoVehiculos) {
-        var imgNormalVehiculos = "//Img/Botones%20entregas/Pedidos_GA/SERVMECNA.png";
-        var imgHoverVehiculos = "//Img/Botones%20entregas/Pedidos_GA/SERVMECBLANC.png";
+        var imgNormalVehiculos = "/Img/Botones%20entregas/Pedidos_GA/SERVMECNA.png";
+        var imgHoverVehiculos = "/Img/Botones%20entregas/Pedidos_GA/SERVMECBLANC.png";
         iconoVehiculos.addEventListener("mouseover", function() {
             iconoVehiculos.src = imgHoverVehiculos;
         });
@@ -331,8 +331,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
       }
       
       if (iconoEstadisticas) {
-        var imgNormalEstadisticas = "//Img/Botones%20entregas/Pedidos_GA/ESTNA2.png";
-        var imgHoverEstadisticas = "//Img/Botones%20entregas/Pedidos_GA/ESTBL2.png";
+        var imgNormalEstadisticas = "/Img/Botones%20entregas/Pedidos_GA/ESTNA2.png";
+        var imgHoverEstadisticas = "/Img/Botones%20entregas/Pedidos_GA/ESTBL2.png";
         iconoEstadisticas.addEventListener("mouseover", function() {
             iconoEstadisticas.src = imgHoverEstadisticas;
         });
@@ -342,8 +342,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
       }
       
       if (iconoAddRegistro) {
-        var imgNormalAddRegistro = "//Img/Botones%20entregas/Pedidos_GA/AGRENA.png";
-        var imgHoverAddRegistro = "//Img/Botones%20entregas/Pedidos_GA/AGREBL.png";
+        var imgNormalAddRegistro = "/Img/Botones%20entregas/Pedidos_GA/AGRENA.png";
+        var imgHoverAddRegistro = "/Img/Botones%20entregas/Pedidos_GA/AGREBL.png";
         iconoAddRegistro.addEventListener("mouseover", function() {
             iconoAddRegistro.src = imgHoverAddRegistro;
         });
@@ -353,8 +353,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
       }
       
       if (iconoU) {
-        var imgNormalU = "//Img/Botones%20entregas/Pedidos_GA/USUNA.png";
-        var imgHoverU = "//Img/Botones%20entregas/Pedidos_GA/USUBL.png";
+        var imgNormalU = "/Img/Botones%20entregas/Pedidos_GA/USUNA.png";
+        var imgHoverU = "/Img/Botones%20entregas/Pedidos_GA/USUBL.png";
         iconoU.addEventListener("mouseover", function() {
             iconoU.src = imgHoverU;
         });
@@ -363,8 +363,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         });
       }
 
-      var imgNormalH = "//Img/Botones%20entregas/Pedidos_GA/H2.png";
-      var imgHoverH = "//Img/Botones%20entregas/Pedidos_GA/H1.png";
+      var imgNormalH = "/Img/Botones%20entregas/Pedidos_GA/H2.png";
+      var imgHoverH = "/Img/Botones%20entregas/Pedidos_GA/H1.png";
       if (iconoH) {
           iconoH.addEventListener("mouseover", function() {
               iconoH.src = imgHoverH;
@@ -376,8 +376,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 
     
       if (iconoReportePrecios) {
-          var imgNormalReportePrecios = "//Img/Botones%20entregas/Pedidos_GA/ICONO_CHIDO.png";
-      var imgHoverReportePrecios = "//Img/Botones%20entregas/Pedidos_GA/ICONO_CHIDO2_BLANCO.png";
+          var imgNormalReportePrecios = "/Img/Botones%20entregas/Pedidos_GA/ICONO_CHIDO.png";
+      var imgHoverReportePrecios = "/Img/Botones%20entregas/Pedidos_GA/ICONO_CHIDO2_BLANCO.png";
       
           iconoReportePrecios.addEventListener("mouseover", function() {
               iconoReportePrecios.src = imgHoverReportePrecios;
@@ -387,8 +387,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
           });
       }
 
-      var imgNormalMapaCalor = "//Img/Botones%20entregas/Pedidos_GA/MAPA_NA.png";
-      var imgHoverMapaCalor = "//Img/Botones%20entregas/Pedidos_GA/MAPA_BL.png";
+      var imgNormalMapaCalor = "/Img/Botones%20entregas/Pedidos_GA/MAPA_NA.png";
+      var imgHoverMapaCalor = "/Img/Botones%20entregas/Pedidos_GA/MAPA_BL.png";
       if (iconoMapaCalor) {
           iconoMapaCalor.addEventListener("mouseover", function() {
               iconoMapaCalor.src = imgHoverMapaCalor;
@@ -399,8 +399,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
       }
 
       if (iconoCS) {
-        var imgNormalSC = "//Img/Botones%20entregas/Pedidos_GA/CERRSESBL.png";
-        var imgHoverSC = "//Img/Botones%20entregas/Pedidos_GA/CERRSESNA.png";
+        var imgNormalSC = "/Img/Botones%20entregas/Pedidos_GA/CERRSESBL.png";
+        var imgHoverSC = "/Img/Botones%20entregas/Pedidos_GA/CERRSESNA.png";
         iconoCS.addEventListener("mouseover", function() {
             iconoCS.src = imgHoverSC;
         });
@@ -409,8 +409,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         });
       }
       
-      var imgNormalMaps = "//Img/Botones%20entregas/Inicio/DETPED/MAPSNA.png";
-      var imgHoverMaps = "//Img/Botones%20entregas/Inicio/DETPED/ABRGMAZ.png";
+      var imgNormalMaps = "/Img/Botones%20entregas/Inicio/DETPED/MAPSNA.png";
+      var imgHoverMaps = "/Img/Botones%20entregas/Inicio/DETPED/ABRGMAZ.png";
       if (iconoMaps) {
           iconoMaps.addEventListener("mouseover", function() {
               iconoMaps.src = imgHoverMaps;
@@ -421,8 +421,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
       }
       
       if (iconoHome) {
-        var imgNormalHome = "//Img/Botones%20entregas/Pedidos_GA/CERRSESBL.png";
-        var imgHoverHome = "//Img/Botones%20entregas/Pedidos_GA/CERRSESNA.png";
+        var imgNormalHome = "/Img/Botones%20entregas/Pedidos_GA/CERRSESBL.png";
+        var imgHoverHome = "/Img/Botones%20entregas/Pedidos_GA/CERRSESNA.png";
         iconoHome.addEventListener("mouseover", function() {
             iconoHome.src = imgHoverHome;
         });
@@ -432,8 +432,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
       }
       
       if (iconoWP) {
-        var imgNormalWP = "//Img/Botones%20entregas/Whatsapp/WWSPAZ.png";
-        var imgHoverWP = "//Img/Botones%20entregas/Whatsapp/WSPNA.png";
+        var imgNormalWP = "/Img/Botones%20entregas/Whatsapp/WWSPAZ.png";
+        var imgHoverWP = "/Img/Botones%20entregas/Whatsapp/WSPNA.png";
         iconoWP.addEventListener("mouseover", function() {
             iconoWP.src = imgHoverWP;
         });

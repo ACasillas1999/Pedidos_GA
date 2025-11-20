@@ -228,16 +228,16 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     document.addEventListener("DOMContentLoaded", function () {
       var iconoInventario = document.querySelector(".icono-inventario");
       if (iconoInventario) {
-        var imgNormalInventario = "//Img/SVG/InventarioN.svg";
-        var imgHoverInventario  = "//Img/SVG/InventarioB.svg";
+        var imgNormalInventario = "/Img/SVG/InventarioN.svg";
+        var imgHoverInventario  = "/Img/SVG/InventarioB.svg";
         iconoInventario.addEventListener("mouseover", function(){ this.src = imgHoverInventario; });
         iconoInventario.addEventListener("mouseout",  function(){ this.src = imgNormalInventario ; });
       }
 
       var iconoEstadisticaServ = document.querySelector(".icono-estadisticaServ");
       if (iconoEstadisticaServ ) {
-        var imgNormalEstadisticaServ = "//Img/SVG/EstadisticasServN.svg";
-        var imgHoverEstadisticaServ  = "//Img/SVG/EstadisticasServB.svg";
+        var imgNormalEstadisticaServ = "/Img/SVG/EstadisticasServN.svg";
+        var imgHoverEstadisticaServ  = "/Img/SVG/EstadisticasServB.svg";
         iconoEstadisticaServ .addEventListener("mouseover", function(){ this.src = imgHoverEstadisticaServ ; });
         iconoEstadisticaServ .addEventListener("mouseout",  function(){ this.src = imgNormalEstadisticaServ ; });
       }

@@ -27,7 +27,7 @@ ALTERNATIVA TEMPORAL:
 Si no tienes las imágenes, puedes usar temporalmente otro icono existente
 cambiando las rutas en Pedidos_GA.php líneas 158-159:
 
-var imgNormalReportePrecios = "//Img/Botones%20entregas/Pedidos_GA/ESTNA2.png";
-var imgHoverReportePrecios = "//Img/Botones%20entregas/Pedidos_GA/ESTBL2.png";
+var imgNormalReportePrecios = "/Img/Botones%20entregas/Pedidos_GA/ESTNA2.png";
+var imgHoverReportePrecios = "/Img/Botones%20entregas/Pedidos_GA/ESTBL2.png";
 
 ===========================================================

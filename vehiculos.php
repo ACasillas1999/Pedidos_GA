@@ -1495,26 +1495,26 @@ while ($c = $choferes->fetch_assoc()) {
       const iconoEstadisticas = document.querySelector(".icono-estadisticas");
       const iconoServicios = document.querySelector(".icono-servicios");
       if (iconoAddChofer) {
-        const n = "//Img/Botones%20entregas/Choferes/ADDSERVMECNA.png",
-          h = "//Img/Botones%20entregas/Choferes/ADDSERVMECBLANC.png";
+        const n = "/Img/Botones%20entregas/Choferes/ADDSERVMECNA.png",
+          h = "/Img/Botones%20entregas/Choferes/ADDSERVMECBLANC.png";
         iconoAddChofer.addEventListener("mouseover", () => iconoAddChofer.src = h);
         iconoAddChofer.addEventListener("mouseout", () => iconoAddChofer.src = n);
       }
       if (iconoVolver) {
-        const n = "//Img/Botones%20entregas/Usuario/VOLVAZ.png",
-          h = "//Img/Botones%20entregas/Usuario/VOLVNA.png";
+        const n = "/Img/Botones%20entregas/Usuario/VOLVAZ.png",
+          h = "/Img/Botones%20entregas/Usuario/VOLVNA.png";
         iconoVolver.addEventListener("mouseover", () => iconoVolver.src = h);
         iconoVolver.addEventListener("mouseout", () => iconoVolver.src = n);
       }
       if (iconoEstadisticas) {
-        const n = "//Img/Botones%20entregas/Pedidos_GA/ESTNA2.png",
-          h = "//Img/Botones%20entregas/Pedidos_GA/ESTBL2.png";
+        const n = "/Img/Botones%20entregas/Pedidos_GA/ESTNA2.png",
+          h = "/Img/Botones%20entregas/Pedidos_GA/ESTBL2.png";
         iconoEstadisticas.addEventListener("mouseover", () => iconoEstadisticas.src = h);
         iconoEstadisticas.addEventListener("mouseout", () => iconoEstadisticas.src = n);
       }
       if (iconoServicios) {
-        const n = "//Img/SVG/ServiciosN.svg",
-          h = "//Img/SVG/ServiciosB.svg";
+        const n = "/Img/SVG/ServiciosN.svg",
+          h = "/Img/SVG/ServiciosB.svg";
         iconoServicios.addEventListener("mouseover", () => iconoServicios.src = h);
         iconoServicios.addEventListener("mouseout", () => iconoServicios.src = n);
       }

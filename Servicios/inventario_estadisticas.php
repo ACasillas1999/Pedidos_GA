@@ -167,8 +167,8 @@ try {
     document.addEventListener("DOMContentLoaded", function () {
       var iconoInventario = document.querySelector(".icono-inventario");
       if (iconoInventario) {
-        var imgNormalInventario = "//Img/SVG/InventarioN.svg";
-        var imgHoverInventario  = "//Img/SVG/InventarioB.svg";
+        var imgNormalInventario = "/Img/SVG/InventarioN.svg";
+        var imgHoverInventario  = "/Img/SVG/InventarioB.svg";
         iconoInventario.addEventListener("mouseover", function(){ this.src = imgHoverInventario; });
         iconoInventario.addEventListener("mouseout",  function(){ this.src = imgNormalInventario ; });
       }

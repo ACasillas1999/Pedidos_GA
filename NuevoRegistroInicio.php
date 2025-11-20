@@ -39,8 +39,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     var iconoVolver = document.querySelector(".icono-Volver");
     var iconoFAP = document.querySelector(".icono-FAP-img");
 
-    var imgNormalVolver = "//Img/Botones%20entregas/RegistrarChofer/VOLVAZ.png";
-    var imgHoverVolver = "//Img/Botones%20entregas/RegistrarChofer/VOLVNA.png";
+    var imgNormalVolver = "/Img/Botones%20entregas/RegistrarChofer/VOLVAZ.png";
+    var imgHoverVolver = "/Img/Botones%20entregas/RegistrarChofer/VOLVNA.png";
 
     // Cambiar la imagen al pasar el mouse para Volver
     if (iconoVolver) {
@@ -53,8 +53,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         });
     }
 
-    var imgNormalFAP = "//Img/Botones%20entregas/Inicio/DETPED/AGPEDNA.png";
-    var imgHoverFAP = "//Img/Botones%20entregas/Inicio/DETPED/AGPEDAZ.png";
+    var imgNormalFAP = "/Img/Botones%20entregas/Inicio/DETPED/AGPEDNA.png";
+    var imgHoverFAP = "/Img/Botones%20entregas/Inicio/DETPED/AGPEDAZ.png";
 
     // Cambiar la imagen al pasar el mouse para FAP
     if (iconoFAP) {

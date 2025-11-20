@@ -14,16 +14,16 @@ document.addEventListener("DOMContentLoaded", function() {
   const iconoVolver = document.querySelector(".icono-Volver");
   const iconoFAP    = document.querySelector(".icono-FAP-img");
 
-  const imgNormalVolver = "//Img/Botones%20entregas/RegistrarChofer/VOLVAZ.png";
-  const imgHoverVolver  = "//Img/Botones%20entregas/RegistrarChofer/VOLVNA.png";
+  const imgNormalVolver = "/Img/Botones%20entregas/RegistrarChofer/VOLVAZ.png";
+  const imgHoverVolver  = "/Img/Botones%20entregas/RegistrarChofer/VOLVNA.png";
 
   if (iconoVolver) {
     iconoVolver.addEventListener("mouseover", () => iconoVolver.src = imgHoverVolver);
     iconoVolver.addEventListener("mouseout",  () => iconoVolver.src = imgNormalVolver);
   }
 
-  const imgNormalFAP = "//Img/Botones%20entregas/RegistrarChofer/REGNA.png";
-  const imgHoverFAP  = "//Img/Botones%20entregas/RegistrarChofer/REGNAF.png";
+  const imgNormalFAP = "/Img/Botones%20entregas/RegistrarChofer/REGNA.png";
+  const imgHoverFAP  = "/Img/Botones%20entregas/RegistrarChofer/REGNAF.png";
 
   if (iconoFAP) {
     iconoFAP.addEventListener("mouseover", () => iconoFAP.src = imgHoverFAP);

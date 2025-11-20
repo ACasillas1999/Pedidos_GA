@@ -58,8 +58,8 @@ document.addEventListener("DOMContentLoaded", function() {
     var iconoActP = document.querySelector(".icono-ActP");
     var iconoImprimir = document.querySelector(".icono-imprimir")
     
-    var imgNormalActP = "//Img/Botones%20entregas/Inicio/DETPED/AZTPEDNA.png";
-    var imgHoverActP = "//Img/Botones%20entregas/Inicio/DETPED/ACTPEDAZ.png";
+    var imgNormalActP = "/Img/Botones%20entregas/Inicio/DETPED/AZTPEDNA.png";
+    var imgHoverActP = "/Img/Botones%20entregas/Inicio/DETPED/ACTPEDAZ.png";
 //AZTPEDNA
     // Cambiar la imagen al pasar el mouse
     iconoActP.addEventListener("mouseover", function() {
@@ -72,8 +72,8 @@ document.addEventListener("DOMContentLoaded", function() {
     });
     
     
-    var imgNormalImprimir = "//Img/Botones%20entregas/Inicio/DETPED/IMPNA.png";
-    var imgHoverImprimir = "//Img/Botones%20entregas/Inicio/DETPED/IMPAZ.png";
+    var imgNormalImprimir = "/Img/Botones%20entregas/Inicio/DETPED/IMPNA.png";
+    var imgHoverImprimir = "/Img/Botones%20entregas/Inicio/DETPED/IMPAZ.png";
 
     // Cambiar la imagen al pasar el mouse
     iconoImprimir.addEventListener("mouseover", function() {

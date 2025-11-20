@@ -32,7 +32,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         var iconoVolver = document.querySelector(".icono-Volver");
     
             var imgNormalAddChoferes ="/Img/Botones%20entregas/Pedidos_GA/AGUSNA.png";
-            var imgHoverCAddhoferes = "//Img/Botones%20entregas/Pedidos_GA/AGUSBL.png";
+            var imgHoverCAddhoferes = "/Img/Botones%20entregas/Pedidos_GA/AGUSBL.png";
 
             // Cambiar la imagen al pasar el mouse para Pendientes
             iconoAddChofer.addEventListener("mouseover", function() {
@@ -46,7 +46,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         
         
           var imgNormalVolver="/Img/Botones%20entregas/Usuario/VOLVAZ.png";
-            var imgHoverVolver = "//Img/Botones%20entregas/Usuario/VOLVNA.png";
+            var imgHoverVolver = "/Img/Botones%20entregas/Usuario/VOLVNA.png";
 
             // Cambiar la imagen al pasar el mouse para Pendientes
             iconoVolver.addEventListener("mouseover", function() {

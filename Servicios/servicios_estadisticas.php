@@ -130,8 +130,8 @@ try {
 
       var iconoAgregar = document.querySelector(".icono-agregar_servicio");
       if (iconoAgregar) {
-        var imgNormalAgregar = "//Img/SVG/CrearSerN.svg";
-        var imgHoverAgregar  = "//Img/SVG/CrearSerB.svg";
+        var imgNormalAgregar = "/Img/SVG/CrearSerN.svg";
+        var imgHoverAgregar  = "/Img/SVG/CrearSerB.svg";
         iconoAgregar.addEventListener("mouseover", function(){ this.src = imgHoverAgregar; });
         iconoAgregar.addEventListener("mouseout",  function(){ this.src = imgNormalAgregar; });
       }

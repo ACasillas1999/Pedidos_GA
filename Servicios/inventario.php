@@ -156,8 +156,8 @@ while ($v = $qVehiculos->fetch_assoc()) {
   document.addEventListener("DOMContentLoaded", function () {
     var iconoAgregarSer = document.querySelector(".icono-agregar_servicio");
     if (iconoAgregarSer) {
-        var imgNormalAgregarSer = "//Img/SVG/CrearSerN.svg";
-        var imgHoverAgregarSer  = "//Img/SVG/CrearSerB.svg";
+        var imgNormalAgregarSer = "/Img/SVG/CrearSerN.svg";
+        var imgHoverAgregarSer  = "/Img/SVG/CrearSerB.svg";
        iconoAgregarSer.addEventListener("mouseover", function(){ this.src = imgHoverAgregarSer; });
        iconoAgregarSer.addEventListener("mouseout",  function(){ this.src = imgNormalAgregarSer ; });
       }
@@ -165,8 +165,8 @@ while ($v = $qVehiculos->fetch_assoc()) {
 
     var iconoInvEstadisticas = document.querySelector(".icono-invEstadisticas");
     if (iconoInvEstadisticas) {
-        var imgNormalInvEstadisticas = "//Img/SVG/EstaInventarioN.svg";
-        var imgHoverInvEstadisticas  = "//Img/SVG/EstaInventarioB.svg";
+        var imgNormalInvEstadisticas = "/Img/SVG/EstaInventarioN.svg";
+        var imgHoverInvEstadisticas  = "/Img/SVG/EstaInventarioB.svg";
        iconoInvEstadisticas.addEventListener("mouseover", function(){ this.src = imgHoverInvEstadisticas ; });
        iconoInvEstadisticas.addEventListener("mouseout",  function(){ this.src = imgNormalInvEstadisticas  ; });
       }

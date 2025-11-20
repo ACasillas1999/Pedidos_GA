@@ -58,7 +58,7 @@ if (!$vehiculos) {
         var iconoEstadisticas = document.querySelector(".icono-estadisticas");
     
             var imgNormalAddChoferes ="/Img/Botones%20entregas/Choferes/ADDSERVMECNA.png";
-            var imgHoverCAddhoferes = "//Img/Botones%20entregas/Choferes/ADDSERVMECBLANC.png";
+            var imgHoverCAddhoferes = "/Img/Botones%20entregas/Choferes/ADDSERVMECBLANC.png";
 
             // Cambiar la imagen al pasar el mouse para Pendientes
             iconoAddChofer.addEventListener("mouseover", function() {
@@ -71,7 +71,7 @@ if (!$vehiculos) {
             });
         
         var imgNormalVolver="/Img/Botones%20entregas/Usuario/VOLVAZ.png";
-            var imgHoverVolver = "//Img/Botones%20entregas/Usuario/VOLVNA.png";
+            var imgHoverVolver = "/Img/Botones%20entregas/Usuario/VOLVNA.png";
 
             // Cambiar la imagen al pasar el mouse para Pendientes
             iconoVolver.addEventListener("mouseover", function() {
@@ -83,8 +83,8 @@ if (!$vehiculos) {
                 iconoVolver.src = imgNormalVolver;
             });
         
-      var imgNormalEstadisticas = "//Img/Botones%20entregas/Pedidos_GA/ESTNA2.png";
-      var imgHoverEstadisticas = "//Img/Botones%20entregas/Pedidos_GA/ESTBL2.png";
+      var imgNormalEstadisticas = "/Img/Botones%20entregas/Pedidos_GA/ESTNA2.png";
+      var imgHoverEstadisticas = "/Img/Botones%20entregas/Pedidos_GA/ESTBL2.png";
       iconoEstadisticas.addEventListener("mouseover", function() {
           iconoEstadisticas.src = imgHoverEstadisticas;
       });

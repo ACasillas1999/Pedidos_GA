@@ -318,15 +318,15 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
             const iconoImprimir = document.querySelector(".icono-Imprimir");
 
             if (iconoVolver) {
-                const normal = "//Img/Botones%20entregas/RegistrarChofer/VOLVAZ.png";
-                const hover  = "//Img/Botones%20entregas/RegistrarChofer/VOLVNA.png";
+                const normal = "/Img/Botones%20entregas/RegistrarChofer/VOLVAZ.png";
+                const hover  = "/Img/Botones%20entregas/RegistrarChofer/VOLVNA.png";
                 iconoVolver.addEventListener('mouseover', () => iconoVolver.src = hover);
                 iconoVolver.addEventListener('mouseout',  () => iconoVolver.src = normal);
             }
 
             if (iconoImprimir) {
-                const normal = "//Img/Botones%20entregas/Estadisticas/IMPAZ.png";
-                const hover  = "//Img/Botones%20entregas/Estadisticas/IMPNA.png";
+                const normal = "/Img/Botones%20entregas/Estadisticas/IMPAZ.png";
+                const hover  = "/Img/Botones%20entregas/Estadisticas/IMPNA.png";
                 iconoImprimir.addEventListener('mouseover', () => iconoImprimir.src = hover);
                 iconoImprimir.addEventListener('mouseout',  () => iconoImprimir.src = normal);
             }

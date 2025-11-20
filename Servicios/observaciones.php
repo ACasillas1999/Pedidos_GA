@@ -28,8 +28,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     document.addEventListener("DOMContentLoaded", function() {
       var iconoVolver = document.querySelector(".icono-Volver");
       if (iconoVolver) {
-        var imgNormalVolver = "//Img/Botones%20entregas/Usuario/VOLVAZ.png";
-        var imgHoverVolver = "//Img/Botones%20entregas/Usuario/VOLVNA.png";
+        var imgNormalVolver = "/Img/Botones%20entregas/Usuario/VOLVAZ.png";
+        var imgHoverVolver = "/Img/Botones%20entregas/Usuario/VOLVNA.png";
         iconoVolver.addEventListener("mouseover", function() {
           this.src = imgHoverVolver;
         });
@@ -40,8 +40,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 
       var iconoServicios = document.querySelector(".icono-servicios");
       if (iconoServicios) {
-        var imgNormalServicios = "//Img/SVG/ServiciosN.svg";
-        var imgHoverServicios = "//Img/SVG/ServiciosB.svg";
+        var imgNormalServicios = "/Img/SVG/ServiciosN.svg";
+        var imgHoverServicios = "/Img/SVG/ServiciosB.svg";
         iconoServicios.addEventListener("mouseover", function() {
           this.src = imgHoverServicios;
         });

@@ -35,8 +35,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     document.addEventListener("DOMContentLoaded", function() {
       var iconoInventario = document.querySelector(".icono-inventario");
       if (iconoInventario) {
-        var imgNormalInventario = "//Img/SVG/InventarioN.svg";
-        var imgHoverInventario = "//Img/SVG/InventarioB.svg";
+        var imgNormalInventario = "/Img/SVG/InventarioN.svg";
+        var imgHoverInventario = "/Img/SVG/InventarioB.svg";
         iconoInventario.addEventListener("mouseover", function() {
           this.src = imgHoverInventario;
         });
@@ -47,8 +47,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 
       var iconoVolver = document.querySelector(".icono-Volver");
       if (iconoVolver) {
-        var imgNormalVolver = "//Img/Botones%20entregas/Usuario/VOLVAZ.png";
-        var imgHoverVolver = "//Img/Botones%20entregas/Usuario/VOLVNA.png";
+        var imgNormalVolver = "/Img/Botones%20entregas/Usuario/VOLVAZ.png";
+        var imgHoverVolver = "/Img/Botones%20entregas/Usuario/VOLVNA.png";
         iconoVolver.addEventListener("mouseover", function() {
           this.src = imgHoverVolver;
         });
@@ -59,8 +59,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 
       var iconoAgregar = document.querySelector(".icono-agregar_servicio");
       if (iconoAgregar) {
-        var imgNormalAgregar = "//Img/SVG/CrearSerN.svg";
-        var imgHoverAgregar = "//Img/SVG/CrearSerB.svg";
+        var imgNormalAgregar = "/Img/SVG/CrearSerN.svg";
+        var imgHoverAgregar = "/Img/SVG/CrearSerB.svg";
         iconoAgregar.addEventListener("mouseover", function() {
           this.src = imgHoverAgregar;
         });

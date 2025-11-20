@@ -28,8 +28,8 @@ $id_pedido = $_GET['id'];
         var iconoVolver = document.querySelector(".icono-Volver");
         
         
-        var imgNormalAP = "//Img/Botones%20entregas/Inicio/DETPED/AGPEDNA.png";
-        var imgHoverAP = "//Img/Botones%20entregas/Inicio/DETPED/AGPEDAZ.png";
+        var imgNormalAP = "/Img/Botones%20entregas/Inicio/DETPED/AGPEDNA.png";
+        var imgHoverAP = "/Img/Botones%20entregas/Inicio/DETPED/AGPEDAZ.png";
 
         // Cambiar la imagen al pasar el mouse
         iconoAP.addEventListener("mouseover", function() {
@@ -41,8 +41,8 @@ $id_pedido = $_GET['id'];
             iconoAP.src = imgNormalAP;
         });
 
-        var imgNormalVolver = "//Img/Botones%20entregas/RegistrarChofer/VOLVAZ.png";
-    var imgHoverVolver = "//Img/Botones%20entregas/RegistrarChofer/VOLVNA.png";
+        var imgNormalVolver = "/Img/Botones%20entregas/RegistrarChofer/VOLVAZ.png";
+    var imgHoverVolver = "/Img/Botones%20entregas/RegistrarChofer/VOLVNA.png";
 
     // Cambiar la imagen al pasar el mouse para Volver
     if (iconoVolver) {

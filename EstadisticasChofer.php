@@ -211,8 +211,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     var iconoVolver = document.querySelector(".icono-Volver");
     
 
-    var imgNormalImprimir = "//Img/Botones%20entregas/Estadisticas/IMPAZ.png";
-    var imgHoverImprimir = "//Img/Botones%20entregas/Estadisticas/IMPNA.png";
+    var imgNormalImprimir = "/Img/Botones%20entregas/Estadisticas/IMPAZ.png";
+    var imgHoverImprimir = "/Img/Botones%20entregas/Estadisticas/IMPNA.png";
 
     // Cambiar la imagen al pasar el mouse
     if (iconoImprimir) {
@@ -225,8 +225,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         });
     }
 
-    var imgNormalVolver = "//Img/Botones%20entregas/RegistrarChofer/VOLVAZ.png";
-    var imgHoverVolver = "//Img/Botones%20entregas/RegistrarChofer/VOLVNA.png";
+    var imgNormalVolver = "/Img/Botones%20entregas/RegistrarChofer/VOLVAZ.png";
+    var imgHoverVolver = "/Img/Botones%20entregas/RegistrarChofer/VOLVNA.png";
 
     // Cambiar la imagen al pasar el mouse para Volver
     if (iconoVolver) {

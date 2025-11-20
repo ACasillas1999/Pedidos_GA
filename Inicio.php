@@ -35,8 +35,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         var iconoVChoferes = document.querySelector(".icono-VChoferes");
         
 
-        var imgNormalPVolver = "//Img/Botones%20entregas/Inicio/VOLVER/VOLPEDNA.png";
-        var imgHoverPVolvers = "//Img/Botones%20entregas/Inicio/VOLVER/VOLPEDBL.png";
+        var imgNormalPVolver = "/Img/Botones%20entregas/Inicio/VOLVER/VOLPEDNA.png";
+        var imgHoverPVolvers = "/Img/Botones%20entregas/Inicio/VOLVER/VOLPEDBL.png";
 
         // Cambiar la imagen al pasar el mouse para icono-PVovler
         if (iconoPVovler) {
@@ -48,8 +48,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
             });
         }
 
-        var imgNormalVChoferes = "//Img/Botones%20entregas/Inicio/VOLVER/VOLCHOFNA.png";
-        var imgHoverVChoferes = "//Img/Botones%20entregas/Inicio/VOLVER/VOLCHOFBL.png";
+        var imgNormalVChoferes = "/Img/Botones%20entregas/Inicio/VOLVER/VOLCHOFNA.png";
+        var imgHoverVChoferes = "/Img/Botones%20entregas/Inicio/VOLVER/VOLCHOFBL.png";
 
         // Cambiar la imagen al pasar el mouse para icono-VChoferes
         if (iconoVChoferes) {
@@ -161,11 +161,11 @@ document.addEventListener("DOMContentLoaded", function() {
            
             var iconoHome = document.querySelector(".icono-Home-img");
 
-            var imgNormalMaps = "//Img/Botones%20entregas/Inicio/DETPED/MAPSNA.png";
-            var imgHoverMaps = "//Img/Botones%20entregas/Inicio/DETPED/ABRGMAZ.png";
+            var imgNormalMaps = "/Img/Botones%20entregas/Inicio/DETPED/MAPSNA.png";
+            var imgHoverMaps = "/Img/Botones%20entregas/Inicio/DETPED/ABRGMAZ.png";
 
-            var imgNormalHome = "//Img/Botones%20entregas/Inicio/DETPED/HOMEBL.png";
-            var imgHoverHome = "//Img/Botones%20entregas/Inicio/DETPED/HOMENA.png";
+            var imgNormalHome = "/Img/Botones%20entregas/Inicio/DETPED/HOMEBL.png";
+            var imgHoverHome = "/Img/Botones%20entregas/Inicio/DETPED/HOMENA.png";
 
             // Hover para el botón "Abrir en Google Maps"
             if (iconoMaps) {
