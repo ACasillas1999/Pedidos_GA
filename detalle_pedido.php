@@ -825,9 +825,9 @@ function obtenerRutaArchivoCargado($pedidoId) {
     $rutaArchivo = null;
 
     // Consultar la ruta del archivo en la base de datos
-                    $servername = "localhost";
-                    $username = "gpoascen_Pedidos";
-                    $password = 'Pa$$w0rd3026';
+                    $servername = "18.211.75.118";
+                    $username = "pedidos_app";
+                    $password = 'TuContraseñaSegura123!';
                     $database = "gpoascen_pedidos_app";
 
     $conn = new mysqli($servername, $username, $password, $database);
