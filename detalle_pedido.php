@@ -608,9 +608,9 @@ function cargarArchivo($pedidoId) {
                     $filePathRelative = $uploadDirRelative . $uniqueName;
 
                     // Guardar la ruta relativa del archivo en la base de datos
-                    $servername = "localhost";
-                    $username = "gpoascen_Pedidos";
-                    $password = 'Pa$$w0rd3026';
+                    $servername = "18.211.75.118";
+                $username = "pedidos_app";                   
+                 $password = 'TuContraseñaSegura123!';
                     $database = "gpoascen_pedidos_app";
 
                     $conn = new mysqli($servername, $username, $password, $database);
@@ -670,9 +670,9 @@ $downloadUrl = '/' . $filePathRelative;
 // Función para descargar archivos
 function descargarArchivo($pedidoId) {
     // Consultar la ruta del archivo en la base de datos
-                    $servername = "localhost";
-                    $username = "gpoascen_Pedidos";
-                    $password = 'Pa$$w0rd3026';
+                    $servername = "18.211.75.118";
+                $username = "pedidos_app";                  
+                  $password = 'TuContraseñaSegura123!';
                     $database = "gpoascen_pedidos_app";
     $conn = new mysqli($servername, $username, $password, $database);
 
@@ -714,9 +714,9 @@ function descargarArchivo($pedidoId) {
 // Función para consultar archivos con vista previa
 function consultarArchivo($pedidoId) {
     // Configuración de conexión a la base de datos
-    $servername = "localhost";
-    $username = "gpoascen_Pedidos";
-    $password = 'Pa$$w0rd3026';
+    $servername = "18.211.75.118";
+$username = "pedidos_app";    
+$password = 'TuContraseñaSegura123!';
     $database = "gpoascen_pedidos_app";
 
     // Conectar a la base de datos
