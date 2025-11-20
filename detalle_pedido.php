@@ -632,7 +632,7 @@ function cargarArchivo($pedidoId) {
                     echo '<p style="margin:4px 0 0 0;color:#217a21;">Guardado como: <strong>' . htmlspecialchars($uniqueName) . '</strong></p>';
 
                     // Mostrar enlace de descarga según el tipo de archivo
-$downloadUrl = '/' . $filePathRelative;
+$downloadUrl = '/Pedidos_GA/' . $filePathRelative;
                     echo '<p style="margin:8px 0 0 0;"><a href="' . $downloadUrl . '" target="_blank" style="color:#0a66c2;text-decoration:none;font-weight:600;">📄 Ver/Descargar archivo</a></p>';
                     echo '</div>';
 
@@ -750,7 +750,7 @@ $password = 'TuContraseñaSegura123!';
         $rutaArchivoCompleta = realpath(dirname(__FILE__)) . DIRECTORY_SEPARATOR . $rutaArchivoRelativa;
 
         // URL para el navegador
-$urlArchivo = '/' . $rutaArchivoRelativa;
+$urlArchivo = '/Pedidos_GA/' . $rutaArchivoRelativa;
 
         // Verificar si el archivo existe en el servidor
         if (!file_exists($rutaArchivoCompleta)) {
