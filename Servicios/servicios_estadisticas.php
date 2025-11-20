@@ -107,7 +107,7 @@ try {
   <meta charset="utf-8">
   <title>Estadísticas de Servicios</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/png" href="//Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+  <link rel="icon" type="image/png" href="/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
   <link rel="stylesheet" href="../styles.css">
   <style>
     body{background:#f6f7fb;color:#0f172a;font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif}
@@ -141,11 +141,11 @@ try {
     <div class="sidebar">
       <ul>
         <li><a href="agregar_servicio.php">
-                    <img src="//Img/SVG/CrearSerN.svg" class="icono-agregar_servicio sidebar-icon" alt="Agregar">
+                    <img src="/Img/SVG/CrearSerN.svg" class="icono-agregar_servicio sidebar-icon" alt="Agregar">
 
         </a>
       </li>
-        <li class="corner-left-bottom"><a href="../Servicios/Servicios.php"><img src="//Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Volver" style="max-width:35%;height:auto;"></a></li>
+        <li class="corner-left-bottom"><a href="../Servicios/Servicios.php"><img src="/Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Volver" style="max-width:35%;height:auto;"></a></li>
       </ul>
     </div>
     <main class="content">

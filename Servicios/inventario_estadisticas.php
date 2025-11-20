@@ -89,7 +89,7 @@ try {
   <meta charset="utf-8">
   <title>Estadísticas de Inventario</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/png" href="//Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+  <link rel="icon" type="image/png" href="/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
   <link rel="stylesheet" href="../styles.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -181,11 +181,11 @@ try {
     <div class="sidebar">
       <ul>
         <li><a href="inventario.php">
-                   <img src="//Img/SVG/InventarioN.svg" class="icono-inventario sidebar-icon" alt="Inventario">
+                   <img src="/Img/SVG/InventarioN.svg" class="icono-inventario sidebar-icon" alt="Inventario">
 
         </a>
       </li>
-        <li class="corner-left-bottom"><a href="../Servicios/Servicios.php"><img src="//Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Volver" style="max-width:35%;height:auto;"></a></li>
+        <li class="corner-left-bottom"><a href="../Servicios/Servicios.php"><img src="/Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Volver" style="max-width:35%;height:auto;"></a></li>
       </ul>
     </div>
     <main class="content">

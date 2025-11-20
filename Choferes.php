@@ -16,7 +16,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <link rel="icon" type="image/png" href="//Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+    <link rel="icon" type="image/png" href="/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pedidos GA</title>
@@ -31,7 +31,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         var iconoAddChofer = document.querySelector(".icono-AddChofer");
         var iconoVolver = document.querySelector(".icono-Volver");
     
-            var imgNormalAddChoferes ="//Img/Botones%20entregas/Choferes/AGCHOF2.png";
+            var imgNormalAddChoferes ="/Img/Botones%20entregas/Choferes/AGCHOF2.png";
             var imgHoverCAddhoferes = "//Img/Botones%20entregas/Choferes/AGCHOFBL2.png";
 
             // Cambiar la imagen al pasar el mouse para Pendientes
@@ -44,7 +44,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
                 iconoAddChofer.src = imgNormalAddChoferes;
             });
         
-        var imgNormalVolver="//Img/Botones%20entregas/Usuario/VOLVAZ.png";
+        var imgNormalVolver="/Img/Botones%20entregas/Usuario/VOLVAZ.png";
             var imgHoverVolver = "//Img/Botones%20entregas/Usuario/VOLVNA.png";
 
             // Cambiar la imagen al pasar el mouse para Pendientes
@@ -79,7 +79,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         
         
                <li class="corner-left-bottom"><a href="Pedidos_GA.php">
-            <img src="//Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Estaditicas " class = "icono-Volver"style="max-width: 35%; height: auto;">
+            <img src="/Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Estaditicas " class = "icono-Volver"style="max-width: 35%; height: auto;">
             
            </a></li>
     </ul>
@@ -94,7 +94,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 <div class="container">
           <h2 class="titulo">
             <div class="chart-title">
-                <img src="//Img/Botones%20entregas/Choferes/CONCHOF3.png" alt="iconoVPedidos "class= "icono-registro" style="max-width: 20%; height: auto; ">
+                <img src="/Img/Botones%20entregas/Choferes/CONCHOF3.png" alt="iconoVPedidos "class= "icono-registro" style="max-width: 20%; height: auto; ">
               </div>
 
     

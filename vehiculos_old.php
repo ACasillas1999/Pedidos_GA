@@ -57,7 +57,7 @@ if (!$vehiculos) {
         var iconoVolver = document.querySelector(".icono-Volver");
         var iconoEstadisticas = document.querySelector(".icono-estadisticas");
     
-            var imgNormalAddChoferes ="//Img/Botones%20entregas/Choferes/ADDSERVMECNA.png";
+            var imgNormalAddChoferes ="/Img/Botones%20entregas/Choferes/ADDSERVMECNA.png";
             var imgHoverCAddhoferes = "//Img/Botones%20entregas/Choferes/ADDSERVMECBLANC.png";
 
             // Cambiar la imagen al pasar el mouse para Pendientes
@@ -70,7 +70,7 @@ if (!$vehiculos) {
                 iconoAddChofer.src = imgNormalAddChoferes;
             });
         
-        var imgNormalVolver="//Img/Botones%20entregas/Usuario/VOLVAZ.png";
+        var imgNormalVolver="/Img/Botones%20entregas/Usuario/VOLVAZ.png";
             var imgHoverVolver = "//Img/Botones%20entregas/Usuario/VOLVNA.png";
 
             // Cambiar la imagen al pasar el mouse para Pendientes
@@ -101,7 +101,7 @@ if (!$vehiculos) {
 <head>
     <title>Gestión de Vehículos</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="icon" type="image/png" href="//Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+    <link rel="icon" type="image/png" href="/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
    
 </head>
 <body>
@@ -140,7 +140,7 @@ input[type="text"] {
          
          
                 <li class="corner-left-bottom"><a href="Pedidos_GA.php">
-             <img src="//Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Estaditicas " class = "icono-Volver"style="max-width: 35%; height: auto;">
+             <img src="/Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Estaditicas " class = "icono-Volver"style="max-width: 35%; height: auto;">
              
             </a></li>
      </ul>

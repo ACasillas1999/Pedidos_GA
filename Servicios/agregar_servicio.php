@@ -16,7 +16,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
   <meta charset="utf-8">
   <title>Servicios</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/png" href="//Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+  <link rel="icon" type="image/png" href="/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
   <link rel="stylesheet" href="../styles.css">
   <style>
     :root {
@@ -251,16 +251,16 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
       <ul>
         <li>
           <a href="inventario.php">
-             <img src="//Img/SVG/InventarioN.svg" class="icono-inventario sidebar-icon" alt="Inventario">
+             <img src="/Img/SVG/InventarioN.svg" class="icono-inventario sidebar-icon" alt="Inventario">
           </a>
         </li>
         <li><a href="servicios_estadisticas.php">
-          <img src="//Img/SVG/EstadisticasServN.svg" class="icono-estadisticaServ sidebar-icon" alt="Inventario">
+          <img src="/Img/SVG/EstadisticasServN.svg" class="icono-estadisticaServ sidebar-icon" alt="Inventario">
         </a>
       </li>
         <li class="corner-left-bottom">
           <a href="../Servicios/Servicios.php">
-            <img src="//Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Volver" class="icono-Volver" style="max-width:35%;height:auto;">
+            <img src="/Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Volver" class="icono-Volver" style="max-width:35%;height:auto;">
           </a>
         </li>
       </ul>

@@ -20,7 +20,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
   <title>Detalles Chofer</title>
   <link rel="stylesheet" href="../styles.css">
   <link rel="stylesheet" href="style_servicios_cards.css">
-  <link rel="icon" type="image/png" href="//Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+  <link rel="icon" type="image/png" href="/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
 
   <script>
     window.PEDIDOS_CHOFER = <?= json_encode($pedidosAll ?? [], JSON_UNESCAPED_UNICODE) ?>;
@@ -85,18 +85,18 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     <ul>
       <li>
         <a href="inventario.php">
-          <img src="//Img/SVG/InventarioN.svg" class="icono-inventario sidebar-icon" alt="Inventario">
+          <img src="/Img/SVG/InventarioN.svg" class="icono-inventario sidebar-icon" alt="Inventario">
         </a>
       </li>
       <li>
         <a href="agregar_servicio.php">
-          <img src="//Img/SVG/CrearSerN.svg" class="icono-agregar_servicio sidebar-icon" alt="Agregar">
+          <img src="/Img/SVG/CrearSerN.svg" class="icono-agregar_servicio sidebar-icon" alt="Agregar">
         </a>
       </li>
       
       <li class="corner-left-bottom">
         <a href="../vehiculos.php">
-          <img src="//Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Volver" class="icono-Volver" style="max-width:35%;height:auto;">
+          <img src="/Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Volver" class="icono-Volver" style="max-width:35%;height:auto;">
         </a>
       </li>
     </ul>

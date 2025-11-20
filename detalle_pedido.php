@@ -5,7 +5,7 @@
 <html lang="es">
 <head>
      <title>Pedidos GA</title>
-    <link rel="icon" type="image/png" href="//Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+    <link rel="icon" type="image/png" href="/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="styles1.css">
@@ -252,7 +252,7 @@ $tipoEnvioTexto = strtoupper($tipoEnvio);
     
             <button type="submit" class="icono-ActualizarP" style="background: none; border: none; padding: 0;">
                 
-        <img src="//Img/Botones%20entregas/Inicio/DETPED/AZTPEDNA.png" alt="Estaditicas" class="icono-ActP" style="max-width: 50%; height: auto;">
+        <img src="/Img/Botones%20entregas/Inicio/DETPED/AZTPEDNA.png" alt="Estaditicas" class="icono-ActP" style="max-width: 50%; height: auto;">
                 
           </button>
 </form>
@@ -293,7 +293,7 @@ $tipoEnvioTexto = strtoupper($tipoEnvio);
          <div class="container2">
         
         <h1>
-        <img src="//Img/Botones%20entregas/Inicio/DETPED/DOCAZ.png" alt="Estaditicas" class="icono-ActP" style="max-width: 30%; height: auto;">
+        <img src="/Img/Botones%20entregas/Inicio/DETPED/DOCAZ.png" alt="Estaditicas" class="icono-ActP" style="max-width: 30%; height: auto;">
              
         </h1>
     
@@ -305,7 +305,7 @@ $tipoEnvioTexto = strtoupper($tipoEnvio);
 <div class="accion-container">
     <h2>            
         
-    <img src="//Img/Botones%20entregas/Inicio/DETPED/CARARAZ.png" alt="Estaditicas" class="icono-ActP" style="max-width:60%; height: auto;">
+    <img src="/Img/Botones%20entregas/Inicio/DETPED/CARARAZ.png" alt="Estaditicas" class="icono-ActP" style="max-width:60%; height: auto;">
     
     </h2>
     <?php
@@ -329,7 +329,7 @@ $tipoEnvioTexto = strtoupper($tipoEnvio);
                   <!--  <div class="accion-container">
                         <h2>
                         
-                        <img src="//Img/Botones%20entregas/Inicio/DETPED/DESCARAZ.png" alt="Estaditicas" class="icono-ActP" style="max-width: 100%; height: auto;">
+                        <img src="/Img/Botones%20entregas/Inicio/DETPED/DESCARAZ.png" alt="Estaditicas" class="icono-ActP" style="max-width: 100%; height: auto;">
                         
                         </h2>
                         <form action="detalle_pedido.php" method="post">
@@ -343,7 +343,7 @@ $tipoEnvioTexto = strtoupper($tipoEnvio);
                     <div class="accion-container">
                         <h2>
                         
-                        <img src="//Img/Botones%20entregas/Inicio/DETPED/CONSTARCAZ.png" alt="Estaditicas" class="icono-ActP" style="max-width: 100%; height: auto;">
+                        <img src="/Img/Botones%20entregas/Inicio/DETPED/CONSTARCAZ.png" alt="Estaditicas" class="icono-ActP" style="max-width: 100%; height: auto;">
                         
                         </h2>
                         <form action="detalle_pedido.php?id=<?php echo $pedidoId; ?>" method="post">
@@ -369,7 +369,7 @@ $tipoEnvioTexto = strtoupper($tipoEnvio);
              
              <button class="icono-Imprimir"  style="background: none; border: none; padding: 0;" onclick="imprimirPagina()">
                  
-                  <img src="//Img/Botones%20entregas/Inicio/DETPED/IMPNA.png" alt="Estaditicas" class="icono-imprimir" style="max-width: 50%; height: auto;">
+                  <img src="/Img/Botones%20entregas/Inicio/DETPED/IMPNA.png" alt="Estaditicas" class="icono-imprimir" style="max-width: 50%; height: auto;">
                  
                 </button>
              </div>
@@ -383,7 +383,7 @@ $tipoEnvioTexto = strtoupper($tipoEnvio);
     
             <button type="submit" class="icono-ActualizarP" style="background: none; border: none; padding: 0;">
                 
-        <img src="//Img/Botones%20entregas/Inicio/DETPED/ACTPEDAZ.png" alt="Estaditicas" class="icono-ActP" style="max-width: 50%; height: auto;">
+        <img src="/Img/Botones%20entregas/Inicio/DETPED/ACTPEDAZ.png" alt="Estaditicas" class="icono-ActP" style="max-width: 50%; height: auto;">
                 
           </button>
 </form>
@@ -409,7 +409,7 @@ $tipoEnvioTexto = strtoupper($tipoEnvio);
         
         <h1>
         
-         <img src="//Img/Botones%20entregas/Inicio/DETPED/MOSTIMAZ.png" alt="Imagen" class="icono-Imagen" style="max-width: 50%; height: auto;">
+         <img src="/Img/Botones%20entregas/Inicio/DETPED/MOSTIMAZ.png" alt="Imagen" class="icono-Imagen" style="max-width: 50%; height: auto;">
         
         </h1>
     <div id="imagen-container">
@@ -489,7 +489,7 @@ $tipoEnvioTexto = strtoupper($tipoEnvio);
         
          <h2>
         
-        <img src="//Img/Botones%20entregas/Inicio/DETPED/DETACTAZ.png" alt="Estaditicas" class="icono-imprimir" style="max-width: 50%; height: auto;">
+        <img src="/Img/Botones%20entregas/Inicio/DETPED/DETACTAZ.png" alt="Estaditicas" class="icono-imprimir" style="max-width: 50%; height: auto;">
         
         </h2>
             <table class="table-custom">

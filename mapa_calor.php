@@ -18,7 +18,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mapa de Calor - Pedidos GA</title>
-    <link rel="icon" type="image/png" href="//Img/logo empresa/LOGO_GPO_A.png">
+    <link rel="icon" type="image/png" href="/Img/logo empresa/LOGO_GPO_A.png">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="styles_mapa.css">
 

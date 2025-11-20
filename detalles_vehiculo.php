@@ -560,7 +560,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'desas
 <head>
     <meta charset="utf-8">
     <title>Detalles del Vehículo</title>
-    <link rel="icon" type="image/png" href="//Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+    <link rel="icon" type="image/png" href="/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
     <style>
         :root {
             --brand: #005aa3;

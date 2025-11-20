@@ -19,7 +19,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
   <meta charset="utf-8">
   <title>Observaciones Vehículos</title>
   <link rel="stylesheet" href="../styles.css">
-  <link rel="icon" type="image/png" href="//Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+  <link rel="icon" type="image/png" href="/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
 </head>
 
@@ -56,12 +56,12 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     <ul>
       <li>
         <a href="Servicios.php">
-          <img src="//Img/SVG/ServiciosN.svg" class="icono-servicios sidebar-icon" alt="Servicios">
+          <img src="/Img/SVG/ServiciosN.svg" class="icono-servicios sidebar-icon" alt="Servicios">
         </a>
       </li>
       <li class="corner-left-bottom">
         <a href="../vehiculos.php">
-          <img src="//Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Volver" class="icono-Volver" style="max-width:35%;height:auto;">
+          <img src="/Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Volver" class="icono-Volver" style="max-width:35%;height:auto;">
         </a>
       </li>
     </ul>

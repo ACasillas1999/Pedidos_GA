@@ -19,7 +19,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pedidos GA</title>
   <link rel="stylesheet" type="text/css" href="styles.css">
-  <link rel="icon" type="image/png" href="//Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+  <link rel="icon" type="image/png" href="/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
   <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -449,7 +449,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
   <div class="WP-button">
     <form id="wpForm" action="/Pedidos_GA/Mensajes_WP/Mensaje_WP_NotificarChoferes.php" method="post" onsubmit="return false;">
       <button type="button" onclick="confirmSubmit()" value="WP" style="background: none; border: none; padding: 0;">
-        <img src="//Img/Botones entregas/Whatsapp/WWSPAZ.png" alt="icono-WP" class="icono-WP" style="max-width: 45%; height: auto;">
+        <img src="/Img/Botones entregas/Whatsapp/WWSPAZ.png" alt="icono-WP" class="icono-WP" style="max-width: 45%; height: auto;">
       </button>
     </form>
   </div>

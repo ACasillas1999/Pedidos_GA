@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <link rel="icon" type="image/png" href="//Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+  <link rel="icon" type="image/png" href="/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Registro de Chofer</title>
@@ -35,14 +35,14 @@ document.addEventListener("DOMContentLoaded", function() {
 <body>
 <header class="header">
   <div class="logo">
-    <img src="//Img/Botones%20entregas/RegistrarChofer/REGCHOFTIT.png" alt="Registro de Chofer" style="max-width: 15%; height: auto;">
+    <img src="/Img/Botones%20entregas/RegistrarChofer/REGCHOFTIT.png" alt="Registro de Chofer" style="max-width: 15%; height: auto;">
   </div>
   <nav class="navbar">
     <ul>
       <li class="nav-item">
         <a href="../Choferes.php" class="nav-link">
           <!-- Usa / y codifica espacios -->
-          <img src="//Img/Botones%20entregas/RegistrarChofer/VOLVAZ.png"
+          <img src="/Img/Botones%20entregas/RegistrarChofer/VOLVAZ.png"
                alt="Volver" class="icono-Volver"
                style="max-width: 5%; height: auto; position:absolute; top: 50px; left: 25px;">
         </a>
@@ -99,7 +99,7 @@ document.addEventListener("DOMContentLoaded", function() {
     <input type="password" id="confirm_password" name="confirm_password" required>
 
     <button type="submit" class="icono-FAP" style="background:none; border:none; padding:0;">
-      <img src="//Img/Botones%20entregas/RegistrarChofer/REGNA.png"
+      <img src="/Img/Botones%20entregas/RegistrarChofer/REGNA.png"
            class="icono-FAP-img" alt="Registrar" style="max-width:50%; height:auto; display:flex;">
     </button>
 

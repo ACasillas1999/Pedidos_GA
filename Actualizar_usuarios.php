@@ -18,7 +18,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="//Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+    <link rel="icon" type="image/png" href="/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
     <link rel="stylesheet" href="styles7.css">
     <title>Formulario</title>
 </head>
@@ -71,7 +71,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
      <header class="header">
         <div class="logo">
          
-          <img src="//Img/Botones%20entregas/Usuario/USUABL.png" alt="Estaditicas " class = "icono-AddChofer"style="max-width: 200%; height: auto;">
+          <img src="/Img/Botones%20entregas/Usuario/USUABL.png" alt="Estaditicas " class = "icono-AddChofer"style="max-width: 200%; height: auto;">
          
          </div>
         <nav class="navbar">
@@ -155,7 +155,7 @@ if ($result->num_rows > 0) {
         
 
         <button type="submit" class="icono-FAP" style="background: none; border: none; padding: 0;">
-            <img src="//Img/Botones%20entregas/RegistrarChofer/ACTNA.png" class="icono-FAP-img" alt="Actualizar Pedido" style="max-width: 50%; height: auto; display: flex;">
+            <img src="/Img/Botones%20entregas/RegistrarChofer/ACTNA.png" class="icono-FAP-img" alt="Actualizar Pedido" style="max-width: 50%; height: auto; display: flex;">
         </button>
        </div>
       <!--<?php print_r($row); ?> -->

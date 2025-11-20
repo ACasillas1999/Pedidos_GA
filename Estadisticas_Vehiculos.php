@@ -110,7 +110,7 @@ $conn->close();
     <title>Estadísticas de Vehículos</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <link rel="icon" type="image/png" href="//Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+    <link rel="icon" type="image/png" href="/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
         .container { width: 80%; margin: auto; }

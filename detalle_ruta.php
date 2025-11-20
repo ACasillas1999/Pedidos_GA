@@ -92,7 +92,7 @@ $color = $colores[$colorIndex];
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Detalle de Ruta - <?php echo htmlspecialchars($grupo['nombre_grupo']); ?></title>
-  <link rel="icon" href="img/Logo 2.png" type="image/png">
+  <link rel="icon" href="/Img/Logo 2.png" type="image/png">
   <link rel="stylesheet" type="text/css" href="styles.css">
 
   <!-- Mapbox -->

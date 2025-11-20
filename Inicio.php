@@ -20,7 +20,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 <html lang="es">
 <head>
     <title>Pedidos GA</title>
-    <link rel="icon" type="image/png" href="//Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+    <link rel="icon" type="image/png" href="/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="styles1.css">
@@ -135,7 +135,7 @@ document.addEventListener("DOMContentLoaded", function() {
     <p></p>
 
     <button class="icono-Maps" style="background: none; border: none; padding: 0;" onclick="openGoogleMaps()">
-        <img src="//Img/Botones%20entregas/Inicio/DETPED/MAPSNA.png" alt="icono-Maps" class="icono-Maps-img" style="max-width: 50%; height: auto;">
+        <img src="/Img/Botones%20entregas/Inicio/DETPED/MAPSNA.png" alt="icono-Maps" class="icono-Maps-img" style="max-width: 50%; height: auto;">
     </button>
     
    
@@ -145,7 +145,7 @@ document.addEventListener("DOMContentLoaded", function() {
         <ul class="menu">
         <li class="icono-Home">
                 <a href="#">
-                <img src="//Img/Botones%20entregas/Inicio/DETPED/HOMEBL.png" alt="icono-Home" class="icono-Home-img" style="max-width: 10%;">
+                <img src="/Img/Botones%20entregas/Inicio/DETPED/HOMEBL.png" alt="icono-Home" class="icono-Home-img" style="max-width: 10%;">
                </a><!--HOMEBL-->
             </li>
         </ul>

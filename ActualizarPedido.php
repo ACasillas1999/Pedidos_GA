@@ -17,7 +17,7 @@ $id_pedido = $_GET['id'];
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="//Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+    <link rel="icon" type="image/png" href="/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
     <link rel="stylesheet" href="styles3.css">
     <title>Formulario de Pedidos</title>
 </head>
@@ -66,7 +66,7 @@ $id_pedido = $_GET['id'];
      <header class="header">
         <div class="logo">
          
-          <img src="//Img/Botones%20entregas/Inicio/DETPED/ACTPED.png" alt="Estaditicas" class="icono-imprimir" style="max-width: 15%; height: auto;">
+          <img src="/Img/Botones%20entregas/Inicio/DETPED/ACTPED.png" alt="Estaditicas" class="icono-imprimir" style="max-width: 15%; height: auto;">
          
          </div>
         <nav class="navbar">
@@ -486,7 +486,7 @@ $precio_esta_validado = isset($row['precio_validado_jc']) && $row['precio_valida
        <form action="ActualizarPedido.php" method="GET">
             <input type="hidden" name="id" value="<?php echo $row['ID']; ?>">
             <button type="submit" class="icono-AP" style="background: none; border: none; padding: 0;">
-                <img src="//Img/Botones%20entregas/Inicio/DETPED/AGPEDNA.png" alt="Actualizar Pedido" style="max-width: 50%; height: auto; Display: Flex;">
+                <img src="/Img/Botones%20entregas/Inicio/DETPED/AGPEDNA.png" alt="Actualizar Pedido" style="max-width: 50%; height: auto; Display: Flex;">
             </button>
         </form>
 
