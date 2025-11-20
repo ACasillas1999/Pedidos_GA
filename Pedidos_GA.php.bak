@@ -19,11 +19,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pedidos GA</title>
   <link rel="stylesheet" type="text/css" href="styles.css">
-<<<<<<< HEAD
-  <link rel="icon" type="image/png" href="/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
-=======
   <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
   <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -313,13 +309,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
       var iconoWP = document.querySelector(".icono-WP");
       
       if (iconoChoferes) {
-<<<<<<< HEAD
-        var imgNormalChoferes = "/Img/Botones%20entregas/Pedidos_GA/CHOFNA2.png";
-        var imgHoverChoferes = "/Img/Botones%20entregas/Pedidos_GA/CHOFBL2.png";
-=======
         var imgNormalChoferes = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/CHOFNA2.png";
         var imgHoverChoferes = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/CHOFBL2.png";
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
         iconoChoferes.addEventListener("mouseover", function() {
             iconoChoferes.src = imgHoverChoferes;
         });
@@ -329,13 +320,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
       }
 
       if (iconoVehiculos) {
-<<<<<<< HEAD
-        var imgNormalVehiculos = "/Img/Botones%20entregas/Pedidos_GA/SERVMECNA.png";
-        var imgHoverVehiculos = "/Img/Botones%20entregas/Pedidos_GA/SERVMECBLANC.png";
-=======
         var imgNormalVehiculos = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/SERVMECNA.png";
         var imgHoverVehiculos = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/SERVMECBLANC.png";
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
         iconoVehiculos.addEventListener("mouseover", function() {
             iconoVehiculos.src = imgHoverVehiculos;
         });
@@ -345,13 +331,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
       }
       
       if (iconoEstadisticas) {
-<<<<<<< HEAD
-        var imgNormalEstadisticas = "/Img/Botones%20entregas/Pedidos_GA/ESTNA2.png";
-        var imgHoverEstadisticas = "/Img/Botones%20entregas/Pedidos_GA/ESTBL2.png";
-=======
         var imgNormalEstadisticas = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/ESTNA2.png";
         var imgHoverEstadisticas = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/ESTBL2.png";
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
         iconoEstadisticas.addEventListener("mouseover", function() {
             iconoEstadisticas.src = imgHoverEstadisticas;
         });
@@ -361,13 +342,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
       }
       
       if (iconoAddRegistro) {
-<<<<<<< HEAD
-        var imgNormalAddRegistro = "/Img/Botones%20entregas/Pedidos_GA/AGRENA.png";
-        var imgHoverAddRegistro = "/Img/Botones%20entregas/Pedidos_GA/AGREBL.png";
-=======
         var imgNormalAddRegistro = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/AGRENA.png";
         var imgHoverAddRegistro = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/AGREBL.png";
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
         iconoAddRegistro.addEventListener("mouseover", function() {
             iconoAddRegistro.src = imgHoverAddRegistro;
         });
@@ -377,13 +353,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
       }
       
       if (iconoU) {
-<<<<<<< HEAD
-        var imgNormalU = "/Img/Botones%20entregas/Pedidos_GA/USUNA.png";
-        var imgHoverU = "/Img/Botones%20entregas/Pedidos_GA/USUBL.png";
-=======
         var imgNormalU = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/USUNA.png";
         var imgHoverU = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/USUBL.png";
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
         iconoU.addEventListener("mouseover", function() {
             iconoU.src = imgHoverU;
         });
@@ -392,13 +363,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         });
       }
 
-<<<<<<< HEAD
-      var imgNormalH = "/Img/Botones%20entregas/Pedidos_GA/H2.png";
-      var imgHoverH = "/Img/Botones%20entregas/Pedidos_GA/H1.png";
-=======
       var imgNormalH = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/H2.png";
       var imgHoverH = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/H1.png";
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
       if (iconoH) {
           iconoH.addEventListener("mouseover", function() {
               iconoH.src = imgHoverH;
@@ -410,13 +376,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 
     
       if (iconoReportePrecios) {
-<<<<<<< HEAD
-          var imgNormalReportePrecios = "/Img/Botones%20entregas/Pedidos_GA/ICONO_CHIDO.png";
-      var imgHoverReportePrecios = "/Img/Botones%20entregas/Pedidos_GA/ICONO_CHIDO2_BLANCO.png";
-=======
           var imgNormalReportePrecios = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/ICONO_CHIDO.png";
       var imgHoverReportePrecios = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/ICONO_CHIDO2_BLANCO.png";
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
       
           iconoReportePrecios.addEventListener("mouseover", function() {
               iconoReportePrecios.src = imgHoverReportePrecios;
@@ -426,13 +387,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
           });
       }
 
-<<<<<<< HEAD
-      var imgNormalMapaCalor = "/Img/Botones%20entregas/Pedidos_GA/MAPA_NA.png";
-      var imgHoverMapaCalor = "/Img/Botones%20entregas/Pedidos_GA/MAPA_BL.png";
-=======
       var imgNormalMapaCalor = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/MAPA_NA.png";
       var imgHoverMapaCalor = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/MAPA_BL.png";
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
       if (iconoMapaCalor) {
           iconoMapaCalor.addEventListener("mouseover", function() {
               iconoMapaCalor.src = imgHoverMapaCalor;
@@ -443,13 +399,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
       }
 
       if (iconoCS) {
-<<<<<<< HEAD
-        var imgNormalSC = "/Img/Botones%20entregas/Pedidos_GA/CERRSESBL.png";
-        var imgHoverSC = "/Img/Botones%20entregas/Pedidos_GA/CERRSESNA.png";
-=======
         var imgNormalSC = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/CERRSESBL.png";
         var imgHoverSC = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/CERRSESNA.png";
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
         iconoCS.addEventListener("mouseover", function() {
             iconoCS.src = imgHoverSC;
         });
@@ -458,13 +409,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         });
       }
       
-<<<<<<< HEAD
-      var imgNormalMaps = "/Img/Botones%20entregas/Inicio/DETPED/MAPSNA.png";
-      var imgHoverMaps = "/Img/Botones%20entregas/Inicio/DETPED/ABRGMAZ.png";
-=======
       var imgNormalMaps = "/Pedidos_GA/Img/Botones%20entregas/Inicio/DETPED/MAPSNA.png";
       var imgHoverMaps = "/Pedidos_GA/Img/Botones%20entregas/Inicio/DETPED/ABRGMAZ.png";
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
       if (iconoMaps) {
           iconoMaps.addEventListener("mouseover", function() {
               iconoMaps.src = imgHoverMaps;
@@ -475,13 +421,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
       }
       
       if (iconoHome) {
-<<<<<<< HEAD
-        var imgNormalHome = "/Img/Botones%20entregas/Pedidos_GA/CERRSESBL.png";
-        var imgHoverHome = "/Img/Botones%20entregas/Pedidos_GA/CERRSESNA.png";
-=======
         var imgNormalHome = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/CERRSESBL.png";
         var imgHoverHome = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/CERRSESNA.png";
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
         iconoHome.addEventListener("mouseover", function() {
             iconoHome.src = imgHoverHome;
         });
@@ -491,13 +432,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
       }
       
       if (iconoWP) {
-<<<<<<< HEAD
-        var imgNormalWP = "/Img/Botones%20entregas/Whatsapp/WWSPAZ.png";
-        var imgHoverWP = "/Img/Botones%20entregas/Whatsapp/WSPNA.png";
-=======
         var imgNormalWP = "/Pedidos_GA/Img/Botones%20entregas/Whatsapp/WWSPAZ.png";
         var imgHoverWP = "/Pedidos_GA/Img/Botones%20entregas/Whatsapp/WSPNA.png";
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
         iconoWP.addEventListener("mouseover", function() {
             iconoWP.src = imgHoverWP;
         });
@@ -513,11 +449,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
   <div class="WP-button">
     <form id="wpForm" action="/Mensajes_WP/Mensaje_WP_NotificarChoferes.php" method="post" onsubmit="return false;">
       <button type="button" onclick="confirmSubmit()" value="WP" style="background: none; border: none; padding: 0;">
-<<<<<<< HEAD
-        <img src="/Img/Botones entregas/Whatsapp/WWSPAZ.png" alt="icono-WP" class="icono-WP" style="max-width: 45%; height: auto;">
-=======
         <img src="/Pedidos_GA/Img/Botones entregas/Whatsapp/WWSPAZ.png" alt="icono-WP" class="icono-WP" style="max-width: 45%; height: auto;">
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
       </button>
     </form>
   </div>

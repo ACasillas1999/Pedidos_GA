@@ -224,11 +224,7 @@ $stmt->close();
   <title>Detalles Chofer</title>
   <meta charset="utf-8">
   <link rel="stylesheet" href="styles.css">
-<<<<<<< HEAD
-  <link rel="icon" type="image/png" href="/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
-=======
   <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
@@ -524,13 +520,8 @@ $stmt->close();
       // Listeners seguros (solo si existen)
       var iconoAddChofer = document.querySelector(".icono-AddChofer");
       if (iconoAddChofer) {
-<<<<<<< HEAD
-        var imgNormalAddChoferes = "/Img/Botones%20entregas/Choferes/ADDSERVMECNA.png";
-        var imgHoverCAddhoferes = "/Img/Botones%20entregas/Choferes/ADDSERVMECBLANC.png";
-=======
         var imgNormalAddChoferes = "/Pedidos_GA/Img/Botones%20entregas/Choferes/ADDSERVMECNA.png";
         var imgHoverCAddhoferes = "/Pedidos_GA/Img/Botones%20entregas/Choferes/ADDSERVMECBLANC.png";
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
         iconoAddChofer.addEventListener("mouseover", function() {
           this.src = imgHoverCAddhoferes;
         });
@@ -541,13 +532,8 @@ $stmt->close();
 
       var iconoVolver = document.querySelector(".icono-Volver");
       if (iconoVolver) {
-<<<<<<< HEAD
-        var imgNormalVolver = "/Img/Botones%20entregas/Usuario/VOLVAZ.png";
-        var imgHoverVolver = "/Img/Botones%20entregas/Usuario/VOLVNA.png";
-=======
         var imgNormalVolver = "/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVAZ.png";
         var imgHoverVolver = "/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVNA.png";
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
         iconoVolver.addEventListener("mouseover", function() {
           this.src = imgHoverVolver;
         });
@@ -558,13 +544,8 @@ $stmt->close();
 
       var iconoEstadisticas = document.querySelector(".icono-estadisticas");
       if (iconoEstadisticas) {
-<<<<<<< HEAD
-        var imgNormalEstadisticas = "/Img/Botones%20entregas/Pedidos_GA/ESTNA2.png";
-        var imgHoverEstadisticas = "/Img/Botones%20entregas/Pedidos_GA/ESTBL2.png";
-=======
         var imgNormalEstadisticas = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/ESTNA2.png";
         var imgHoverEstadisticas = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/ESTBL2.png";
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
         iconoEstadisticas.addEventListener("mouseover", function() {
           this.src = imgHoverEstadisticas;
         });
@@ -581,11 +562,7 @@ $stmt->close();
 
 
       <li class="corner-left-bottom"><a href="vehiculos.php">
-<<<<<<< HEAD
-          <img src="/Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Volver" class="icono-Volver" style="max-width: 35%; height: auto;">
-=======
           <img src="/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Volver" class="icono-Volver" style="max-width: 35%; height: auto;">
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
         </a></li>
     </ul>
   </div>

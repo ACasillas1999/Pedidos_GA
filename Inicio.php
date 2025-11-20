@@ -20,11 +20,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 <html lang="es">
 <head>
     <title>Pedidos GA</title>
-<<<<<<< HEAD
-    <link rel="icon" type="image/png" href="/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
-=======
     <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="styles1.css">
@@ -39,13 +35,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         var iconoVChoferes = document.querySelector(".icono-VChoferes");
         
 
-<<<<<<< HEAD
-        var imgNormalPVolver = "/Img/Botones%20entregas/Inicio/VOLVER/VOLPEDNA.png";
-        var imgHoverPVolvers = "/Img/Botones%20entregas/Inicio/VOLVER/VOLPEDBL.png";
-=======
         var imgNormalPVolver = "/Pedidos_GA/Img/Botones%20entregas/Inicio/VOLVER/VOLPEDNA.png";
         var imgHoverPVolvers = "/Pedidos_GA/Img/Botones%20entregas/Inicio/VOLVER/VOLPEDBL.png";
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
 
         // Cambiar la imagen al pasar el mouse para icono-PVovler
         if (iconoPVovler) {
@@ -57,13 +48,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
             });
         }
 
-<<<<<<< HEAD
-        var imgNormalVChoferes = "/Img/Botones%20entregas/Inicio/VOLVER/VOLCHOFNA.png";
-        var imgHoverVChoferes = "/Img/Botones%20entregas/Inicio/VOLVER/VOLCHOFBL.png";
-=======
         var imgNormalVChoferes = "/Pedidos_GA/Img/Botones%20entregas/Inicio/VOLVER/VOLCHOFNA.png";
         var imgHoverVChoferes = "/Pedidos_GA/Img/Botones%20entregas/Inicio/VOLVER/VOLCHOFBL.png";
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
 
         // Cambiar la imagen al pasar el mouse para icono-VChoferes
         if (iconoVChoferes) {
@@ -149,11 +135,7 @@ document.addEventListener("DOMContentLoaded", function() {
     <p></p>
 
     <button class="icono-Maps" style="background: none; border: none; padding: 0;" onclick="openGoogleMaps()">
-<<<<<<< HEAD
-        <img src="/Img/Botones%20entregas/Inicio/DETPED/MAPSNA.png" alt="icono-Maps" class="icono-Maps-img" style="max-width: 50%; height: auto;">
-=======
         <img src="/Pedidos_GA/Img/Botones%20entregas/Inicio/DETPED/MAPSNA.png" alt="icono-Maps" class="icono-Maps-img" style="max-width: 50%; height: auto;">
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
     </button>
     
    
@@ -163,11 +145,7 @@ document.addEventListener("DOMContentLoaded", function() {
         <ul class="menu">
         <li class="icono-Home">
                 <a href="#">
-<<<<<<< HEAD
-                <img src="/Img/Botones%20entregas/Inicio/DETPED/HOMEBL.png" alt="icono-Home" class="icono-Home-img" style="max-width: 10%;">
-=======
                 <img src="/Pedidos_GA/Img/Botones%20entregas/Inicio/DETPED/HOMEBL.png" alt="icono-Home" class="icono-Home-img" style="max-width: 10%;">
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
                </a><!--HOMEBL-->
             </li>
         </ul>
@@ -183,19 +161,11 @@ document.addEventListener("DOMContentLoaded", function() {
            
             var iconoHome = document.querySelector(".icono-Home-img");
 
-<<<<<<< HEAD
-            var imgNormalMaps = "/Img/Botones%20entregas/Inicio/DETPED/MAPSNA.png";
-            var imgHoverMaps = "/Img/Botones%20entregas/Inicio/DETPED/ABRGMAZ.png";
-
-            var imgNormalHome = "/Img/Botones%20entregas/Inicio/DETPED/HOMEBL.png";
-            var imgHoverHome = "/Img/Botones%20entregas/Inicio/DETPED/HOMENA.png";
-=======
             var imgNormalMaps = "/Pedidos_GA/Img/Botones%20entregas/Inicio/DETPED/MAPSNA.png";
             var imgHoverMaps = "/Pedidos_GA/Img/Botones%20entregas/Inicio/DETPED/ABRGMAZ.png";
 
             var imgNormalHome = "/Pedidos_GA/Img/Botones%20entregas/Inicio/DETPED/HOMEBL.png";
             var imgHoverHome = "/Pedidos_GA/Img/Botones%20entregas/Inicio/DETPED/HOMENA.png";
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
 
             // Hover para el botón "Abrir en Google Maps"
             if (iconoMaps) {

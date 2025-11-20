@@ -112,11 +112,7 @@ $conn->close();
     <title>Detalles de <?= htmlspecialchars($nombre) ?></title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="styles7.css" type="text/css">
-<<<<<<< HEAD
-    <link rel="icon" type="image/png" href="/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
-=======
     <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
         .container { width: 80%; margin: auto; }

@@ -110,11 +110,7 @@ $conn->close();
     <title>Estadísticas de Vehículos</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-<<<<<<< HEAD
-    <link rel="icon" type="image/png" href="/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
-=======
     <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
         .container { width: 80%; margin: auto; }
@@ -126,7 +122,7 @@ $conn->close();
         .form-container { margin-bottom: 20px; }
 
 
-        <style>
+      
         body {
             font-family: 'Arial', sans-serif;
             background-color: #f4f4f9;

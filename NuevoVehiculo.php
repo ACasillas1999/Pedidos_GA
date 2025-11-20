@@ -130,11 +130,7 @@ $vehiculos = $conn->query("SELECT * FROM vehiculos");
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nuevo Vehículo</title>
-<<<<<<< HEAD
-    <link rel="icon" type="image/png" href="/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
-=======
     <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
     <link rel="stylesheet" href="styles3.css">
 
     <style>

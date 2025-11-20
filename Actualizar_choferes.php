@@ -16,11 +16,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<<<<<<< HEAD
-    <link rel="icon" type="image/png" href="/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
-=======
     <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
     <link rel="stylesheet" href="styles7.css">
     <title>Formulario</title>
 </head>
@@ -34,13 +30,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
  
      
  
-<<<<<<< HEAD
-     var imgNormalVolver = "/Img/Botones%20entregas/RegistrarChofer/VOLVAZ.png";
-     var imgHoverVolver = "/Img/Botones%20entregas/RegistrarChofer/VOLVNA.png";
-=======
      var imgNormalVolver = "/Pedidos_GA/Img/Botones%20entregas/RegistrarChofer/VOLVAZ.png";
      var imgHoverVolver = "/Pedidos_GA/Img/Botones%20entregas/RegistrarChofer/VOLVNA.png";
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
  
      // Cambiar la imagen al pasar el mouse para Volver
      if (iconoVolver) {
@@ -54,13 +45,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
      }
 
 
-<<<<<<< HEAD
-     var imgNormalFAP = "/Img/Botones%20entregas/RegistrarChofer/ACTNA.png";
-    var imgHoverFAP = "/Img/Botones%20entregas/RegistrarChofer/ACTNAF.png";
-=======
      var imgNormalFAP = "/Pedidos_GA/Img/Botones%20entregas/RegistrarChofer/ACTNA.png";
     var imgHoverFAP = "/Pedidos_GA/Img/Botones%20entregas/RegistrarChofer/ACTNAF.png";
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
 
     // Cambiar la imagen al pasar el mouse para FAP
     if (iconoFAP) {
@@ -157,15 +143,9 @@ if ($result->num_rows > 0) {
    
 </select><br><br>
  
-<<<<<<< HEAD
-       <!-- <input src="/Img/Botones%2520entregas/RegistrarChofer/ACTNA.png" type="submit" value="Actualizar">-->
-        <button type="submit" class="icono-FAP" style="background: none; border: none; padding: 0;">
-                <img src="/Img/Botones%20entregas/RegistrarChofer/ACTNA.png" class="icono-FAP-img" alt="Actualizar Pedido" style="max-width: 50%; height: auto; display: flex;">
-=======
        <!-- <input src="/Pedidos_GA/Img/Botones%2520entregas/RegistrarChofer/ACTNA.png" type="submit" value="Actualizar">-->
         <button type="submit" class="icono-FAP" style="background: none; border: none; padding: 0;">
                 <img src="/Pedidos_GA/Img/Botones%20entregas/RegistrarChofer/ACTNA.png" class="icono-FAP-img" alt="Actualizar Pedido" style="max-width: 50%; height: auto; display: flex;">
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
             </button>
         
        </div>

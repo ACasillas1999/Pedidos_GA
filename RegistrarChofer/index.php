@@ -1,11 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<<<<<<< HEAD
-  <link rel="icon" type="image/png" href="/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
-=======
   <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Registro de Chofer</title>
@@ -18,26 +14,16 @@ document.addEventListener("DOMContentLoaded", function() {
   const iconoVolver = document.querySelector(".icono-Volver");
   const iconoFAP    = document.querySelector(".icono-FAP-img");
 
-<<<<<<< HEAD
-  const imgNormalVolver = "/Img/Botones%20entregas/RegistrarChofer/VOLVAZ.png";
-  const imgHoverVolver  = "/Img/Botones%20entregas/RegistrarChofer/VOLVNA.png";
-=======
   const imgNormalVolver = "/Pedidos_GA/Img/Botones%20entregas/RegistrarChofer/VOLVAZ.png";
   const imgHoverVolver  = "/Pedidos_GA/Img/Botones%20entregas/RegistrarChofer/VOLVNA.png";
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
 
   if (iconoVolver) {
     iconoVolver.addEventListener("mouseover", () => iconoVolver.src = imgHoverVolver);
     iconoVolver.addEventListener("mouseout",  () => iconoVolver.src = imgNormalVolver);
   }
 
-<<<<<<< HEAD
-  const imgNormalFAP = "/Img/Botones%20entregas/RegistrarChofer/REGNA.png";
-  const imgHoverFAP  = "/Img/Botones%20entregas/RegistrarChofer/REGNAF.png";
-=======
   const imgNormalFAP = "/Pedidos_GA/Img/Botones%20entregas/RegistrarChofer/REGNA.png";
   const imgHoverFAP  = "/Pedidos_GA/Img/Botones%20entregas/RegistrarChofer/REGNAF.png";
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
 
   if (iconoFAP) {
     iconoFAP.addEventListener("mouseover", () => iconoFAP.src = imgHoverFAP);
@@ -49,22 +35,14 @@ document.addEventListener("DOMContentLoaded", function() {
 <body>
 <header class="header">
   <div class="logo">
-<<<<<<< HEAD
-    <img src="/Img/Botones%20entregas/RegistrarChofer/REGCHOFTIT.png" alt="Registro de Chofer" style="max-width: 15%; height: auto;">
-=======
     <img src="/Pedidos_GA/Img/Botones%20entregas/RegistrarChofer/REGCHOFTIT.png" alt="Registro de Chofer" style="max-width: 15%; height: auto;">
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
   </div>
   <nav class="navbar">
     <ul>
       <li class="nav-item">
         <a href="../Choferes.php" class="nav-link">
           <!-- Usa / y codifica espacios -->
-<<<<<<< HEAD
-          <img src="/Img/Botones%20entregas/RegistrarChofer/VOLVAZ.png"
-=======
           <img src="/Pedidos_GA/Img/Botones%20entregas/RegistrarChofer/VOLVAZ.png"
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
                alt="Volver" class="icono-Volver"
                style="max-width: 5%; height: auto; position:absolute; top: 50px; left: 25px;">
         </a>
@@ -121,11 +99,7 @@ document.addEventListener("DOMContentLoaded", function() {
     <input type="password" id="confirm_password" name="confirm_password" required>
 
     <button type="submit" class="icono-FAP" style="background:none; border:none; padding:0;">
-<<<<<<< HEAD
-      <img src="/Img/Botones%20entregas/RegistrarChofer/REGNA.png"
-=======
       <img src="/Pedidos_GA/Img/Botones%20entregas/RegistrarChofer/REGNA.png"
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
            class="icono-FAP-img" alt="Registrar" style="max-width:50%; height:auto; display:flex;">
     </button>
 

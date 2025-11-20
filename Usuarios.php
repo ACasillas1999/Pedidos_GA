@@ -16,11 +16,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<<<<<<< HEAD
-    <link rel="icon" type="image/png" href="/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
-=======
     <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Consultar Usuarios</title>
@@ -35,13 +31,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         var iconoAddChofer = document.querySelector(".icono-AddChofer");
         var iconoVolver = document.querySelector(".icono-Volver");
     
-<<<<<<< HEAD
-            var imgNormalAddChoferes ="/Img/Botones%20entregas/Pedidos_GA/AGUSNA.png";
-            var imgHoverCAddhoferes = "/Img/Botones%20entregas/Pedidos_GA/AGUSBL.png";
-=======
             var imgNormalAddChoferes ="/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/AGUSNA.png";
             var imgHoverCAddhoferes = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/AGUSBL.png";
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
 
             // Cambiar la imagen al pasar el mouse para Pendientes
             iconoAddChofer.addEventListener("mouseover", function() {
@@ -54,13 +45,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
             });
         
         
-<<<<<<< HEAD
-          var imgNormalVolver="/Img/Botones%20entregas/Usuario/VOLVAZ.png";
-            var imgHoverVolver = "/Img/Botones%20entregas/Usuario/VOLVNA.png";
-=======
           var imgNormalVolver="/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVAZ.png";
             var imgHoverVolver = "/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVNA.png";
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
 
             // Cambiar la imagen al pasar el mouse para Pendientes
             iconoVolver.addEventListener("mouseover", function() {
@@ -85,32 +71,19 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
      
      
     <ul>
-<<<<<<< HEAD
-        <li><a href="/Registrar">
-            <img src="/Img/Botones%20entregas/Pedidos_GA/AGUSNA.png" alt="Estaditicas " class = "icono-AddChofer"style="max-width: 80%; height: auto;">
-=======
         <li><a href="/Pedidos_GA/Registrar">
             <img src="/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/AGUSNA.png" alt="Estaditicas " class = "icono-AddChofer"style="max-width: 80%; height: auto;">
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
             
            </a></li>
         
         
          <li class="corner-left-bottom"><a href="Pedidos_GA.php">
-<<<<<<< HEAD
-            <img src="/Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Estaditicas " class = "icono-Volver"style="max-width: 35%; height: auto;">
-=======
             <img src="/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVAZ.png" alt="Estaditicas " class = "icono-Volver"style="max-width: 35%; height: auto;">
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
             
            </a></li>
         
               <!-- <li class="logout-button">
-<<<<<<< HEAD
-    <form action="Pedidos_GA.php" method="post" src="/Img/Botones%20entregas/Pedidos_GA/AGUSNA.png" >
-=======
     <form action="Pedidos_GA.php" method="post" src="/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/AGUSNA.png" >
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
         <input type="submit" value="Volver">
        
     </form>
@@ -133,11 +106,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
           <h2 class="titulo">
             <div class="chart-title">
                
-<<<<<<< HEAD
-               <img src="/Img/Botones%20entregas/Usuario/USUAZ.png" alt="iconoVPedidos "class= "icono-registro" style="max-width: 20%; height: auto; ">
-=======
                <img src="/Pedidos_GA/Img/Botones%20entregas/Usuario/USUAZ.png" alt="iconoVPedidos "class= "icono-registro" style="max-width: 20%; height: auto; ">
->>>>>>> parent of 5e8b02c (parra amazon Update image paths and SQL table names)
                 
                 
 
