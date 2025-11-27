@@ -202,25 +202,19 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
           <?php if ($_SESSION["Rol"] === "Admin"): ?>
             <li>
             <a href="mapa_calor.php" title="Mapa de Calor" style="display:flex; align-items:center; justify-content:center;">
-              <!-- SVG provisional como icono de "Mapa de Calor" -->
-              <svg class="icono-mapa-calor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="48" height="48" role="img" aria-label="Mapa de Calor" style="max-width:60%; height:auto;">
-              <!-- Círculos concéntricos para simular un punto de calor -->
-              <circle cx="12" cy="12" r="8" fill="#ffffffff"/>
-              <circle cx="12" cy="12" r="5" fill="#ffffffff"/>
-              <circle cx="12" cy="12" r="2" fill="#ffffffff"/>
-              </svg>
+             <img src="/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/Mapa_calor.png" alt="calor" class="icono-calor" style="max-width: 60%; height: auto;">
             </a>
             </li>
           <?php endif; ?>
           <?php if ($_SESSION["Rol"] === "Admin" || $_SESSION["Rol"] === "JC" || $_SESSION["Rol"] === "MEC"): ?>
           <li>
-            <a href="vehiculos.php" title="Vehículos">
+            <a href="vehiculos.php" title="Vehículos" style="display:flex; align-items:center; justify-content:center;">
               <img src="\Pedidos_GA\Img\Botones entregas\Pedidos_GA\SERVMECNA.png" alt="vehiculos" class="icono-vehiculos" style="max-width: 60%; height: auto;">
             </a>
           </li>
           <?php endif; ?>
           <li>
-            <a href="Choferes.php" title="Choferes">
+            <a href="Choferes.php" title="Choferes" style="display:flex; align-items:center; justify-content:center;">
               <img src="\Pedidos_GA\Img\Botones entregas\Pedidos_GA\CHOFNA2.png" alt="Choferes" class="icono-choferes" style="max-width: 60%; height: auto;">
             </a>
           </li>
@@ -230,7 +224,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
       <!-- Si no es admin, mostrar Choferes directamente -->
       <li class="sidebar-divider"></li>
       <li>
-        <a href="Choferes.php" title="Choferes">
+        <a href="Choferes.php" title="Choferes" style="display:flex; align-items:center; justify-content:center;">
           <img src="\Pedidos_GA\Img\Botones entregas\Pedidos_GA\CHOFNA2.png" alt="Choferes" class="icono-choferes" style="max-width: 70%; height: auto;">
         </a>
       </li>
@@ -246,18 +240,18 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         <ul class="dropdown-menu" id="menu-config">
           <?php if ($_SESSION["Rol"] === "Admin"): ?>
           <li>
-            <a href="Usuarios.php" title="Usuarios">
+            <a href="Usuarios.php" title="Usuarios" style="display:flex; align-items:center; justify-content:center;">
               <img src="\Pedidos_GA\Img\Botones entregas\Pedidos_GA\USUNA.png" alt="Usuarios" class="icono-U" style="max-width: 60%; height: auto;">
             </a>
           </li>
           <li>
-            <a href="historial.php" title="Historial">
+            <a href="historial.php" title="Historial" style="display:flex; align-items:center; justify-content:center;">
               <img src="\Pedidos_GA\Img\Botones entregas\Pedidos_GA\H2.png" alt="Historial" class="icono-H" style="max-width: 60%; height: auto;">
             </a>
           </li>
           <?php endif; ?>
           <li>
-            <a href="reporte_precios_facturas.php" title="Reporte de Precios">
+            <a href="reporte_precios_facturas.php" title="Reporte de Precios" style="display:flex; align-items:center; justify-content:center;">
               <img src="\Pedidos_GA\Img\Botones entregas\Pedidos_GA\ICONO_CHIDO.png" alt="Reporte Precios" class="icono-reporte-precios" style="max-width: 60%; height: auto;">
             </a>
           </li>
@@ -296,6 +290,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 
       // Manejo de imágenes e iconos
       var iconoVehiculos = document.querySelector(".icono-vehiculos");
+       var iconoCalor = document.querySelector(".icono-calor");
       var iconoChoferes = document.querySelector(".icono-choferes");
       var iconoEstadisticas = document.querySelector(".icono-estadisticas");
       var iconoAddRegistro = document.querySelector(".icono-registro");
@@ -327,6 +322,17 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         });
         iconoVehiculos.addEventListener("mouseout", function() {
             iconoVehiculos.src = imgNormalVehiculos;
+        });
+      }
+
+      if (iconoCalor) {
+        var imgNormalCalor = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/Mapa_Calor.png";
+        var imgHoverCalor = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/Mapa_Calor_bc.png";
+        iconoCalor.addEventListener("mouseover", function() {
+            iconoCalor.src = imgHoverCalor;
+        });
+        iconoCalor.addEventListener("mouseout", function() {
+            iconoCalor.src = imgNormalCalor;
         });
       }
       

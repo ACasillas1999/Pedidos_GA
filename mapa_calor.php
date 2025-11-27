@@ -33,7 +33,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         <ul>
             <li>
                 <a href="Pedidos_GA.php">
-                    <img src="\Pedidos_GA\Img\Botones entregas\Pedidos_GA\INICIO_NA.png" alt="Inicio" style="max-width: 80%; height: auto;">
+                    <img src="\Pedidos_GA\Img\Botones entregas\RegistrarChofer\VOLVAZ.png" alt="Inicio" style="max-width: 80%; height: auto;">
                 </a>
             </li>
         </ul>
