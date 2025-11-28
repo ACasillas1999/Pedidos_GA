@@ -22,33 +22,62 @@ $hoy = new DateTime();
 $inicioMesDT = new DateTime('first day of this month 00:00:00');
 $finMesDT = new DateTime('last day of this month 23:59:59');
 
+$mesParam = trim($_GET['mes'] ?? '');
 $desdeParam = trim($_GET['desde'] ?? '');
 $hastaParam = trim($_GET['hasta'] ?? '');
+$semanasParam = $_GET['semanas'] ?? [];
+if (!is_array($semanasParam)) {
+  $semanasParam = [$semanasParam];
+}
+$weeksSelectedKeys = [];
+foreach ($semanasParam as $s) {
+  $s = trim((string)$s);
+  if ($s === '') continue;
+  if (preg_match('/^(\\d{4})-(\\d{1,2})$/', $s, $m)) {
+    $weeksSelectedKeys[] = ((int)$m[1]) . '-' . ((int)$m[2]);
+  }
+}
+$weeksSelectedKeys = array_values(array_unique($weeksSelectedKeys));
+$weeksQueryStr = '';
+foreach ($weeksSelectedKeys as $wk) {
+  $weeksQueryStr .= '&semanas[]=' . urlencode($wk);
+}
 
 $filtroInicioDT = clone $inicioMesDT;
 $filtroFinDT = clone $finMesDT;
 
-if ($desdeParam !== '') {
-  try { $filtroInicioDT = new DateTime($desdeParam . ' 00:00:00'); } catch (Exception $e) {}
-}
-if ($hastaParam !== '') {
-  try { $filtroFinDT = new DateTime($hastaParam . ' 23:59:59'); } catch (Exception $e) {}
-}
-if ($filtroInicioDT > $filtroFinDT) {
-  $tmp = $filtroInicioDT;
-  $filtroInicioDT = $filtroFinDT;
-  $filtroFinDT = $tmp;
+if ($mesParam !== '' && preg_match('/^\\d{4}-\\d{2}$/', $mesParam)) {
+  try {
+    $filtroInicioDT = new DateTime($mesParam . '-01 00:00:00');
+    $filtroFinDT = (clone $filtroInicioDT)->modify('last day of this month 23:59:59');
+  } catch (Exception $e) {}
+} else {
+  if ($desdeParam !== '') {
+    try { $filtroInicioDT = new DateTime($desdeParam . ' 00:00:00'); } catch (Exception $e) {}
+  }
+  if ($hastaParam !== '') {
+    try { $filtroFinDT = new DateTime($hastaParam . ' 23:59:59'); } catch (Exception $e) {}
+  }
+  if ($filtroInicioDT > $filtroFinDT) {
+    $tmp = $filtroInicioDT;
+    $filtroInicioDT = $filtroFinDT;
+    $filtroFinDT = $tmp;
+  }
 }
 
 $filtroInicio = $filtroInicioDT->format('Y-m-d H:i:s');
 $filtroFin = $filtroFinDT->format('Y-m-d H:i:s');
 $desdeVal = $filtroInicioDT->format('Y-m-d');
 $hastaVal = $filtroFinDT->format('Y-m-d');
+$mesVal = ($mesParam !== '' && preg_match('/^\\d{4}-\\d{2}$/', $mesParam)) ? $mesParam : '';
+$filtroInicioDateOnly = $filtroInicioDT->format('Y-m-d');
+$filtroFinDateOnly = $filtroFinDT->format('Y-m-d');
 $mensaje = '';
 $mensajeTipo = '';
 $previewRows = [];
 $previewSummary = [];
 $importLogs = [];
+$showImportModal = false;
 if ($allowCsv) {
   ensureImportLogTable($conn);
   $resLog = $conn->query("SELECT id, usuario, rol, resumen, errores, creado_en FROM gasolina_import_log ORDER BY id DESC LIMIT 30");
@@ -65,6 +94,25 @@ function h($v): string
   return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
 }
 
+function buildWeekLabel(int $anio, int $semana, array $meses): string
+{
+  $d = new DateTime();
+  $d->setISODate($anio, $semana, 1);
+  $ini = $d->format('d') . ' ' . $meses[(int)$d->format('n')];
+  $dFin = (clone $d)->modify('+6 day');
+  $fin = $dFin->format('d') . ' ' . $meses[(int)$dFin->format('n')];
+  return "Semana {$semana} ({$anio}): {$ini} al {$fin}";
+}
+
+function getWeekRange(int $anio, int $semana): array
+{
+  $d = new DateTime();
+  $d->setISODate($anio, $semana, 1);
+  $ini = clone $d;
+  $fin = (clone $d)->modify('+6 day');
+  return [$ini, $fin];
+}
+
 function ensureImportLogTable($conn)
 {
   $sql = "
@@ -78,6 +126,24 @@ function ensureImportLogTable($conn)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   ";
   $conn->query($sql);
+}
+
+// Normaliza fechas dd/mm/yyyy a yyyy-mm-dd para que DateTime pueda parsear.
+function normalizeCsvDate(string $fecha): string
+{
+  $fecha = trim($fecha);
+  if ($fecha === '') return '';
+  if (preg_match('/^(\\d{1,2})\\/(\\d{1,2})\\/(\\d{2,4})$/', $fecha, $m)) {
+    $dia = (int)$m[1];
+    $mes = (int)$m[2];
+    $anio = (int)$m[3];
+    if ($anio < 100) {
+      // Asume años de 2 dígitos en 2000s
+      $anio = 2000 + $anio;
+    }
+    return sprintf('%04d-%02d-%02d', $anio, $mes, $dia);
+  }
+  return $fecha;
 }
 
 // Importa CSV masivo con columnas: EMPRESA, PLACA, FECHA, IMPORTE, OBSERVACIONES.
@@ -110,8 +176,9 @@ if ($allowCsv) {
       $usuarioLog = $_SESSION['Nombre'] ?? ($_SESSION['Usuario'] ?? '');
       $erroresLog = implode("\n", $importResult['errors_full'] ?? []);
       $summaryLog = json_encode($importResult['summary'] ?? []);
+      $summaryLogMsg = $summaryLog . ' | ' . $mensaje;
       $stmtLog = $conn->prepare("INSERT INTO gasolina_import_log (usuario, rol, resumen, errores) VALUES (?, ?, ?, ?)");
-      $stmtLog->bind_param('ssss', $usuarioLog, $rol, $summaryLog . ' | ' . $mensaje, $erroresLog);
+      $stmtLog->bind_param('ssss', $usuarioLog, $rol, $summaryLogMsg, $erroresLog);
       $stmtLog->execute();
       $stmtLog->close();
       unset($_SESSION['csv_preview_data']);
@@ -119,6 +186,7 @@ if ($allowCsv) {
   }
 
   if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['import_csv']) && $_POST['import_csv'] === 'preview') {
+    $showImportModal = true; // tras previsualizar volvemos a mostrar el modal con los resultados
     ensureImportLogTable($conn);
     if (!isset($_FILES['csv_file']) || $_FILES['csv_file']['error'] !== UPLOAD_ERR_OK) {
       $mensajeTipo = 'danger';
@@ -263,7 +331,8 @@ function processCsvStream($fh, $rol, $sucursal, $conn, bool $doInsert, int $limi
     $row = $parsed[$i];
     $empresaCsv = $idx['EMPRESA'] !== null ? trim($row[$idx['EMPRESA']] ?? '') : '';
     $placaCsv = trim($row[$idx['PLACA']] ?? '');
-    $fechaCsv = trim($row[$idx['FECHA']] ?? '');
+    $fechaCsvRaw = trim($row[$idx['FECHA']] ?? '');
+    $fechaCsv = normalizeCsvDate($fechaCsvRaw);
     $importeCsv = (float)($row[$idx['IMPORTE']] ?? 0);
     $obsCsv = isset($idx['OBSERVACIONES']) && $idx['OBSERVACIONES'] !== null ? trim($row[$idx['OBSERVACIONES']] ?? '') : '';
 
@@ -322,7 +391,7 @@ function processCsvStream($fh, $rol, $sucursal, $conn, bool $doInsert, int $limi
     $rows[] = [
       'empresa' => $empresaCsv,
       'placa' => $placaCsv,
-      'fecha' => $fechaCsv,
+      'fecha' => $fechaCsvRaw,
       'importe' => $importeCsv,
       'obs' => $obsCsv,
       'anio' => $status === 'ok' ? $anio : null,
@@ -422,29 +491,33 @@ $matriz = [];
 $empresaTotales = [];
 $empresaWeek = [];
 $weekLabels = [];
-$importLogs = [];
+$weekLabelsAll = [];
+$grandTotal = 0;
+
+$weekDateExpr = "STR_TO_DATE(CONCAT(anio, ' ', LPAD(semana, 2, '0'), ' 1'), '%x %v %w')";
+$weekDateExprGs = "STR_TO_DATE(CONCAT(gs.anio, ' ', LPAD(gs.semana, 2, '0'), ' 1'), '%x %v %w')";
 
 // Semanas presentes en el mes (segun fecha_registro)
 if ($rol === "Admin" || $rol === "MEC") {
   $sqlWeeks = "
     SELECT DISTINCT anio, semana
       FROM gasolina_semanal
-     WHERE fecha_registro BETWEEN ? AND ?
+     WHERE DATE($weekDateExpr) BETWEEN ? AND ?
   ORDER BY anio, semana
   ";
   $stmtWeeks = $conn->prepare($sqlWeeks);
-  $stmtWeeks->bind_param('ss', $filtroInicio, $filtroFin);
+  $stmtWeeks->bind_param('ss', $filtroInicioDateOnly, $filtroFinDateOnly);
 } else {
   $sqlWeeks = "
     SELECT DISTINCT gs.anio, gs.semana
       FROM gasolina_semanal gs
       JOIN vehiculos v ON v.id_vehiculo = gs.id_vehiculo
-     WHERE gs.fecha_registro BETWEEN ? AND ?
+     WHERE DATE($weekDateExprGs) BETWEEN ? AND ?
        AND v.Sucursal = ?
   ORDER BY gs.anio, gs.semana
   ";
   $stmtWeeks = $conn->prepare($sqlWeeks);
-  $stmtWeeks->bind_param('sss', $filtroInicio, $filtroFin, $sucursal);
+  $stmtWeeks->bind_param('sss', $filtroInicioDateOnly, $filtroFinDateOnly, $sucursal);
 }
 if ($stmtWeeks->execute()) {
   $resW = $stmtWeeks->get_result();
@@ -453,6 +526,26 @@ if ($stmtWeeks->execute()) {
   }
 }
 $stmtWeeks->close();
+$weeksFiltered = [];
+foreach ($weeks as $w) {
+  [$wIni, $wFin] = getWeekRange((int)$w['anio'], (int)$w['semana']);
+  if ($wFin < $filtroInicioDT || $wIni > $filtroFinDT) {
+    continue; // Semana fuera del rango de fechas seleccionado
+  }
+  $weeksFiltered[] = $w;
+}
+$weeks = $weeksFiltered;
+$weeksAll = $weeksFiltered;
+if (!empty($weeksSelectedKeys)) {
+  $weeks = array_values(array_filter($weeks, function ($w) use ($weeksSelectedKeys) {
+    $key = $w['anio'] . '-' . $w['semana'];
+    return in_array($key, $weeksSelectedKeys, true);
+  }));
+}
+$weekKeySet = [];
+foreach ($weeks as $w) {
+  $weekKeySet[$w['anio'] . '-' . $w['semana']] = true;
+}
 
 // Datos del mes por empresa/placa/semana
 if ($rol === "Admin" || $rol === "MEC") {
@@ -460,26 +553,28 @@ if ($rol === "Admin" || $rol === "MEC") {
     SELECT gs.*, v.placa, v.numero_serie, v.Sucursal, v.razon_social
       FROM gasolina_semanal gs
       JOIN vehiculos v ON v.id_vehiculo = gs.id_vehiculo
-     WHERE gs.fecha_registro BETWEEN ? AND ?
+     WHERE DATE($weekDateExprGs) BETWEEN ? AND ?
   ORDER BY v.razon_social, v.placa
   ";
   $stmtGas = $conn->prepare($gasSql);
-  $stmtGas->bind_param('ss', $filtroInicio, $filtroFin);
+  $stmtGas->bind_param('ss', $filtroInicioDateOnly, $filtroFinDateOnly);
 } else {
   $gasSql = "
     SELECT gs.*, v.placa, v.numero_serie, v.Sucursal, v.razon_social
       FROM gasolina_semanal gs
       JOIN vehiculos v ON v.id_vehiculo = gs.id_vehiculo
-     WHERE gs.fecha_registro BETWEEN ? AND ?
+     WHERE DATE($weekDateExprGs) BETWEEN ? AND ?
        AND v.Sucursal = ?
   ORDER BY v.razon_social, v.placa
   ";
   $stmtGas = $conn->prepare($gasSql);
-  $stmtGas->bind_param('sss', $filtroInicio, $filtroFin, $sucursal);
+  $stmtGas->bind_param('sss', $filtroInicioDateOnly, $filtroFinDateOnly, $sucursal);
 }
 if ($stmtGas->execute()) {
   $resGas = $stmtGas->get_result();
   while ($row = $resGas->fetch_assoc()) {
+    $key = $row['anio'] . '-' . $row['semana'];
+    if (!isset($weekKeySet[$key])) continue;
     $registros[] = $row;
     $empresa = trim((string)$row['razon_social']);
     if ($empresa === '') {
@@ -489,7 +584,6 @@ if ($stmtGas->execute()) {
       $empresa = 'Sin empresa';
     }
     $placa = $row['placa'] ?: $row['numero_serie'];
-    $key = $row['anio'] . '-' . $row['semana'];
     if (!isset($matriz[$empresa])) $matriz[$empresa] = [];
     if (!isset($matriz[$empresa][$placa])) {
       $matriz[$empresa][$placa] = [
@@ -505,19 +599,18 @@ if ($stmtGas->execute()) {
     if (!isset($empresaWeek[$empresa][$key])) $empresaWeek[$empresa][$key] = 0;
     $empresaWeek[$empresa][$key] += (float)$row['importe'];
     $empresaTotales[$empresa] += (float)$row['importe'];
+    $grandTotal += (float)$row['importe'];
   }
 }
 $stmtGas->close();
 
 // Etiquetas de semana
 $meses = [1=>"ENE",2=>"FEB",3=>"MAR",4=>"ABR",5=>"MAY",6=>"JUN",7=>"JUL",8=>"AGO",9=>"SEP",10=>"OCT",11=>"NOV",12=>"DIC"];
+foreach ($weeksAll as $w) {
+  $weekLabelsAll[$w['anio'] . '-' . $w['semana']] = buildWeekLabel((int)$w['anio'], (int)$w['semana'], $meses);
+}
 foreach ($weeks as $w) {
-  $d = new DateTime();
-  $d->setISODate($w['anio'], $w['semana'], 1);
-  $ini = $d->format('d') . ' ' . $meses[(int)$d->format('n')];
-  $dFin = (clone $d)->modify('+6 day');
-  $fin = $dFin->format('d') . ' ' . $meses[(int)$dFin->format('n')];
-  $weekLabels[$w['anio'] . '-' . $w['semana']] = "Semana {$ini} al {$fin}";
+  $weekLabels[$w['anio'] . '-' . $w['semana']] = $weekLabelsAll[$w['anio'] . '-' . $w['semana']] ?? buildWeekLabel((int)$w['anio'], (int)$w['semana'], $meses);
 }
 
 // Resumen anual por vehiculo
@@ -634,14 +727,7 @@ if ($allowCsv && ($_GET['export'] ?? '') === 'csv') {
       box-shadow:var(--shadow);
       padding:16px;
     }
-    .toolbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin:10px 0 14px;
-    }
-    .toolbar .pill{margin:0}
+    .toolbar{display:none;}
     .btn{
       display:inline-flex;
       align-items:center;
@@ -649,36 +735,120 @@ if ($allowCsv && ($_GET['export'] ?? '') === 'csv') {
       gap:6px;
       border:none;
       border-radius:12px;
-      padding:12px 16px;
+      padding:10px 14px;
       font-weight:800;
-      font-size:.95rem;
+      font-size:.9rem;
       cursor:pointer;
       text-decoration:none;
-      transition:transform .08s ease, box-shadow .12s ease, filter .12s ease;
-      box-shadow:0 6px 14px rgba(15, 23, 42, .12);
+      transition:transform .08s ease, box-shadow .14s ease, filter .14s ease;
+      box-shadow:0 8px 18px rgba(15, 23, 42, .12);
       color:#fff;
+      letter-spacing:.2px;
     }
-    .btn:hover{filter:brightness(1.05);}
+    .btn:hover{filter:brightness(1.07);}
     .btn:active{transform:translateY(1px);}
-    .btn.primary{background:#0b68c4;}
-    .btn.secondary{background:#3b4a62;}
+    .btn.primary{background:linear-gradient(135deg,#0f7ae8,#0b63bd);}
+    .btn.secondary{background:linear-gradient(135deg,#44546a,#2f3b4e);}
     .btn.ghost{
       background:#fff;
       color:#0b68c4;
       border:1px solid #cbd5e1;
-      box-shadow:none;
+      box-shadow:0 6px 16px rgba(15,23,42,.1);
     }
     .btn.small{padding:10px 14px;font-size:.9rem;}
-    .actions-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
-    .toolbar-compact{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;}
-    .toolbar-left{display:flex;flex-direction:column;gap:8px;flex:1 1 320px;}
-    .toolbar-right{display:flex;gap:8px;align-items:center;}
-    .filter-range{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
-    .filter-range{
+    .actions-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+    .toolbar-compact{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:transparent;padding:0;}
+    .filters-grid{
+      display:grid;
+      grid-template-columns:2fr 1fr;
+      gap:10px;
+      width:100%;
+      align-items:start;
+    }
+    .filter-card,
+    .action-card{
+      background:#fff;
+      border:1px solid #d5d7dd;
+      border-radius:14px;
+      box-shadow:0 6px 16px rgba(15,23,42,.12);
+      padding:10px 12px;
+    }
+    
+    .filter-row{
       display:flex;
       gap:8px;
+      width:100%;
+    }
+    .filter-row.two .field{flex:1;}
+    .filter-row.full .field{flex:1;}
+    .filter-row.actions{justify-content:flex-end;}
+    .filter-row.actions .btn{min-width:120px;}
+    .action-card{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      justify-content:flex-start;
+    }
+    .action-card .btn{
+      width:100%;
+      justify-content:center;
+      padding:10px 14px;
+    }
+    @media (max-width: 1024px){
+      .filters-grid{
+        grid-template-columns:1fr;
+      }
+    }
+    .filter-range{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      align-items:stretch;
+      padding:0;
+      background:transparent;
+      border:none;
+      border-radius:0;
+      box-shadow:none;
+      flex:1 1 560px;
+    }
+    .filter-range .field{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-width:160px;
+      flex:1 1 180px;
+    }
+    .filter-range .field label{margin:0;font-weight:800;font-size:.9rem;color:#0f172a;}
+    .filter-range input[type="date"],
+    .filter-range input[type="month"]{
+      width:100%;
+      background:#f8fafc;
+      padding:8px 10px;
+      border-radius:8px;
+      border:1px solid #cbd5e1;
+      font-weight:700;
+      letter-spacing:.2px;
+    }
+    .filter-range .action-field{flex:0 0 auto;min-width:120px;}
+    .topband{
+      background:#d4d4d8;
+      padding:12px 14px;
+      border-radius:14px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      margin-bottom:12px;
+      box-shadow:0 6px 14px rgba(15,23,42,.1);
+      border:1px solid #c5c7cd;
+    }
+    .topband h1{color:#0f172a;margin:0;font-size:22px;}
+    .topband .muted{color:#2f323a;margin:0;font-size:.93rem;}
+    .table-header{
+      display:flex;
+      justify-content:space-between;
       align-items:center;
-      flex-wrap:wrap;
+      gap:10px;
+      margin:4px 0 8px;
     }
     .filter-range label{margin:0;font-weight:700;font-size:.9rem;}
     .filter-range input[type="date"]{
@@ -723,14 +893,45 @@ if ($allowCsv && ($_GET['export'] ?? '') === 'csv') {
       font-weight:700;
       font-size:.82rem;
     }
-    .msg{
-      padding:12px 14px;
-      border-radius:10px;
-      margin-bottom:12px;
-      font-weight:700;
+    .msg-card{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+      padding:14px 16px;
+      border-radius:14px;
+      margin-bottom:14px;
+      border:1px solid #e5e7eb;
+      background:linear-gradient(120deg,#ffffff 0%, #f8fafc 100%);
+      box-shadow:var(--shadow);
     }
-    .msg.success{background:#ecfdf3;border:1px solid #bbf7d0;color:#166534}
-    .msg.danger{background:#fef2f2;border:1px solid #fecdd3;color:#991b1b}
+    .msg-card .dot{
+      width:12px;
+      height:12px;
+      border-radius:50%;
+      margin-top:4px;
+    }
+    .msg-card .msg-body{flex:1;}
+    .msg-card .msg-title{
+      font-weight:800;
+      font-size:1rem;
+      margin:0 0 4px 0;
+      color:#0f172a;
+      letter-spacing:.2px;
+    }
+    .msg-card .msg-text{
+      margin:0;
+      font-weight:650;
+      color:#1f2937;
+      line-height:1.45;
+    }
+    .msg-card.success{border-color:#bbf7d0;background:linear-gradient(120deg,#f0fdf4 0%, #ffffff 100%);}
+    .msg-card.success .dot{background:#16a34a;}
+    .msg-card.danger{border-color:#fecdd3;background:linear-gradient(120deg,#fef2f2 0%, #ffffff 100%);}
+    .msg-card.danger .dot{background:#dc2626;}
+    .msg-card.warn{border-color:#fcd34d;background:linear-gradient(120deg,#fffbeb 0%, #ffffff 100%);}
+    .msg-card.warn .dot{background:#d97706;}
+    .msg-card.info{border-color:#c7d2fe;background:linear-gradient(120deg,#eef2ff 0%, #ffffff 100%);}
+    .msg-card.info .dot{background:#4f46e5;}
     .grid{
       display:grid;
       grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
@@ -900,44 +1101,82 @@ if ($allowCsv && ($_GET['export'] ?? '') === 'csv') {
     </ul>
   </div>
 
-  <h1>Gasolina semanal</h1>
-  <div class="muted">Captura por vehiculo usando la llave (id_vehiculo, anio, semana).</div>
-
-  <div class="toolbar toolbar-compact">
-    <div class="toolbar-left">
-      <form class="filter-range" method="get">
-        <label for="desde">Desde</label>
-        <input type="date" id="desde" name="desde" value="<?php echo h($desdeVal); ?>">
-        <label for="hasta">Hasta</label>
-        <input type="date" id="hasta" name="hasta" value="<?php echo h($hastaVal); ?>">
-        <button type="submit" class="btn btn primary small">Aplicar</button>
-      </form>
-      <div class="actions-row">
-        <button type="button" class="btn primary small" id="openImport">Importar CSV</button>
-        <?php if (isset($_SESSION['csv_preview_data'])): ?>
-          <a href="?desde=<?php echo h($desdeVal); ?>&hasta=<?php echo h($hastaVal); ?>" class="btn secondary small">Limpiar preview</a>
-        <?php endif; ?>
-        <button type="button" class="btn secondary small" id="openImportLog">Ver historial importacion</button>
+  <div class="topband">
+    <h1>Gasolina semanal</h1>
+    <div class="muted">Captura por vehiculo usando la llave (id_vehiculo, anio, semana).</div>
+    <div class="filters-grid">
+      <div class="filter-card">
+        <form class="filter-range" method="get">
+          <div class="filter-row two">
+            <div class="field">
+              <label for="desde">Desde</label>
+              <input type="date" id="desde" name="desde" value="<?php echo h($desdeVal); ?>">
+            </div>
+            <div class="field">
+              <label for="hasta">Hasta</label>
+              <input type="date" id="hasta" name="hasta" value="<?php echo h($hastaVal); ?>">
+            </div>
+          </div>
+          <div class="filter-row full">
+            <div class="field">
+              <label for="mes">Mes</label>
+              <input type="month" id="mes" name="mes" value="<?php echo h($mesVal); ?>">
+            </div>
+          </div>
+          <div class="filter-row actions">
+            <button type="submit" class="btn btn primary small">Aplicar</button>
+          </div>
+        </form>
       </div>
-    </div>
-    <div class="toolbar-right">
       <?php if ($allowCsv): ?>
-        <a class="btn ghost small" href="?desde=<?php echo h($desdeVal); ?>&hasta=<?php echo h($hastaVal); ?>&export=csv">Exportar CSV</a>
+      <div class="action-card">
+        <a class="btn ghost small" href="?desde=<?php echo h($desdeVal); ?>&hasta=<?php echo h($hastaVal); ?><?php echo $weeksQueryStr ? h($weeksQueryStr) : ''; ?>&export=csv">Exportar CSV</a>
         <a class="btn secondary small" href="/Pedidos_GA/Machotes/gasolina_import_template.csv" download>Machote CSV</a>
+        <button type="button" class="btn primary small" id="openImport">Importar CSV</button>
+        <button type="button" class="btn secondary small" id="openImportLog">Ver historial importacion</button>
+        <?php if (isset($_SESSION['csv_preview_data'])): ?>
+          <a href="?desde=<?php echo h($desdeVal); ?>&hasta=<?php echo h($hastaVal); ?><?php echo $weeksQueryStr ? h($weeksQueryStr) : ''; ?>" class="btn ghost small">Limpiar preview</a>
+        <?php endif; ?>
+      </div>
       <?php endif; ?>
-      <button type="button" class="btn primary small" id="openModal">Registrar semana</button>
     </div>
   </div>
   <div class="pill" style="margin-bottom:10px;">Rango aplicado: <?php echo h($desdeVal); ?> al <?php echo h($hastaVal); ?></div>
+  <?php if ($mesVal): ?>
+    <div class="pill" style="margin-bottom:10px;">Mes seleccionado: <?php echo h($mesVal); ?></div>
+  <?php endif; ?>
+  <?php if (!empty($weeksSelectedKeys)): ?>
+    <div class="pill" style="margin-bottom:10px;">Semanas mostradas: <?php echo h(implode(', ', array_map(function($wk) use ($weekLabelsAll) { return $weekLabelsAll[$wk] ?? $wk; }, $weeksSelectedKeys))); ?></div>
+  <?php endif; ?>
 
   <?php if ($mensaje): ?>
-    <div class="msg <?php echo h($mensajeTipo); ?>"><?php echo h($mensaje); ?></div>
+    <?php
+      $msgTitle = 'Aviso';
+      if ($mensajeTipo === 'success') $msgTitle = 'Listo';
+      elseif ($mensajeTipo === 'danger') $msgTitle = 'Revisa por favor';
+      elseif ($mensajeTipo === 'warn') $msgTitle = 'Atencion';
+    ?>
+    <div class="msg-card <?php echo h($mensajeTipo ?: 'info'); ?>">
+      <div class="dot"></div>
+      <div class="msg-body">
+        <div class="msg-title"><?php echo h($msgTitle); ?></div>
+        <div class="msg-text"><?php echo h($mensaje); ?></div>
+      </div>
+    </div>
   <?php endif; ?>
+
+  <div class="summary" style="margin:10px 0 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;max-width:540px;">
+    <div style="font-weight:800;font-size:1rem;color:#0f172a;">Total general del rango</div>
+    <div style="font-size:1.2rem;font-weight:900;color:#0b68c4;">$<?php echo number_format($grandTotal, 2); ?></div>
+  </div>
 
   <!-- Totales anuales removidos a solicitud -->
 
   <div class="table-wrapper" style="margin-top:14px;">
-    <h3 style="margin:4px 0 8px;">Gasolina por semana (rango)</h3>
+    <div class="table-header">
+      <h3 style="margin:0;">Gasolina por semana (rango)</h3>
+      <button type="button" class="btn primary small" id="openModal">Registrar semana</button>
+    </div>
     <?php if (empty($weeks)): ?>
       <div class="muted">Sin semanas capturadas en este rango.</div>
     <?php else: ?>
@@ -1106,6 +1345,7 @@ if ($allowCsv && ($_GET['export'] ?? '') === 'csv') {
 
   <script>
     document.addEventListener("DOMContentLoaded", function() {
+      const shouldOpenImport = <?php echo $showImportModal ? 'true' : 'false'; ?>;
       const iconoAddChofer = document.querySelector(".icono-AddChofer");
       const iconoVolver = document.querySelector(".icono-Volver");
       const iconoEstadisticas = document.querySelector(".icono-estadisticas");
@@ -1215,6 +1455,21 @@ if ($allowCsv && ($_GET['export'] ?? '') === 'csv') {
         modalImportLog.addEventListener("click", (e) => {
           if (e.target === modalImportLog) closeLogModal();
         });
+      }
+      // Si se selecciona un mes, limpiar fechas manuales para evitar confusiones
+      const mesInput = document.getElementById("mes");
+      const desdeInput = document.getElementById("desde");
+      const hastaInput = document.getElementById("hasta");
+      if (mesInput) {
+        mesInput.addEventListener("change", () => {
+          if (mesInput.value && desdeInput && hastaInput) {
+            desdeInput.value = "";
+            hastaInput.value = "";
+          }
+        });
+      }
+      if (shouldOpenImport) {
+        openImportModal();
       }
       document.addEventListener("keydown", (e) => {
         if (e.key === "Escape") closeModal();

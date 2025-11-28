@@ -144,6 +144,51 @@ $hist_servicios = $conn->query("
   ORDER BY os.creado_en DESC
 ");
 
+
+// Resúmenes para pestaña Información (últimos 2 registros)
+$resumen_km = $conn->query("
+  SELECT fecha_registro, kilometraje_inicial, kilometraje_final
+  FROM registro_kilometraje
+  WHERE id_vehiculo = {$id_vehiculo}
+  ORDER BY id_registro DESC
+  LIMIT 2
+");
+
+$resumen_conductores = $conn->query("
+  SELECT hc.fecha_inicio, hc.fecha_fin, ch.username AS chofer_nombre
+  FROM historial_conductores hc
+  JOIN choferes ch ON ch.ID = hc.id_chofer
+  WHERE hc.id_vehiculo = {$id_vehiculo}
+  ORDER BY hc.id DESC
+  LIMIT 2
+");
+
+$resumen_obs = $conn->query("
+  SELECT fecha_inspeccion, seccion, item, calificacion
+  FROM checklist_vehicular
+  WHERE id_vehiculo = {$id_vehiculo}
+  ORDER BY fecha_inspeccion DESC, id DESC
+  LIMIT 2
+");
+
+$resumen_gas = $conn->query("
+  SELECT fecha_registro, anio, semana, importe, observaciones
+  FROM gasolina_semanal
+  WHERE id_vehiculo = {$id_vehiculo}
+  ORDER BY fecha_registro DESC
+  LIMIT 2
+");
+
+$resumen_servicios = $conn->query("
+  SELECT os.creado_en, os.estatus, s.nombre AS nombre_servicio
+  FROM orden_servicio os
+  LEFT JOIN servicios s ON os.id_servicio = s.id
+  WHERE os.id_vehiculo = {$id_vehiculo}
+  ORDER BY os.creado_en DESC
+  LIMIT 2
+");
+
+
 // ------- WhatsApp (igual que tenías) -------
 $whatsapp_token  = "EAAGacaATjwEBOZBgqhohcVk1ZBGEAbiTl7i86qESvSPjdllaomwzIG7LmOOvyTFpzyIlXX6dtTYTVTLLuw6SjaLoh2rec07I8qu1nGNYSVZAmQTGNa3QCQjujTqfd7QuLLwFNQllnX2z1V7JvToDhEi5KVqUWXHSqgSETvGyU7S2SN2fpXW0NpQaRI48pwZAgGS7A1BQMjLl5ZBjy";
 $phone_number_id = "335894526282507";
@@ -344,13 +389,51 @@ if ($proxSrv <= 0) {
     $estadoSrvClass = 'pill-ok';
 }
 
-// Gasolina
+// Gasolina (usar misma tabla que Gas.php: gasolina_semanal)
+// Registrar o actualizar semana de gasolina para ESTE vehiculo
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && (($_POST['accion'] ?? '') === 'registrar_semana_gasolina')) {
+    $idVehiculo = $id_vehiculo; // ya viene del contexto
+    $importe = (float)($_POST['importe'] ?? 0);
+    $obs = trim($_POST['observaciones'] ?? '');
+    $fechaSemana = $_POST['fecha_semana'] ?? date('Y-m-d');
+
+    try {
+        $dt = new DateTime($fechaSemana);
+    } catch (Exception $e) {
+        $dt = new DateTime();
+    }
+
+    $anio = (int)$dt->format('o');
+    $semana = (int)$dt->format('W');
+
+    if ($idVehiculo > 0 && $importe > 0) {
+        $stmt = $conn->prepare("
+        INSERT INTO gasolina_semanal (id_vehiculo, anio, semana, importe, fecha_registro, observaciones)
+        VALUES (?, ?, ?, ?, NOW(), ?)
+        ON DUPLICATE KEY UPDATE
+          importe = VALUES(importe),
+          observaciones = VALUES(observaciones),
+          fecha_registro = VALUES(fecha_registro)
+      ");
+        $stmt->bind_param('iiids', $idVehiculo, $anio, $semana, $importe, $obs);
+        if ($stmt->execute()) {
+            echo "<script>alert('Semana de gasolina guardada para {$semana}/{$anio}'); window.location.href='detalles_vehiculo.php?id={$idVehiculo}';</script>";
+            exit;
+        } else {
+            echo "<script>alert('No se pudo guardar la semana de gasolina: " . htmlspecialchars($stmt->error, ENT_QUOTES, 'UTF-8') . "'); window.history.back();</script>";
+            exit;
+        }
+    } else {
+        echo "<script>alert('Faltan datos obligatorios (importe > 0).'); window.history.back();</script>";
+        exit;
+    }
+}
+
 $historial_gasolina = $conn->query("
-  SELECT g.*, c.username AS chofer
-  FROM registro_gasolina g
-  JOIN choferes c ON g.id_chofer = c.ID
-  WHERE g.id_vehiculo = $id_vehiculo
-  ORDER BY g.id_registro DESC
+  SELECT gs.*
+  FROM gasolina_semanal gs
+  WHERE gs.id_vehiculo = {$id_vehiculo}
+  ORDER BY gs.fecha_registro DESC
 ");
 
 /* ====== POST: Asignar chofer con historial ====== */
@@ -1220,6 +1303,102 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'desas
 
     <!-- Panes -->
     <section id="pane-info" class="tab-pane">
+                  <!-- Resumen rápido de últimas actividades -->
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-bottom:16px;">
+              <!-- Historial de kilometraje -->
+              <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;">
+                  <div style="font-weight:600;color:#0f172a;font-size:.95rem;margin-bottom:6px;">Últimos kilometrajes</div>
+                  <?php if ($resumen_km && $resumen_km->num_rows > 0): ?>
+                      <?php while ($rk = $resumen_km->fetch_assoc()): ?>
+                          <div style="font-size:.85rem;color:#475569;margin-bottom:4px;">
+                              <strong><?= htmlspecialchars(date('d/m/Y', strtotime($rk['fecha_registro']))) ?>:</strong>
+                              <?= number_format((int)$rk['kilometraje_inicial']) ?> →
+                              <?= number_format((int)$rk['kilometraje_final']) ?> km
+                          </div>
+                      <?php endwhile; ?>
+                  <?php else: ?>
+                      <div style="font-size:.8rem;color:#94a3b8;">Sin registros de kilometraje.</div>
+                  <?php endif; ?>
+              </div>
+
+              <!-- Historial de conductores -->
+              <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;">
+                  <div style="font-weight:600;color:#0f172a;font-size:.95rem;margin-bottom:6px;">Últimos conductores</div>
+                  <?php if ($resumen_conductores && $resumen_conductores->num_rows > 0): ?>
+                      <?php while ($rc = $resumen_conductores->fetch_assoc()): ?>
+                          <div style="font-size:.85rem;color:#475569;margin-bottom:4px;">
+                              <strong><?= htmlspecialchars($rc['chofer_nombre']) ?></strong>
+                              <span>
+                                  (<?= htmlspecialchars(date('d/m/Y', strtotime($rc['fecha_inicio']))) ?>
+                                  <?php if (!empty($rc['fecha_fin'])): ?>
+                                      – <?= htmlspecialchars(date('d/m/Y', strtotime($rc['fecha_fin']))) ?>
+                                  <?php else: ?>
+                                      – actual
+                                  <?php endif; ?>)
+                              </span>
+                          </div>
+                      <?php endwhile; ?>
+                  <?php else: ?>
+                      <div style="font-size:.8rem;color:#94a3b8;">Sin historial de conductores.</div>
+                  <?php endif; ?>
+              </div>
+
+              <!-- Observaciones -->
+              <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;">
+                  <div style="font-weight:600;color:#0f172a;font-size:.95rem;margin-bottom:6px;">Últimas observaciones</div>
+                  <?php if ($resumen_obs && $resumen_obs->num_rows > 0): ?>
+                      <?php while ($ro = $resumen_obs->fetch_assoc()): ?>
+                          <div style="font-size:.85rem;color:#475569;margin-bottom:4px;">
+                              <strong><?= htmlspecialchars(date('d/m/Y', strtotime($ro['fecha_inspeccion']))) ?></strong>
+                              – <?= htmlspecialchars($ro['seccion']) ?> / <?= htmlspecialchars($ro['item']) ?>
+                              (<?= htmlspecialchars($ro['calificacion']) ?>)
+                          </div>
+                      <?php endwhile; ?>
+                  <?php else: ?>
+                      <div style="font-size:.8rem;color:#94a3b8;">Sin observaciones recientes.</div>
+                  <?php endif; ?>
+              </div>
+
+              <!-- Gasolina -->
+              <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;">
+                  <div style="font-weight:600;color:#0f172a;font-size:.95rem;margin-bottom:6px;">Última gasolina semanal</div>
+                  <?php if ($resumen_gas && $resumen_gas->num_rows > 0): ?>
+                      <?php while ($rg = $resumen_gas->fetch_assoc()): ?>
+                          <div style="font-size:.85rem;color:#475569;margin-bottom:4px;">
+                              <strong><?= htmlspecialchars(date('d/m/Y', strtotime($rg['fecha_registro']))) ?></strong>
+                              – Semana <?= (int)$rg['semana'] ?>/<?= (int)$rg['anio'] ?>:
+                              $<?= number_format((float)$rg['importe'], 2) ?>
+                              <?php if (!empty($rg['observaciones'])): ?>
+                                  <div style="font-size:.8rem;color:#64748b;">
+                                      <?= htmlspecialchars($rg['observaciones']) ?>
+                                  </div>
+                              <?php endif; ?>
+                          </div>
+                      <?php endwhile; ?>
+                  <?php else: ?>
+                      <div style="font-size:.8rem;color:#94a3b8;">Sin registros de gasolina.</div>
+                  <?php endif; ?>
+              </div>
+
+              <!-- Servicios -->
+              <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;">
+                  <div style="font-weight:600;color:#0f172a;font-size:.95rem;margin-bottom:6px;">Últimos servicios</div>
+                  <?php if ($resumen_servicios && $resumen_servicios->num_rows > 0): ?>
+                      <?php while ($rs = $resumen_servicios->fetch_assoc()): ?>
+                          <div style="font-size:.85rem;color:#475569;margin-bottom:4px;">
+                              <strong><?= htmlspecialchars($rs['nombre_servicio'] ?? 'Sin servicio') ?></strong>
+                              – <?= htmlspecialchars(date('d/m/Y', strtotime($rs['creado_en']))) ?>
+                              <?php if (!empty($rs['estatus'])): ?>
+                                  <span style="font-size:.8rem;color:#0f766e;">(<?= htmlspecialchars($rs['estatus']) ?>)</span>
+                              <?php endif; ?>
+                          </div>
+                      <?php endwhile; ?>
+                  <?php else: ?>
+                      <div style="font-size:.8rem;color:#94a3b8;">Sin servicios registrados.</div>
+                  <?php endif; ?>
+              </div>
+          </div>
+
         <table class="mi-tabla">
             <tr>
                 <th>Placa</th>
@@ -1231,6 +1410,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'desas
             </tr>
             <tr>
                 <td><?= htmlspecialchars($placa ?: '—') ?></td>
+                
                 <td><?= htmlspecialchars($tipoV ?: '—') ?></td>
                 <td><?= htmlspecialchars($sucV  ?: '—') ?></td>
                 <td><?= number_format($kmAct) ?></td>
@@ -1494,27 +1674,27 @@ function fmtDuracion($min){
         <?php endforeach; endif; ?>
     </section>
 
-    <section id="pane-gas" class="tab-pane" style="display:none">
-        <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
-            <button class="btn alt" onclick="abrirModalGasolina()">Agregar carga</button>
-        </div>
-        <table class="mi-tabla">
-            <tr>
-                <th>Fecha</th>
-                <th>Chofer</th>
-                <th>Litros</th>
-                <th>Costo</th>
-            </tr>
-            <?php while ($g = $historial_gasolina->fetch_assoc()): ?>
-                <tr>
-                    <td><?= htmlspecialchars($g['fecha_registro']) ?></td>
-                    <td><?= htmlspecialchars($g['chofer']) ?></td>
-                    <td><?= number_format((float)$g['litros'], 2) ?> L</td>
-                    <td>$<?= number_format((float)$g['costo'], 2) ?></td>
-                </tr>
-            <?php endwhile; ?>
-        </table>
-    </section>
+      <section id="pane-gas" class="tab-pane" style="display:none">
+          <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+              <button class="btn alt" onclick="abrirModalGasolina()">Agregar carga</button>
+          </div>
+          <table class="mi-tabla">
+              <tr>
+                  <th>Fecha registro</th>
+                  <th>Año/Semana</th>
+                  <th>Importe</th>
+                  <th>Observaciones</th>
+              </tr>
+              <?php while ($g = $historial_gasolina->fetch_assoc()): ?>
+                  <tr>
+                      <td><?= htmlspecialchars($g['fecha_registro']) ?></td>
+                      <td><?= htmlspecialchars($g['anio'] . ' / ' . $g['semana']) ?></td>
+                      <td>$<?= number_format((float)$g['importe'], 2) ?></td>
+                      <td><?= htmlspecialchars($g['observaciones'] ?? '') ?></td>
+                  </tr>
+              <?php endwhile; ?>
+          </table>
+      </section>
 
 
     <section id="pane-ext" class="tab-pane" style="display:none">
@@ -1664,53 +1844,39 @@ function fmtDuracion($min){
                 <h3 id="mg-title" class="modal__title">Registrar Carga de Gasolina</h3>
                 <button class="modal__close" onclick="cerrarModalGasolina()" aria-label="Cerrar">×</button>
             </div>
-            <form method="POST" action="RegistrarGasolina.php">
-                <input type="hidden" name="id_vehiculo" value="<?= $id_vehiculo ?>">
+            <form method="POST" autocomplete="off">
+                <input type="hidden" name="accion" value="registrar_semana_gasolina">
                 <div class="modal__body">
-                    <?php $sucursalUsuario = $_SESSION["Sucursal"]; ?>
                     <div class="modal__row">
-                        <label class="modal__label">Sucursal</label>
-                        <select id="filtroSucursalGas" onchange="filtrarChoferes('Gas')" class="modal__field" <?= ($rol === 'JC') ? 'disabled' : '' ?>>
-                            <?php
-                            if ($rol === 'Admin') {
-                                echo "<option value=''>Todas</option>";
-                                $sucs = $conn->query("SELECT DISTINCT Sucursal FROM choferes");
-                                while ($s = $sucs->fetch_assoc()) echo "<option value='{$s['Sucursal']}'>{$s['Sucursal']}</option>";
-                            } else {
-                                echo "<option value='{$sucursalUsuario}' selected>{$sucursalUsuario}</option>";
-                            }
-                            ?>
-                        </select>
-                    </div>
-                    <div class="modal__row">
-                        <label class="modal__label">Chofer</label>
-                        <select name="id_chofer" id="listaChoferesGas" class="modal__field" required>
-                            <?php
-                            $chs = $conn->query("SELECT * FROM choferes WHERE Estado='ACTIVO'");
-                            while ($ch = $chs->fetch_assoc()) {
-                                echo "<option value='{$ch['ID']}' data-sucursal='{$ch['Sucursal']}'>{$ch['username']} - {$ch['Sucursal']}</option>";
-                            }
-                            ?>
-                        </select>
+                        <label class="modal__label">Vehículo</label>
+                        <div class="modal__field" style="background:#e5e7eb;">
+                            <?= htmlspecialchars($vehiculo['placa'] ?? '') ?>
+                            <?php if (!empty($vehiculo['Sucursal'])): ?>
+                                - <?= htmlspecialchars($vehiculo['Sucursal']) ?>
+                            <?php endif; ?>
+                        </div>
                     </div>
                     <div class="modal__row inline">
                         <div>
-                            <label class="modal__label">Fecha de carga</label>
-                            <input class="modal__field" type="date" name="fecha_registro" required>
+                            <label class="modal__label">Fecha dentro de la semana</label>
+                            <input class="modal__field" type="date" name="fecha_semana"
+                                   value="<?= date('Y-m-d') ?>" required>
                         </div>
                         <div>
-                            <label class="modal__label">Litros cargados</label>
-                            <input class="modal__field" type="number" name="litros" step="0.0001" required>
+                            <label class="modal__label">Importe semanal (MXN)</label>
+                            <input class="modal__field" type="number" name="importe"
+                                   step="0.01" min="0" placeholder="0.00" required>
                         </div>
                     </div>
                     <div class="modal__row">
-                        <label class="modal__label">Costo total</label>
-                        <input class="modal__field" type="number" name="costo" step="0.0001" required>
+                        <label class="modal__label">Observaciones</label>
+                        <textarea class="modal__field" name="observaciones"
+                                  placeholder="Opcional"></textarea>
                     </div>
                 </div>
                 <div class="modal__actions">
                     <button type="button" class="btn--ghost" onclick="cerrarModalGasolina()">Cancelar</button>
-                    <button type="submit" class="btn--primary btn--warn">Registrar gasolina</button>
+                    <button type="submit" class="btn--primary btn--warn">Guardar / Actualizar semana</button>
                 </div>
             </form>
         </div>
@@ -2349,8 +2515,4 @@ function fmtDuracion($min){
 
 </body>
 </html>
-
-
-
-
 
