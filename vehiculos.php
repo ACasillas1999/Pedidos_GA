@@ -1043,6 +1043,13 @@ while ($c = $choferes->fetch_assoc()) {
         </a>
       </li>
 
+      <li>
+        <a href="/Pedidos_GA/Gas/Gas.php" title="Gas" aria-label="Gas">
+          <!--<i class="fa-sharp fa-solid fa-gears sidebar-icon small" style="font-size:48px;color:orange;"></i>-->
+          <img src="/Pedidos_GA\Img\Botones entregas\Pedidos_GA\gas.png"  class="icono-gas sidebar-icon" alt="Gas">
+        </a>
+      </li>
+
       <li class="sidebar-bottom">
         <a href="Pedidos_GA.php" title="Volver">
           <img src="/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVAZ.png" class="icono-Volver sidebar-icon small" alt="Volver">
@@ -1494,6 +1501,7 @@ while ($c = $choferes->fetch_assoc()) {
       const iconoVolver = document.querySelector(".icono-Volver");
       const iconoEstadisticas = document.querySelector(".icono-estadisticas");
       const iconoServicios = document.querySelector(".icono-servicios");
+      const iconogas = document.querySelector(".icono-gas");
       if (iconoAddChofer) {
         const n = "/Pedidos_GA/Img/Botones%20entregas/Choferes/ADDSERVMECNA.png",
           h = "/Pedidos_GA/Img/Botones%20entregas/Choferes/ADDSERVMECBLANC.png";
@@ -1517,6 +1525,12 @@ while ($c = $choferes->fetch_assoc()) {
           h = "/Pedidos_GA/Img/SVG/ServiciosB.svg";
         iconoServicios.addEventListener("mouseover", () => iconoServicios.src = h);
         iconoServicios.addEventListener("mouseout", () => iconoServicios.src = n);
+      }
+      if (iconogas) {
+        const n = "/Pedidos_GA/Img/Botones entregas/Pedidos_GA/gas.png",
+          h = "/Pedidos_GA/Img/Botones entregas/Pedidos_GA/gas_bc.png";
+        iconogas.addEventListener("mouseover", () => iconogas.src = h);
+        iconogas.addEventListener("mouseout", () => iconogas.src = n);
       }
 
     });
