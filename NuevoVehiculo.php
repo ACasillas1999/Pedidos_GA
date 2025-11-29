@@ -12,6 +12,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 }
 
 require_once __DIR__ . "/Conexiones/Conexion.php";
+$prefNumeroSerie = trim($_GET['numero_serie'] ?? "");
+$prefPlaca = trim($_GET['placa'] ?? "");
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["agregar_vehiculo"])) {
     // Sanitización básica
     $numero_serie   = trim($_POST["numero_serie"] ?? "");
@@ -343,4 +345,20 @@ document.getElementById("foto").addEventListener("change", function(){
     const fileName = this.files.length > 0 ? this.files[0].name : "Ningún archivo seleccionado";
     document.getElementById("file-chosen").textContent = fileName;
 });
+</script>
+<script>
+// Prefill placa y numero de serie desde querystring (llamado desde Gas.php)
+(function(){
+  const params = new URLSearchParams(window.location.search);
+  const placaQS = params.get('placa') || '';
+  const serieQS = params.get('numero_serie') || '';
+  if (placaQS) {
+    const inpPlaca = document.querySelector('input[name="placa"]');
+    if (inpPlaca) inpPlaca.value = placaQS;
+  }
+  if (serieQS) {
+    const inpSerie = document.querySelector('input[name="numero_serie"]');
+    if (inpSerie) inpSerie.value = serieQS;
+  }
+})();
 </script>

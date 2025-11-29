@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 // Modulo de gasolina semanal
 ini_set('session.cookie_httponly', true);
 ini_set('session.cookie_secure', true);
@@ -78,12 +78,55 @@ $previewRows = [];
 $previewSummary = [];
 $importLogs = [];
 $showImportModal = false;
+$pendingRows = [];
+$pendingCount = 0;
+$pendingProcessMsg = '';
+$showPendingModal = false;
 if ($allowCsv) {
   ensureImportLogTable($conn);
+  ensurePendingTable($conn);
+
+  if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['process_pending'])) {
+    $proc = processPendingQueue($conn, $rol, $sucursal);
+    $pendingProcessMsg = $proc['message'];
+    $showPendingModal = true;
+  }
+
   $resLog = $conn->query("SELECT id, usuario, rol, resumen, errores, creado_en FROM gasolina_import_log ORDER BY id DESC LIMIT 30");
   if ($resLog) {
     while ($r = $resLog->fetch_assoc()) {
       $importLogs[] = $r;
+    }
+  }
+
+  $pendingCountQuery = ($rol === "Admin" || $rol === "MEC")
+    ? "SELECT COUNT(*) AS c FROM gasolina_import_pending"
+    : "SELECT COUNT(*) AS c FROM gasolina_import_pending WHERE sucursal = ?";
+  if ($rol === "Admin" || $rol === "MEC") {
+    $resCnt = $conn->query($pendingCountQuery);
+  } else {
+    $stmtCnt = $conn->prepare($pendingCountQuery);
+    $stmtCnt->bind_param('s', $sucursal);
+    $stmtCnt->execute();
+    $resCnt = $stmtCnt->get_result();
+  }
+  if ($resCnt && ($rowCnt = $resCnt->fetch_assoc())) {
+    $pendingCount = (int)$rowCnt['c'];
+  }
+  $pendingRowsQuery = ($rol === "Admin" || $rol === "MEC")
+    ? "SELECT id, empresa, placa, fecha, anio, semana, importe, observaciones FROM gasolina_import_pending ORDER BY id DESC LIMIT 200"
+    : "SELECT id, empresa, placa, fecha, anio, semana, importe, observaciones FROM gasolina_import_pending WHERE sucursal = ? ORDER BY id DESC LIMIT 200";
+  if ($rol === "Admin" || $rol === "MEC") {
+    $resPend = $conn->query($pendingRowsQuery);
+  } else {
+    $stmtPend = $conn->prepare($pendingRowsQuery);
+    $stmtPend->bind_param('s', $sucursal);
+    $stmtPend->execute();
+    $resPend = $stmtPend->get_result();
+  }
+  if ($resPend) {
+    while ($p = $resPend->fetch_assoc()) {
+      $pendingRows[] = $p;
     }
   }
 }
@@ -126,6 +169,104 @@ function ensureImportLogTable($conn)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   ";
   $conn->query($sql);
+}
+
+function ensurePendingTable($conn)
+{
+  $sql = "
+    CREATE TABLE IF NOT EXISTS gasolina_import_pending (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      placa VARCHAR(50) NOT NULL,
+      empresa VARCHAR(120) DEFAULT '',
+      fecha DATE NOT NULL,
+      anio INT NOT NULL,
+      semana INT NOT NULL,
+      importe DECIMAL(10,2) NOT NULL DEFAULT 0,
+      observaciones VARCHAR(255) DEFAULT '',
+      sucursal VARCHAR(100) DEFAULT '',
+      creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE KEY uniq_placa_fecha_sucursal (placa, fecha, sucursal)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  ";
+  $conn->query($sql);
+}
+
+function processPendingQueue($conn, $rol, $sucursal): array
+{
+  ensurePendingTable($conn);
+
+  $vehMap = [];
+  $vehSql = ($rol === "Admin" || $rol === "MEC")
+    ? "SELECT id_vehiculo, placa, numero_serie FROM vehiculos"
+    : "SELECT id_vehiculo, placa, numero_serie FROM vehiculos WHERE Sucursal = ?";
+  if ($rol === "Admin" || $rol === "MEC") {
+    $resVeh = $conn->query($vehSql);
+  } else {
+    $stmtVeh = $conn->prepare($vehSql);
+    $stmtVeh->bind_param('s', $sucursal);
+    $stmtVeh->execute();
+    $resVeh = $stmtVeh->get_result();
+  }
+  if ($resVeh) {
+    while ($v = $resVeh->fetch_assoc()) {
+      $k1 = strtoupper(preg_replace('/\\s+/', '', (string)$v['placa']));
+      $k2 = strtoupper(preg_replace('/\\s+/', '', (string)$v['numero_serie']));
+      if ($k1 !== '') $vehMap[$k1] = (int)$v['id_vehiculo'];
+      if ($k2 !== '') $vehMap[$k2] = (int)$v['id_vehiculo'];
+    }
+  }
+
+  $pendingSql = ($rol === "Admin" || $rol === "MEC")
+    ? "SELECT id, empresa, placa, fecha, anio, semana, importe, observaciones FROM gasolina_import_pending ORDER BY id ASC"
+    : "SELECT id, empresa, placa, fecha, anio, semana, importe, observaciones FROM gasolina_import_pending WHERE sucursal = ? ORDER BY id ASC";
+  if ($rol === "Admin" || $rol === "MEC") {
+    $resPend = $conn->query($pendingSql);
+  } else {
+    $stmtPend = $conn->prepare($pendingSql);
+    $stmtPend->bind_param('s', $sucursal);
+    $stmtPend->execute();
+    $resPend = $stmtPend->get_result();
+  }
+  if (!$resPend || $resPend->num_rows === 0) {
+    return ['processed' => 0, 'missing' => 0, 'errors' => 0, 'message' => 'No hay pendientes por procesar.'];
+  }
+
+  $stmtIns = $conn->prepare("
+    INSERT INTO gasolina_semanal (id_vehiculo, anio, semana, importe, fecha_registro, observaciones)
+    VALUES (?, ?, ?, ?, NOW(), ?)
+    ON DUPLICATE KEY UPDATE
+      importe = VALUES(importe),
+      observaciones = VALUES(observaciones),
+      fecha_registro = VALUES(fecha_registro)
+  ");
+  $stmtDel = $conn->prepare("DELETE FROM gasolina_import_pending WHERE id = ?");
+
+  $ok = 0;
+  $missing = 0;
+  $err = 0;
+
+  while ($p = $resPend->fetch_assoc()) {
+    $key = strtoupper(preg_replace('/\\s+/', '', (string)$p['placa']));
+    $idVeh = $vehMap[$key] ?? null;
+    if ($idVeh) {
+      $stmtIns->bind_param('iiids', $idVeh, $p['anio'], $p['semana'], $p['importe'], $p['observaciones']);
+      if ($stmtIns->execute()) {
+        $stmtDel->bind_param('i', $p['id']);
+        $stmtDel->execute();
+        $ok++;
+      } else {
+        $err++;
+      }
+    } else {
+      $missing++;
+    }
+  }
+
+  $msg = "Pendientes procesados: {$ok} insertados";
+  $msg .= $missing > 0 ? ", {$missing} aun sin vehiculo" : '';
+  $msg .= $err > 0 ? ", {$err} con error" : '';
+
+  return ['processed' => $ok, 'missing' => $missing, 'errors' => $err, 'message' => $msg];
 }
 
 // Normaliza fechas dd/mm/yyyy a yyyy-mm-dd para que DateTime pueda parsear.
@@ -313,6 +454,22 @@ function processCsvStream($fh, $rol, $sucursal, $conn, bool $doInsert, int $limi
   $warnImporte = 0;
   $errorsFull = [];
   $errors = [];
+  $stmtPending = null;
+  if ($doInsert) {
+    ensurePendingTable($conn);
+    $stmtPending = $conn->prepare("
+      INSERT INTO gasolina_import_pending (placa, empresa, fecha, anio, semana, importe, observaciones, sucursal)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      ON DUPLICATE KEY UPDATE
+        empresa = VALUES(empresa),
+        anio = VALUES(anio),
+        semana = VALUES(semana),
+        importe = VALUES(importe),
+        observaciones = VALUES(observaciones),
+        sucursal = VALUES(sucursal),
+        creado_en = VALUES(creado_en)
+    ");
+  }
 
   $stmtIns = null;
   if ($doInsert) {
@@ -338,13 +495,15 @@ function processCsvStream($fh, $rol, $sucursal, $conn, bool $doInsert, int $limi
 
     $status = 'ok';
     $msg = '';
+    $anio = null;
+    $semana = null;
+    $dt = null;
 
     if ($placaCsv === '' || $fechaCsv === '') {
       $status = 'skip';
       $msg = 'Faltan datos';
     }
     $key = strtoupper(preg_replace('/\\s+/', '', $placaCsv));
-    $idVeh = $vehMap[$key] ?? null;
     $idVeh = $vehMap[$key] ?? null;
     if (!$idVeh) {
       $status = 'missing';
@@ -357,13 +516,14 @@ function processCsvStream($fh, $rol, $sucursal, $conn, bool $doInsert, int $limi
     }
     try {
       $dt = new DateTime($fechaCsv);
+      $anio = (int)$dt->format('o');
+      $semana = (int)$dt->format('W');
     } catch (Exception $e) {
       $status = ($status === 'ok' || $status === 'missing') ? 'error' : $status;
       $msg = 'Fecha invalida';
     }
     if ($status === 'ok' || $status === 'missing') {
-      $anio = (int)$dt->format('o');
-      $semana = (int)$dt->format('W');
+      $fechaDb = $dt ? $dt->format('Y-m-d') : $fechaCsv;
       if ($doInsert) {
         if ($idVeh) {
           $stmtIns->bind_param('iiids', $idVeh, $anio, $semana, $importeCsv, $obsCsv);
@@ -374,10 +534,11 @@ function processCsvStream($fh, $rol, $sucursal, $conn, bool $doInsert, int $limi
             $msg = $stmtIns->error;
             $skip++;
           }
-        } else {
-          // No inserta por FK, pero contabiliza como omitida
-          $status = 'error';
-          $msg = 'FK requiere vehiculo existente';
+        } elseif ($stmtPending && $anio !== null && $semana !== null) {
+          $status = 'missing';
+          $msg = 'Sin vehiculo; agregado a pendientes';
+          $stmtPending->bind_param('sssiidss', $placaCsv, $empresaCsv, $fechaDb, $anio, $semana, $importeCsv, $obsCsv, $sucursal);
+          $stmtPending->execute();
           $skip++;
         }
       } else {
@@ -387,19 +548,19 @@ function processCsvStream($fh, $rol, $sucursal, $conn, bool $doInsert, int $limi
       $skip++;
     }
 
-  if (!$doInsert && ($limitPreview === 0 || count($rows) < $limitPreview)) {
-    $rows[] = [
-      'empresa' => $empresaCsv,
-      'placa' => $placaCsv,
-      'fecha' => $fechaCsvRaw,
-      'importe' => $importeCsv,
-      'obs' => $obsCsv,
-      'anio' => $status === 'ok' ? $anio : null,
-      'semana' => $status === 'ok' ? $semana : null,
-      'status' => $status,
-      'msg' => $msg
-    ];
-  }
+    if (!$doInsert && ($limitPreview === 0 || count($rows) < $limitPreview)) {
+      $rows[] = [
+        'empresa' => $empresaCsv,
+        'placa' => $placaCsv,
+        'fecha' => $fechaCsvRaw,
+        'importe' => $importeCsv,
+        'obs' => $obsCsv,
+        'anio' => $status === 'ok' ? $anio : null,
+        'semana' => $status === 'ok' ? $semana : null,
+        'status' => $status,
+        'msg' => $msg
+      ];
+    }
     if ($status !== 'ok') {
       $errors[] = "Placa {$placaCsv}: {$msg}";
       $errorsFull[] = "Placa {$placaCsv}: {$msg}";
@@ -407,6 +568,7 @@ function processCsvStream($fh, $rol, $sucursal, $conn, bool $doInsert, int $limi
   }
 
   if ($stmtIns) $stmtIns->close();
+  if ($stmtPending) $stmtPending->close();
 
   $summary = ['ok' => $ok, 'skip' => $skip, 'missing' => $missing, 'warn_importe' => $warnImporte, 'errors' => array_slice($errors, 0, 5)];
   $tipo = $doInsert ? (empty($errors) ? 'success' : 'warn') : (empty($errors) ? 'success' : 'warn');
@@ -418,7 +580,8 @@ function processCsvStream($fh, $rol, $sucursal, $conn, bool $doInsert, int $limi
 // Registrar o actualizar la semana (ON DUPLICATE KEY usa la unique id_vehiculo+anio+semana)
 if ($_SERVER['REQUEST_METHOD'] === 'POST'
     && !isset($_POST['import_csv'])
-    && !isset($_POST['confirm_import'])) {
+    && !isset($_POST['confirm_import'])
+    && !isset($_POST['process_pending'])) {
   $idVehiculo = (int)($_POST['id_vehiculo'] ?? 0);
   $importe = (float)($_POST['importe'] ?? 0);
   $obs = trim($_POST['observaciones'] ?? '');
@@ -979,6 +1142,38 @@ if ($allowCsv && ($_GET['export'] ?? '') === 'csv') {
       box-shadow:var(--shadow);
       padding:10px;
     }
+    .csv-menu{
+      position:relative;
+      display:inline-block;
+      width:100%;
+    }
+    .csv-menu #toggleCsvMenu{
+      width:100%;
+      justify-content:center;
+    }
+    .csv-menu .menu-panel a,
+    .csv-menu .menu-panel button{
+      width:100%;
+      justify-content:center;
+    }
+    .csv-menu .menu-panel{
+      position:absolute;
+      top:110%;
+      left:0;
+      display:none;
+      flex-direction:column;
+      gap:6px;
+      padding:10px;
+      background:#fff;
+      border:1px solid var(--stroke);
+      border-radius:10px;
+      box-shadow:0 10px 30px rgba(0,0,0,.15);
+      min-width:100%;
+      z-index:25;
+    }
+    .csv-menu.open .menu-panel{
+      display:flex;
+    }
     /* Modal */
     .modal-backdrop{
       position:fixed;
@@ -1130,13 +1325,20 @@ if ($allowCsv && ($_GET['export'] ?? '') === 'csv') {
       </div>
       <?php if ($allowCsv): ?>
       <div class="action-card">
-        <a class="btn ghost small" href="?desde=<?php echo h($desdeVal); ?>&hasta=<?php echo h($hastaVal); ?><?php echo $weeksQueryStr ? h($weeksQueryStr) : ''; ?>&export=csv">Exportar CSV</a>
-        <a class="btn secondary small" href="/Pedidos_GA/Machotes/gasolina_import_template.csv" download>Machote CSV</a>
-        <button type="button" class="btn primary small" id="openImport">Importar CSV</button>
+      
         <button type="button" class="btn secondary small" id="openImportLog">Ver historial importacion</button>
+        <button type="button" class="btn secondary small" id="openPending">Pendientes de alta (<?php echo (int)$pendingCount; ?>)</button>
         <?php if (isset($_SESSION['csv_preview_data'])): ?>
           <a href="?desde=<?php echo h($desdeVal); ?>&hasta=<?php echo h($hastaVal); ?><?php echo $weeksQueryStr ? h($weeksQueryStr) : ''; ?>" class="btn ghost small">Limpiar preview</a>
         <?php endif; ?>
+          <div class="csv-menu" id="csvMenu">
+          <button type="button" class="btn ghost small" id="toggleCsvMenu">CSV</button>
+          <div class="menu-panel" id="csvMenuPanel">
+            <a class="btn ghost small" href="?desde=<?php echo h($desdeVal); ?>&hasta=<?php echo h($hastaVal); ?><?php echo $weeksQueryStr ? h($weeksQueryStr) : ''; ?>&export=csv">Exportar CSV</a>
+            <a class="btn secondary small" href="/Pedidos_GA/Machotes/gasolina_import_template.csv" download>Machote CSV</a>
+            <button type="button" class="btn primary small" id="openImport">Importar CSV</button>
+          </div>
+        </div>
       </div>
       <?php endif; ?>
     </div>
@@ -1257,7 +1459,7 @@ if ($allowCsv && ($_GET['export'] ?? '') === 'csv') {
     </div>
   </div>
 
-  <?php if ($allowCsv): ?>
+<?php if ($allowCsv): ?>
   <div class="modal-backdrop" id="modalImport">
     <div class="modal">
       <button type="button" class="close" id="closeImport">&times;</button>
@@ -1321,7 +1523,7 @@ if ($allowCsv && ($_GET['export'] ?? '') === 'csv') {
         <div style="max-height:400px;overflow:auto;border:1px solid #e5e7eb;border-radius:10px;padding:8px;background:#fff;">
           <?php foreach ($importLogs as $log): ?>
             <div style="padding:8px;border-bottom:1px solid #e5e7eb;">
-              <div style="font-weight:700;"><?php echo h($log['creado_en']); ?> — <?php echo h($log['usuario']); ?> (<?php echo h($log['rol']); ?>)</div>
+              <div style="font-weight:700;"><?php echo h($log['creado_en']); ?> - <?php echo h($log['usuario']); ?> (<?php echo h($log['rol']); ?>)</div>
               <div class="muted" style="margin:4px 0;"><?php echo h($log['resumen']); ?></div>
               <?php
                 $errs = array_filter(preg_split('/\\r\\n|\\r|\\n/', (string)$log['errores']));
@@ -1341,9 +1543,64 @@ if ($allowCsv && ($_GET['export'] ?? '') === 'csv') {
       <?php endif; ?>
     </div>
   </div>
-  <?php endif; ?>
+  <div class="modal-backdrop" id="modalPending">
+    <div class="modal" style="max-width:980px;position:relative;">
+      <div class="loader-backdrop" id="pending-loader"><div class="spinner"></div></div>
+      <button type="button" class="close" id="closePending">&times;</button>
+      <h3>Vehiculos pendientes de alta</h3>
+      <form method="post" style="margin:6px 0 10px;" id="pending-form">
+        <input type="hidden" name="process_pending" value="1">
+        <button type="submit" class="btn primary small">Procesar pendientes</button>
+      </form>
+      <?php if ($pendingProcessMsg): ?>
+        <div class="msg-card info" style="margin-top:4px;">
+          <div class="dot"></div>
+          <div class="msg-body">
+            <div class="msg-title">Resultado</div>
+            <div class="msg-text"><?php echo h($pendingProcessMsg); ?></div>
+          </div>
+        </div>
+      <?php endif; ?>
+      <?php if (empty($pendingRows)): ?>
+        <div class="muted">No hay pendientes.</div>
+      <?php else: ?>
+        <div style="overflow-x:auto;margin-top:8px;">
+          <table style="width:100%;border-collapse:collapse;font-size:.92rem;">
+            <thead>
+              <tr style="background:#f1f5f9;">
+                <th style="padding:8px;border:1px solid #e5e7eb;text-align:left;">Placa</th>
+                <th style="padding:8px;border:1px solid #e5e7eb;text-align:left;">Empresa</th>
+                <th style="padding:8px;border:1px solid #e5e7eb;text-align:left;">Fecha</th>
+                <th style="padding:8px;border:1px solid #e5e7eb;text-align:left;">Semana/Año</th>
+                <th style="padding:8px;border:1px solid #e5e7eb;text-align:right;">Importe</th>
+                <th style="padding:8px;border:1px solid #e5e7eb;text-align:left;">Observaciones</th>
+                <th style="padding:8px;border:1px solid #e5e7eb;text-align:left;">Accion</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php foreach ($pendingRows as $p): ?>
+                <tr>
+                  <td style="padding:8px;border:1px solid #e5e7eb;"><?php echo h($p['placa']); ?></td>
+                  <td style="padding:8px;border:1px solid #e5e7eb;"><?php echo h($p['empresa']); ?></td>
+                  <td style="padding:8px;border:1px solid #e5e7eb;"><?php echo h($p['fecha']); ?></td>
+                  <td style="padding:8px;border:1px solid #e5e7eb;"><?php echo h(($p['semana'] ?? '').'/'.($p['anio'] ?? '')); ?></td>
+                  <td style="padding:8px;border:1px solid #e5e7eb;text-align:right;"><?php echo '$'.number_format((float)$p['importe'], 2); ?></td>
+                  <td style="padding:8px;border:1px solid #e5e7eb;"><?php echo h($p['observaciones']); ?></td>
+                  <td style="padding:8px;border:1px solid #e5e7eb;">
+                    <a class="btn ghost small" href="/Pedidos_GA/NuevoVehiculo.php?placa=<?php echo urlencode($p['placa']); ?>" style="padding:6px 10px;">Agregar vehiculo</a>
+                  </td>
+                </tr>
+              <?php endforeach; ?>
+            </tbody>
+          </table>
+        </div>
+      <?php endif; ?>
+    </div>
+  </div>
+<?php endif; ?>
 
   <script>
+
     document.addEventListener("DOMContentLoaded", function() {
       const shouldOpenImport = <?php echo $showImportModal ? 'true' : 'false'; ?>;
       const iconoAddChofer = document.querySelector(".icono-AddChofer");
@@ -1390,6 +1647,14 @@ if ($allowCsv && ($_GET['export'] ?? '') === 'csv') {
       const modalImportLog = document.getElementById("modalImportLog");
       const openImportLog = document.getElementById("openImportLog");
       const closeImportLog = document.getElementById("closeImportLog");
+      const modalPending = document.getElementById("modalPending");
+      const openPending = document.getElementById("openPending");
+      const closePending = document.getElementById("closePending");
+      const pendingForm = document.getElementById("pending-form");
+      const pendingLoader = document.getElementById("pending-loader");
+      const csvMenu = document.getElementById("csvMenu");
+      const csvMenuPanel = document.getElementById("csvMenuPanel");
+      const toggleCsvMenuBtn = document.getElementById("toggleCsvMenu");
 
       function openModal() {
         if (!modal) return;
@@ -1441,6 +1706,20 @@ if ($allowCsv && ($_GET['export'] ?? '') === 'csv') {
           if (e.target === modalImport) closeImportModal();
         });
       }
+      function toggleCsvMenu(event) {
+        if (!csvMenu) return;
+        event.stopPropagation();
+        csvMenu.classList.toggle("open");
+      }
+      function closeCsvMenu() {
+        if (csvMenu) csvMenu.classList.remove("open");
+      }
+      if (toggleCsvMenuBtn) toggleCsvMenuBtn.addEventListener("click", toggleCsvMenu);
+      document.addEventListener("click", (e) => {
+        if (csvMenu && !csvMenu.contains(e.target)) {
+          closeCsvMenu();
+        }
+      });
       function openLogModal() {
         if (!modalImportLog) return;
         modalImportLog.classList.add("show");
@@ -1454,6 +1733,26 @@ if ($allowCsv && ($_GET['export'] ?? '') === 'csv') {
       if (modalImportLog) {
         modalImportLog.addEventListener("click", (e) => {
           if (e.target === modalImportLog) closeLogModal();
+        });
+      }
+      function openPendingModal() {
+        if (!modalPending) return;
+        modalPending.classList.add("show");
+      }
+      function closePendingModal() {
+        if (!modalPending) return;
+        modalPending.classList.remove("show");
+      }
+      if (openPending) openPending.addEventListener("click", openPendingModal);
+      if (closePending) closePending.addEventListener("click", closePendingModal);
+      if (modalPending) {
+        modalPending.addEventListener("click", (e) => {
+          if (e.target === modalPending) closePendingModal();
+        });
+      }
+      if (pendingForm) {
+        pendingForm.addEventListener("submit", () => {
+          if (pendingLoader) pendingLoader.classList.add("show");
         });
       }
       // Si se selecciona un mes, limpiar fechas manuales para evitar confusiones
@@ -1475,8 +1774,14 @@ if ($allowCsv && ($_GET['export'] ?? '') === 'csv') {
         if (e.key === "Escape") closeModal();
         if (e.key === "Escape") closeImportModal();
         if (e.key === "Escape") closeLogModal();
+        if (e.key === "Escape") closePendingModal();
+        if (e.key === "Escape") closeCsvMenu();
       });
+      if (<?php echo $showPendingModal ? 'true' : 'false'; ?> && modalPending) {
+        openPendingModal();
+      }
     });
     </script>
 </body>
 </html>
+
