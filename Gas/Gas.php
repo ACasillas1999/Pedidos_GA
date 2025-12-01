@@ -818,37 +818,60 @@ if ($resTot) {
 $semanaDefault = (int)date('W');
 $fechaDefault = date('Y-m-d');
 
-// Export CSV (matriz rango)
+// Export Excel (HTML table con formato)
 if ($allowCsv && ($_GET['export'] ?? '') === 'csv') {
-  header('Content-Type: text/csv; charset=utf-8');
-  header('Content-Disposition: attachment; filename="gasolina_rango.csv"');
-  $out = fopen('php://output', 'w');
-
-  $header = ['EMPRESA', 'PLACA'];
+  header('Content-Type: application/vnd.ms-excel; charset=utf-8');
+  header('Content-Disposition: attachment; filename="gasolina_rango.xls"');
+  echo '<html><head><meta charset="UTF-8">';
+  echo '<style>
+    body{font-family:Segoe UI,Arial,sans-serif;}
+    table{border-collapse:collapse;width:100%;}
+    th,td{border:1px solid #cfd4dc;padding:8px;}
+    th{background:#0b68c4;color:#fff;font-weight:700;text-align:center;}
+    td.label{text-align:left;font-weight:700;color:#0f172a;}
+    td.total{background:#f7d7c2;font-weight:900;color:#4b1200;text-align:right;}
+    tr:nth-child(even) td{background:#f8fafc;}
+  </style></head><body>';
+  echo '<table>';
+  echo '<thead><tr><th>Empresa</th><th>Placa</th>';
   foreach ($weeks as $w) {
-    $header[] = $weekLabels[$w['anio'].'-'.$w['semana']] ?? ('Semana '.$w['semana']);
+    $label = $weekLabels[$w['anio'].'-'.$w['semana']] ?? ('Semana '.$w['semana']);
+    echo '<th>'.h($label).'</th>';
   }
-  $header[] = 'TOTAL_RANGO';
-  fputcsv($out, $header);
-
+  echo '<th>Total rango</th></tr></thead><tbody>';
   foreach ($matriz as $empresa => $vehList) {
+    $totalEmp = $empresaTotales[$empresa] ?? 0;
+    $first = true;
     foreach ($vehList as $placa => $info) {
-      $row = [$empresa, $placa];
+      echo '<tr>';
+      echo '<td class="label">'.($first ? h($empresa) : '').'</td>';
+      echo '<td class="label">'.h($placa).'</td>';
       foreach ($weeks as $w) {
         $keyW = $w['anio'].'-'.$w['semana'];
-        $row[] = isset($info['semanas'][$keyW]) ? $info['semanas'][$keyW] : '';
+        $val = isset($info['semanas'][$keyW]) ? '$'.number_format((float)$info['semanas'][$keyW], 2) : '-';
+        echo '<td style="text-align:right;">'.h($val).'</td>';
       }
-      $row[] = $info['tot'];
-      fputcsv($out, $row);
+      echo '<td style="text-align:right;font-weight:700;">$'.number_format((float)$info['tot'], 2).'</td>';
+      echo '</tr>';
+      $first = false;
     }
-    $row = ["TOTAL {$empresa}", ''];
+    echo '<tr>';
+    echo '<td class="total" colspan="2">Total '.h($empresa).'</td>';
     foreach ($weeks as $w) {
       $keyW = $w['anio'].'-'.$w['semana'];
-      $row[] = isset($empresaWeek[$empresa][$keyW]) ? $empresaWeek[$empresa][$keyW] : '';
+      $val = isset($empresaWeek[$empresa][$keyW]) ? '$'.number_format((float)$empresaWeek[$empresa][$keyW], 2) : '-';
+      echo '<td class="total">'.h($val).'</td>';
     }
-    $row[] = $empresaTotales[$empresa] ?? 0;
-    fputcsv($out, $row);
+    echo '<td class="total">$'.number_format((float)$totalEmp, 2).'</td>';
+    echo '</tr>';
   }
+  $colspanTotals = 2 + count($weeks);
+  echo '<tr>';
+  echo '<td class="total" colspan="'.(int)$colspanTotals.'">Total general</td>';
+  echo '<td class="total">$'.number_format((float)$grandTotal, 2).'</td>';
+  echo '</tr>';
+  echo '</tbody></table>';
+  echo '</body></html>';
   exit;
 }
 ?>
