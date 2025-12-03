@@ -11,7 +11,7 @@ $latestVersionName = '1.0';    // Texto que verá el usuario
 
 // URL pública donde subes el APK de la nueva versión.
 // EJEMPLO: https://pedidos.grupoascencio.com.mx/apk/app_pedidos_v1.apk
-$apkUrl = 'http://192.168.60.194/Pedidos_GA/App/Apks/app_pedidos_v4.apk';
+$apkUrl = 'http://107.21.163.64/Pedidos_GA/App/Apks/app_pedidos_v4.apk';
 
 $response = [
     'ok' => true,

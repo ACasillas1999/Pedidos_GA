@@ -2,8 +2,8 @@
 
 // Definir los datos de conexión como constantes
 define('DB_SERVER', 'localhost');
-define('DB_USERNAME', 'root');
-define('DB_PASSWORD', '');
+define('DB_USERNAME', 'pedidos_app');
+define('DB_PASSWORD', 'TuContraseaSegura123');
 define('DB_NAME', 'gpoascen_pedidos_app');
 
 // Conectar a la base de datos

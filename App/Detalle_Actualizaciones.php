@@ -1,8 +1,8 @@
 <?php
 // Conexión a la base de datos
 $servername = "localhost";
-$username = "root";
-$password = '';
+$username = "pedidos_app";
+$password = 'TuContraseaSegura123';
 $database = "gpoascen_pedidos_app";
 
 // Crear conexión
