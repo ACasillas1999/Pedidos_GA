@@ -5,8 +5,8 @@
 
 if (!isset($conn) || !($conn instanceof mysqli)) {
     $dbHost = getenv('DB_HOST') !== false ? getenv('DB_HOST') : 'localhost';
-    $dbUser = getenv('DB_USER') !== false ? getenv('DB_USER') : 'root';
-    $dbPass = getenv('DB_PASS') !== false ? getenv('DB_PASS') : '';
+    $dbUser = getenv('DB_USER') !== false ? getenv('DB_USER') : 'pedidos_app';
+    $dbPass = getenv('DB_PASS') !== false ? getenv('DB_PASS') : 'TuContraseaSegura123';
     $dbName = getenv('DB_NAME') !== false ? getenv('DB_NAME') : 'gpoascen_pedidos_app';
 
     mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
