@@ -4,7 +4,7 @@
 // Intenta obtener credenciales de variables de entorno y luego usa defaults
 
 if (!isset($conn) || !($conn instanceof mysqli)) {
-    $dbHost = getenv('DB_HOST') !== false ? getenv('DB_HOST') : 'localhost';
+    $dbHost = getenv('DB_HOST') !== false ? getenv('DB_HOST') : '18.211.75.118';
     $dbUser = getenv('DB_USER') !== false ? getenv('DB_USER') : 'pedidos_app';
     $dbPass = getenv('DB_PASS') !== false ? getenv('DB_PASS') : 'TuContraseaSegura123';
     $dbName = getenv('DB_NAME') !== false ? getenv('DB_NAME') : 'gpoascen_pedidos_app';
