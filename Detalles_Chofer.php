@@ -211,6 +211,28 @@ while ($row = $r->fetch_assoc()) {
 }
 $stmt->close();
 
+// ====== POST: Editar información del chofer ======
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'editar_chofer') {
+    $nuevoNombre = trim($_POST['username'] ?? '');
+    $nuevaSucursal = trim($_POST['sucursal'] ?? '');
+    $nuevoNumero = trim($_POST['numero'] ?? '');
+    $nuevoEstado = trim($_POST['estado'] ?? '');
+
+    if ($nuevoNombre !== '' && $nuevaSucursal !== '' && $nuevoNumero !== '' && $nuevoEstado !== '' && $idChofer > 0) {
+        // Actualizar el chofer
+        $stmt = $conn->prepare("UPDATE choferes SET username = ?, Sucursal = ?, Numero = ?, Estado = ? WHERE ID = ?");
+        $stmt->bind_param("ssssi", $nuevoNombre, $nuevaSucursal, $nuevoNumero, $nuevoEstado, $idChofer);
+        $stmt->execute();
+        $stmt->close();
+
+        header("Location: detalles_chofer.php?id={$idChofer}&msg=chofer-actualizado");
+        exit;
+    } else {
+        echo "<script>alert('Todos los campos son obligatorios.'); history.back();</script>";
+        exit;
+    }
+}
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -604,7 +626,9 @@ $stmt->close();
           <?php else: ?>
             <a class="primary" href="#" onclick="return false;" title="Sin teléfono">Sin teléfono</a>
           <?php endif; ?>
-          <a href="editar_chofer.php?id=<?= (int)$ch['ID'] ?>">Editar</a>
+          <?php if ($rol === 'Admin'): ?>
+            <a href="#" onclick="abrirModalEditarChofer(); return false;">✏️ Editar</a>
+          <?php endif; ?>
         </div>
       </div>
 
@@ -1529,6 +1553,217 @@ $stmt->close();
     <div id="pedidos-chofer"></div>
   </div>
 
+  <!-- Modal Editar Chofer -->
+  <div id="modalEditarChofer" class="modal-chofer" style="display:none;">
+    <div class="modal-overlay-chofer" onclick="cerrarModalEditarChofer()"></div>
+    <div class="modal-content-chofer">
+      <div class="modal-header-chofer">
+        <h3>Editar Información del Chofer</h3>
+        <button class="modal-close-chofer" onclick="cerrarModalEditarChofer()">×</button>
+      </div>
+      <form method="POST" autocomplete="off">
+        <input type="hidden" name="accion" value="editar_chofer">
+        <div class="modal-body-chofer">
+          <div class="form-group-chofer">
+            <label>Nombre del Chofer *</label>
+            <input type="text" name="username" class="form-input-chofer"
+                   value="<?= e($ch['username']) ?>"
+                   required placeholder="Nombre completo del chofer">
+          </div>
+          <div class="form-group-chofer">
+            <label>Sucursal *</label>
+            <input type="text" name="sucursal" class="form-input-chofer"
+                   value="<?= e($ch['Sucursal']) ?>"
+                   required placeholder="Sucursal asignada">
+          </div>
+          <div class="form-group-chofer">
+            <label>Número de Teléfono *</label>
+            <input type="tel" name="numero" class="form-input-chofer"
+                   value="<?= e($ch['Numero']) ?>"
+                   required placeholder="10 dígitos">
+          </div>
+          <div class="form-group-chofer">
+            <label>Estado *</label>
+            <select name="estado" class="form-input-chofer" required>
+              <option value="Activo" <?= $ch['Estado'] === 'Activo' ? 'selected' : '' ?>>Activo</option>
+              <option value="Inactivo" <?= $ch['Estado'] === 'Inactivo' ? 'selected' : '' ?>>Inactivo</option>
+              <option value="Vacaciones" <?= $ch['Estado'] === 'Vacaciones' ? 'selected' : '' ?>>Vacaciones</option>
+              <option value="Incapacidad" <?= $ch['Estado'] === 'Incapacidad' ? 'selected' : '' ?>>Incapacidad</option>
+            </select>
+          </div>
+          <p style="font-size: 0.9rem; color: #64748b; margin: 8px 0 0 0;">
+            * Campos obligatorios
+          </p>
+        </div>
+        <div class="modal-footer-chofer">
+          <button type="button" class="btn-cancel-chofer" onclick="cerrarModalEditarChofer()">Cancelar</button>
+          <button type="submit" class="btn-submit-chofer">Guardar Cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <style>
+    .modal-chofer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay-chofer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-content-chofer {
+      position: relative;
+      background: #fff;
+      border-radius: 16px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      animation: modalSlideIn 0.3s ease-out;
+    }
+
+    @keyframes modalSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .modal-header-chofer {
+      padding: 20px 24px;
+      border-bottom: 1px solid #eef2f7;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-header-chofer h3 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .modal-close-chofer {
+      background: none;
+      border: none;
+      font-size: 28px;
+      color: #64748b;
+      cursor: pointer;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+
+    .modal-close-chofer:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+
+    .modal-body-chofer {
+      padding: 24px;
+    }
+
+    .form-group-chofer {
+      margin-bottom: 16px;
+    }
+
+    .form-group-chofer label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+      color: #475569;
+      font-size: 14px;
+    }
+
+    .form-input-chofer {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #dbe2ea;
+      border-radius: 10px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .form-input-chofer:focus {
+      border-color: #0a66c2;
+      box-shadow: 0 0 0 3px rgba(10, 102, 194, 0.16);
+    }
+
+    .modal-footer-chofer {
+      padding: 16px 24px;
+      border-top: 1px solid #eef2f7;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      background: #f7f9fc;
+    }
+
+    .btn-cancel-chofer {
+      background: #eef2f7;
+      color: #0f172a;
+      border: 1px solid #d8dee9;
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: filter 0.15s;
+    }
+
+    .btn-cancel-chofer:hover {
+      filter: brightness(0.97);
+    }
+
+    .btn-submit-chofer {
+      background: #0a66c2;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: filter 0.15s;
+    }
+
+    .btn-submit-chofer:hover {
+      filter: brightness(1.1);
+    }
+  </style>
+
+  <script>
+    function abrirModalEditarChofer() {
+      document.getElementById('modalEditarChofer').style.display = 'flex';
+    }
+
+    function cerrarModalEditarChofer() {
+      document.getElementById('modalEditarChofer').style.display = 'none';
+    }
+  </script>
 
 </body>
 

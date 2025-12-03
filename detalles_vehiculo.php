@@ -635,6 +635,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'desas
     exit;
 }
 
+/* ====== POST: Editar información del vehículo ====== */
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'editar_vehiculo') {
+    $nuevaPlaca = trim($_POST['placa'] ?? '');
+    $nuevoTipo = trim($_POST['tipo'] ?? '');
+    $nuevaSerie = trim($_POST['numero_serie'] ?? '');
+    $nuevaSucursal = suc_norm($_POST['sucursal'] ?? '');
+    $nuevaRazon = trim($_POST['razon_social'] ?? '');
+
+    if ($nuevaPlaca !== '' && $nuevoTipo !== '' && $nuevaSerie !== '' && $id_vehiculo > 0) {
+        // Verificar que la placa no esté en uso por otro vehículo
+        $stmt = $conn->prepare("SELECT id_vehiculo FROM vehiculos WHERE placa = ? AND id_vehiculo != ?");
+        $stmt->bind_param("si", $nuevaPlaca, $id_vehiculo);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            echo "<script>alert('La placa ya está en uso por otro vehículo.'); history.back();</script>";
+            exit;
+        }
+
+        // Verificar que la serie no esté en uso por otro vehículo
+        $stmt = $conn->prepare("SELECT id_vehiculo FROM vehiculos WHERE numero_serie = ? AND id_vehiculo != ?");
+        $stmt->bind_param("si", $nuevaSerie, $id_vehiculo);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            echo "<script>alert('El número de serie ya está en uso por otro vehículo.'); history.back();</script>";
+            exit;
+        }
+
+        // Actualizar el vehículo
+        $stmt = $conn->prepare("UPDATE vehiculos SET placa = ?, tipo = ?, numero_serie = ?, Sucursal = ?, razon_social = ? WHERE id_vehiculo = ?");
+        $stmt->bind_param("sssssi", $nuevaPlaca, $nuevoTipo, $nuevaSerie, $nuevaSucursal, $nuevaRazon, $id_vehiculo);
+        $stmt->execute();
+
+        // Registrar el cambio si la sucursal cambió
+        if ($nuevaSucursal !== suc_norm($vehiculo['Sucursal'] ?? '')) {
+            $sucursalAnterior = suc_norm($vehiculo['Sucursal'] ?? '');
+            $usuario = $_SESSION['username'] ?? 'Sistema';
+            $stmt = $conn->prepare("INSERT INTO historial_sucursal (id_vehiculo, sucursal_anterior, sucursal_nueva, fecha, usuario) VALUES (?, ?, ?, NOW(), ?)");
+            $stmt->bind_param("isss", $id_vehiculo, $sucursalAnterior, $nuevaSucursal, $usuario);
+            $stmt->execute();
+        }
+
+        header("Location: detalles_vehiculo.php?id={$id_vehiculo}&msg=vehiculo-actualizado");
+        exit;
+    } else {
+        echo "<script>alert('Todos los campos son obligatorios.'); history.back();</script>";
+        exit;
+    }
+}
+
 
 ?>
 <!DOCTYPE html>
@@ -1254,6 +1307,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'desas
                 <button class="btn" onclick="abrirModal()">Registrar Km</button>
                 <?php if ($rol === 'Admin'): ?><button class="btn" onclick="abrirModalServicio()">Registrar Servicio</button><?php endif; ?>
                 <button class="btn alt" onclick="abrirModalGasolina()">Registrar Gasolina</button>
+                <?php if ($rol === 'Admin'): ?><button class="btn ghost" onclick="abrirModalEditarVehiculo()">✏️ Editar Vehículo</button><?php endif; ?>
             </div>
         </div>
 
@@ -1998,6 +2052,61 @@ function fmtDuracion($min){
         </div>
     </div>
 
+    <!-- Modal Editar Vehículo -->
+    <div id="modalEditarVehiculo" class="modal" role="dialog" aria-modal="true" aria-labelledby="mev-title">
+        <div class="modal__card">
+            <div class="modal__head">
+                <h3 id="mev-title" class="modal__title">Editar Información del Vehículo</h3>
+                <button class="modal__close" onclick="cerrarModalEditarVehiculo()" aria-label="Cerrar">×</button>
+            </div>
+            <form method="POST" autocomplete="off">
+                <input type="hidden" name="accion" value="editar_vehiculo">
+                <div class="modal__body">
+                    <div class="modal__row">
+                        <label class="modal__label">Placa *</label>
+                        <input class="modal__field" type="text" name="placa"
+                               value="<?= htmlspecialchars($vehiculo['placa'] ?? '') ?>"
+                               required placeholder="Ej: ABC123">
+                    </div>
+                    <div class="modal__row">
+                        <label class="modal__label">Tipo de Vehículo *</label>
+                        <input class="modal__field" type="text" name="tipo"
+                               value="<?= htmlspecialchars($vehiculo['tipo'] ?? '') ?>"
+                               required placeholder="Ej: Camioneta, Auto, Camión, etc.">
+                    </div>
+                    <div class="modal__row">
+                        <label class="modal__label">Número de Serie *</label>
+                        <input class="modal__field" type="text" name="numero_serie"
+                               value="<?= htmlspecialchars($vehiculo['numero_serie'] ?? '') ?>"
+                               required placeholder="Número de serie del vehículo">
+                    </div>
+                    <div class="modal__row">
+                        <label class="modal__label">Sucursal *</label>
+                        <select class="modal__field" name="sucursal" required>
+                            <?php foreach ($SUCURSALES_CANON as $S):
+                                $sel = (suc_norm($sucV) === $S) ? 'selected' : ''; ?>
+                                <option value="<?= $S ?>" <?= $sel ?>><?= $S ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="modal__row">
+                        <label class="modal__label">Razón Social (opcional)</label>
+                        <input class="modal__field" type="text" name="razon_social"
+                               value="<?= htmlspecialchars($vehiculo['razon_social'] ?? '') ?>"
+                               placeholder="Para vehículos particulares">
+                    </div>
+                    <p style="font-size: 0.9rem; color: #64748b; margin: 8px 0 0 0;">
+                        * Campos obligatorios
+                    </p>
+                </div>
+                <div class="modal__actions">
+                    <button type="button" class="btn--ghost" onclick="cerrarModalEditarVehiculo()">Cancelar</button>
+                    <button type="submit" class="btn--primary">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Overlay global -->
     <script>
         // Overlay único
@@ -2045,6 +2154,14 @@ function fmtDuracion($min){
 
         function cerrarModalGasolina() {
             closeModal('modalGasolina');
+        }
+
+        function abrirModalEditarVehiculo() {
+            openModal('modalEditarVehiculo');
+        }
+
+        function cerrarModalEditarVehiculo() {
+            closeModal('modalEditarVehiculo');
         }
 
         // Tabs (tus tabs)
