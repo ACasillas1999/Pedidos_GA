@@ -326,8 +326,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
       }
 
       if (iconoCalor) {
-        var imgNormalCalor = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/Mapa_Calor.png";
-        var imgHoverCalor = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/Mapa_Calor_bc.png";
+        var imgNormalCalor = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/Mapa_calor.png";
+        var imgHoverCalor = "/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/Mapa_calor_bc.png";
         iconoCalor.addEventListener("mouseover", function() {
             iconoCalor.src = imgHoverCalor;
         });
