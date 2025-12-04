@@ -71,7 +71,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
      
      
     <ul>
-        <li><a href="/Pedidos_GA/Registrar">
+        <li><a href="/Pedidos_GA/Registrar/index.html">
             <img src="/Pedidos_GA/Img/Botones%20entregas/Pedidos_GA/AGUSNA.png" alt="Estaditicas " class = "icono-AddChofer"style="max-width: 80%; height: auto;">
             
            </a></li>
