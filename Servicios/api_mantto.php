@@ -17,8 +17,8 @@ $action = $_GET['action'] ?? $_POST['action'] ?? '';
 /** CONFIG DB **/
 $DB_HOST = '18.211.75.118';
 $DB_NAME = 'gpoascen_pedidos_app';
-$DB_USER = 'pedidos_app';
-$DB_PASS = 'TuContraseaSegura123';
+$DB_USER = 'root';
+$DB_PASS = '04nm2fdLefCxM';
 
 try {
   $pdo = new PDO("mysql:host=$DB_HOST;dbname=$DB_NAME;charset=utf8mb4", $DB_USER, $DB_PASS, [
