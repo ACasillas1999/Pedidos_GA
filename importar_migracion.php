@@ -162,25 +162,44 @@ function importarSQL($conn, $archivo, $nombre) {
         }
 
         // Ejecutar statement
-        if (!$conn->query($statement)) {
-            $errores++;
-            $errorMsg = $conn->error;
+        try {
+            if (!$conn->query($statement)) {
+                $errores++;
+                $errorMsg = $conn->error;
 
-            // Solo guardar errores que NO sean "tabla ya existe"
+                // Solo guardar errores que NO sean "tabla ya existe" o "duplicate entry"
+                if (strpos($errorMsg, 'already exists') === false && strpos($errorMsg, 'Duplicate entry') === false) {
+                    $erroresDetalle[] = [
+                        'statement' => substr($statement, 0, 100) . '...',
+                        'error' => $errorMsg
+                    ];
+                }
+
+                // Si hay demasiados errores críticos, detener
+                if (count($erroresDetalle) > 20) {
+                    echo "<div class='error'>❌ DETENIDO: Demasiados errores críticos</div>";
+                    break;
+                }
+            } else {
+                $ejecutados++;
+            }
+        } catch (mysqli_sql_exception $e) {
+            $errores++;
+            $errorMsg = $e->getMessage();
+
+            // Ignorar errores de "already exists" y "Duplicate entry"
             if (strpos($errorMsg, 'already exists') === false && strpos($errorMsg, 'Duplicate entry') === false) {
                 $erroresDetalle[] = [
                     'statement' => substr($statement, 0, 100) . '...',
                     'error' => $errorMsg
                 ];
-            }
 
-            // Si hay demasiados errores críticos, detener
-            if (count($erroresDetalle) > 20) {
-                echo "<div class='error'>❌ DETENIDO: Demasiados errores críticos</div>";
-                break;
+                // Si hay demasiados errores críticos, detener
+                if (count($erroresDetalle) > 20) {
+                    echo "<div class='error'>❌ DETENIDO: Demasiados errores críticos</div>";
+                    break;
+                }
             }
-        } else {
-            $ejecutados++;
         }
     }
 
