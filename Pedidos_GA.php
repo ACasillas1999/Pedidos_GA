@@ -464,7 +464,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
   <!-- Botón para Descargar App Móvil (Admin y JC) -->
   <?php if ($_SESSION["Rol"] === "Admin" || $_SESSION["Rol"] === "JC") : ?>
   <div class="download-app-button">
-    <a href="/App/Apks/App_Pedidos_GA_v2.apk" download="App_Pedidos_GA_v2.apk" title="Descargar App Móvil">
+    <a href="/var/www/html/App/Apks/App_Pedidos_GA_v2.apk
+" download="App_Pedidos_GA_v2.apk" title="Descargar App Móvil">
       <div class="download-icon">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="35px" height="35px">
           <path d="M0 0h24v24H0z" fill="none"/>
