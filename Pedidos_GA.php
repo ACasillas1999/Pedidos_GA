@@ -202,7 +202,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
           <?php if ($_SESSION["Rol"] === "Admin"): ?>
             <li>
             <a href="mapa_calor.php" title="Mapa de Calor" style="display:flex; align-items:center; justify-content:center;">
-             <img src="\Pedidos_GA\Img\Botones%20entregas\Pedidos_GA\Mapa_calor.png" alt="calor" class="icono-calor" style="max-width: 60%; height: auto;">
+             <img src="\Pedidos_GA\Img\Botones entregas\Pedidos_GA\Mapa_calor.png" alt="calor" class="icono-calor" style="max-width: 60%; height: auto;">
             </a>
             </li>
           <?php endif; ?>
