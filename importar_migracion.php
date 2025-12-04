@@ -116,21 +116,47 @@ function importarSQL($conn, $archivo, $nombre) {
     $statements = [];
     $buffer = '';
     $lineas = explode("\n", $sql);
+    $in_delimiter_block = false;
+    $delimiter = ';';
 
     foreach ($lineas as $linea) {
-        $linea = trim($linea);
+        $lineaTrim = trim($linea);
 
         // Ignorar comentarios y líneas vacías
-        if (empty($linea) || substr($linea, 0, 2) == '--' || substr($linea, 0, 1) == '#') {
+        if (empty($lineaTrim) || substr($lineaTrim, 0, 2) == '--' || substr($lineaTrim, 0, 1) == '#') {
+            continue;
+        }
+
+        // Detectar cambios de DELIMITER (saltar estas líneas)
+        if (stripos($lineaTrim, 'DELIMITER') === 0) {
+            // Extraer el nuevo delimitador
+            $parts = preg_split('/\s+/', $lineaTrim);
+            if (isset($parts[1])) {
+                $delimiter = $parts[1];
+                $in_delimiter_block = ($delimiter != ';');
+            }
             continue;
         }
 
         $buffer .= $linea . "\n";
 
-        // Si termina en punto y coma, es el final del statement
-        if (substr(rtrim($linea), -1) == ';') {
-            $statements[] = trim($buffer);
-            $buffer = '';
+        // Verificar si termina con el delimitador actual
+        if ($in_delimiter_block) {
+            // En bloques especiales, buscar el delimitador $$
+            if (substr(rtrim($lineaTrim), -strlen($delimiter)) == $delimiter) {
+                // Remover el delimitador especial y agregar statement
+                $stmt = trim(substr($buffer, 0, -strlen($delimiter)));
+                if (!empty($stmt)) {
+                    $statements[] = $stmt;
+                }
+                $buffer = '';
+            }
+        } else {
+            // Delimitador normal (;)
+            if (substr(rtrim($lineaTrim), -1) == ';') {
+                $statements[] = trim($buffer);
+                $buffer = '';
+            }
         }
     }
 
@@ -167,8 +193,23 @@ function importarSQL($conn, $archivo, $nombre) {
                 $errores++;
                 $errorMsg = $conn->error;
 
-                // Solo guardar errores que NO sean "tabla ya existe" o "duplicate entry"
-                if (strpos($errorMsg, 'already exists') === false && strpos($errorMsg, 'Duplicate entry') === false) {
+                // Solo guardar errores que NO sean comunes/ignorables
+                $erroresIgnorados = [
+                    'already exists',
+                    'Duplicate entry',
+                    'Multiple primary key defined',
+                    'Duplicate key name'
+                ];
+
+                $esErrorIgnorable = false;
+                foreach ($erroresIgnorados as $errorIgnorado) {
+                    if (stripos($errorMsg, $errorIgnorado) !== false) {
+                        $esErrorIgnorable = true;
+                        break;
+                    }
+                }
+
+                if (!$esErrorIgnorable) {
                     $erroresDetalle[] = [
                         'statement' => substr($statement, 0, 100) . '...',
                         'error' => $errorMsg
@@ -187,8 +228,23 @@ function importarSQL($conn, $archivo, $nombre) {
             $errores++;
             $errorMsg = $e->getMessage();
 
-            // Ignorar errores de "already exists" y "Duplicate entry"
-            if (strpos($errorMsg, 'already exists') === false && strpos($errorMsg, 'Duplicate entry') === false) {
+            // Ignorar errores comunes
+            $erroresIgnorados = [
+                'already exists',
+                'Duplicate entry',
+                'Multiple primary key defined',
+                'Duplicate key name'
+            ];
+
+            $esErrorIgnorable = false;
+            foreach ($erroresIgnorados as $errorIgnorado) {
+                if (stripos($errorMsg, $errorIgnorado) !== false) {
+                    $esErrorIgnorable = true;
+                    break;
+                }
+            }
+
+            if (!$esErrorIgnorable) {
                 $erroresDetalle[] = [
                     'statement' => substr($statement, 0, 100) . '...',
                     'error' => $errorMsg
