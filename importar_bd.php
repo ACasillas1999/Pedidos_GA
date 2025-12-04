@@ -13,7 +13,7 @@ $pass = 'Ascension2024**';
 $dbname = 'gpoascen_pedidos_app';
 
 // Ruta del archivo SQL
-$sqlFile = 'C:\Users\compras-ovalo6\Downloads\gpoascen_pedidos_app (1).sql';
+$sqlFile = 'C:\Users\compras-ovalo6\Downloads\gpoascen_pedidos_app.sql';
 
 if (!file_exists($sqlFile)) {
     die("ERROR: El archivo SQL no existe en: $sqlFile\n");
