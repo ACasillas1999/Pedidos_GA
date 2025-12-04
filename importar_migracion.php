@@ -26,8 +26,8 @@ echo "<p class='info'>Fecha: " . date('Y-m-d H:i:s') . "</p>";
 
 // Configuración de la base de datos EC2
 $host = '18.211.75.118';
-$user = 'pedidos_app';
-$pass = 'TuContraseaSegura123';
+$user = 'root';
+$pass = '04nm2fdLefCxM';
 $dbname = 'gpoascen_pedidos_app';
 
 // Archivos SQL en orden de importación
