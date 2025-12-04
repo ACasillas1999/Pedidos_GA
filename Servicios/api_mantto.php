@@ -15,10 +15,10 @@ $method = $_SERVER['REQUEST_METHOD'];
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
 
 /** CONFIG DB **/
-$DB_HOST = 'localhost';
-$DB_NAME = 'gpoascen_pedidos_app';   // ajusta si tu nombre es otro
-$DB_USER = 'root';
-$DB_PASS = '';
+$DB_HOST = '18.211.75.118';
+$DB_NAME = 'gpoascen_pedidos_app';
+$DB_USER = 'pedidos_app';
+$DB_PASS = 'TuContraseaSegura123';
 
 try {
   $pdo = new PDO("mysql:host=$DB_HOST;dbname=$DB_NAME;charset=utf8mb4", $DB_USER, $DB_PASS, [
