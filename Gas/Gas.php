@@ -1312,7 +1312,7 @@ if ($allowCsv && ($_GET['export'] ?? '') === 'csv') {
         </a>
       </li>
       <li class="sidebar-bottom">
-        <a href="/Pedidos_GA/Vehiculos.php" title="Volver">
+        <a href="/Pedidos_GA/vehiculos.php" title="Volver">
           <img src="/Pedidos_GA/Img/Botones%20entregas/Usuario/VOLVAZ.png" class="icono-Volver sidebar-icon small" alt="Volver">
         </a>
       </li>
