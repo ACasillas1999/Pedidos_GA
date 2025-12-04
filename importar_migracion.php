@@ -39,7 +39,7 @@ $archivos = [
     ],
     [
         'nombre' => 'Datos Faltantes',
-        'archivo' => __DIR__ . '/migrations/gpoascen_pedidos_appdatos faltantes.sql',
+        'archivo' => __DIR__ . '/migrations/gpoascen_pedidos_appdatos_faltantes.sql',
         'descripcion' => 'Importa datos faltantes de tablas auxiliares'
     ],
     [
