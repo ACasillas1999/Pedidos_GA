@@ -1,8 +1,8 @@
 <?php
 // Definir los datos de conexión como constantes
 define('DB_SERVER', '18.211.75.118');
-define('DB_USERNAME', 'pedidos_app');
-define('DB_PASSWORD', 'TuContraseaSegura123');
+define('DB_USERNAME', 'root');
+define('DB_PASSWORD', '04nm2fdLefCxM');
 define('DB_NAME', 'gpoascen_pedidos_app');
 
 // Conectar a la base de datos
