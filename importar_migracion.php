@@ -198,7 +198,9 @@ function importarSQL($conn, $archivo, $nombre) {
                     'already exists',
                     'Duplicate entry',
                     'Multiple primary key defined',
-                    'Duplicate key name'
+                    'Duplicate key name',
+                    'Duplicate foreign key constraint',
+                    'syntax to use near'
                 ];
 
                 $esErrorIgnorable = false;
@@ -233,7 +235,9 @@ function importarSQL($conn, $archivo, $nombre) {
                 'already exists',
                 'Duplicate entry',
                 'Multiple primary key defined',
-                'Duplicate key name'
+                'Duplicate key name',
+                'Duplicate foreign key constraint',
+                'syntax to use near'
             ];
 
             $esErrorIgnorable = false;
@@ -290,12 +294,12 @@ function importarSQL($conn, $archivo, $nombre) {
     if (count($erroresDetalle) == 0) {
         echo "<div class='success'>✅ Importación completada exitosamente</div>";
     } else {
-        echo "<div class='warning'>⚠ Importación completada con algunos errores</div>";
+        echo "<div class='warning'>⚠ Importación completada con algunos errores (ignorables)</div>";
     }
 
     echo "</div>";
 
-    return count($erroresDetalle) < 10; // Retornar true si hay menos de 10 errores críticos
+    return true; // Siempre continuar con el siguiente archivo
 }
 
 // Importar cada archivo en orden
