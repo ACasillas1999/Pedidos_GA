@@ -24,7 +24,6 @@ $sql = "
   FROM choferes c
   LEFT JOIN vehiculos v
     ON v.id_chofer_asignado = c.ID
-   AND v.Sucursal           = c.Sucursal
   WHERE c.Estado = 'ACTIVO'
     AND c.Sucursal = ?
   GROUP BY c.ID, c.username, c.Sucursal
