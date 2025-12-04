@@ -46,12 +46,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['busqueda'])) {
             // Mostrar los datos encontrados en forma de tabla
             echo "<table class='mi-tabla' border='1'>";
             
-            if($_SESSION["Rol"]==="Admin"){
-                 echo "<tr><th>N°</th><th>Nombre</th><th>Numero</th><th>Sucursal</th><th>Estado</th><th>Funcion</th><th>.</th></tr>";
-                
+            if($_SESSION["Rol"]==="Admin" || $_SESSION["Rol"] === "JC"){
+                 echo "<tr><th>N°</th><th>Nombre</th><th>Numero</th><th>Sucursal</th><th>Estado</th><th>Funcion</th><th>Editar</th><th>Restablecer</th></tr>";
+
             }else {
                 echo "<tr><th>N°</th><th>Nombre</th><th>Numero</th><th>Sucursal</th><th>Estado</th><th>Funcion</th></tr>";
-                
+
             }
             
             
@@ -64,15 +64,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['busqueda'])) {
                 echo "<td>" . $row["Sucursal"] . "</td>";
                 echo "<td>" . $row["Estado"] . "</td>";
                 echo "<td><a href='EstadisticasChofer.php?id=" . $row["username"] . "'>Ver Detalles</a></td>";
-                
+
                 if($_SESSION["Rol"]=== "Admin"||$_SESSION["Rol"] === "JC"){
                    echo "<td><a href='Actualizar_choferes.php?id=" . $row["ID"] . "'>
-                   
+
                    '<img src='/Pedidos_GA/Img/Botones%20entregas/RegistrarChofer/ACTCHOFAZ.png' alt='Estaditicas ' class = 'icono-AddChofer'style='max-width: 50%; height: auto;'>
-                   
-                   </a></td>"; 
+
+                   </a></td>";
+
+                   // Botón para restablecer contraseña
+                   echo "<td>
+                       <form method='POST' action='restablecer_password_chofer.php' style='display:inline;' onsubmit='return confirm(\"¿Estás seguro de restablecer la contraseña del chofer " . htmlspecialchars($row["username"]) . "?\");'>
+                           <input type='hidden' name='chofer_id' value='" . $row["ID"] . "'>
+                           <button type='submit' style='background-color: #ff9800; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px;'>
+                               🔑 Restablecer
+                           </button>
+                       </form>
+                   </td>";
                 }
-                
+
                 echo "</tr>";
             }
             echo "</table>";
