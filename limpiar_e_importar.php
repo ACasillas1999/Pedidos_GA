@@ -113,20 +113,15 @@ if ($tablas_restantes == 0) {
 }
 echo "</div>";
 
-// PASO 4: Ejecutar el script de importación
+// PASO 4: Listo para importar
 echo "<div class='step'>";
-echo "<div class='step-title'>📥 PASO 4: Iniciando importación desde cero</div>";
-echo "<div class='info'>Redirigiendo al script de importación...</div>";
-echo "<div>Por favor espera mientras se importan los datos...</div>";
+echo "<div class='step-title'>📥 PASO 4: Listo para importar datos limpios</div>";
+echo "<div class='success'>✓ La base de datos está completamente vacía y lista para importar</div>";
+echo "<div style='margin-top: 20px; padding: 20px; background: #e7f3ff; border-left: 4px solid #005aa3; border-radius: 5px;'>";
+echo "<strong style='color: #005aa3;'>Siguiente paso:</strong><br>";
+echo "Haz clic en el botón de abajo para iniciar la importación de datos reales:<br><br>";
+echo "<a href='importar_migracion.php' style='display: inline-block; background: #005aa3; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px;'>🚀 Importar Datos Reales</a>";
 echo "</div>";
-
-echo "<script>";
-echo "setTimeout(function() { window.location.href = 'importar_migracion.php'; }, 3000);";
-echo "</script>";
-
-echo "<div class='step'>";
-echo "<div class='info'>Si no se redirige automáticamente, haz clic aquí: ";
-echo "<a href='importar_migracion.php' style='color: #005aa3; font-weight: bold;'>Importar Datos</a></div>";
 echo "</div>";
 
 $conn->close();
