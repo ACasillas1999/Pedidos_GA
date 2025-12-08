@@ -187,7 +187,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
          <label for="tipo_envio">Tipo de Envío:</label>
         <select id="tipo_envio" name="tipo_envio" required>
             <option value="">Selecciona una opción</option>
-            <option value="Programado">Domicilio</option>
+            <option value="Domicilio">Domicilio</option>
             <option value="Paquetería">Paquetería</option>
         </select><br><br>
 
