@@ -15,7 +15,7 @@
         // Función para hacer una solicitud HTTP GET
         function obtenerImagen() {
             var id_pedido = 91; // Establece el ID del pedido que deseas mostrar
-            var url = "https://pedidos.grupoascencio.com.mx/Pedidos_GA/App/Ver_Foto.php?id_pedido=" + id_pedido; // Reemplaza la URL con la ruta correcta a tu archivo PHP
+            var url = "https://pedidos.grupoascencio.com.mx/App/Ver_Foto.php?id_pedido=" + id_pedido; // Reemplaza la URL con la ruta correcta a tu archivo PHP
 
             // Realizar la solicitud HTTP GET
             fetch(url)
