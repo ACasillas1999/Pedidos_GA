@@ -462,7 +462,7 @@ $tipoEnvioTexto = strtoupper($tipoEnvio);
         // Función para obtener la imagen
         function obtenerImagen() {
             var id_pedido = <?php echo $row["ID"]; ?>; // ID del pedido
-            var url = "/App/Ver_Foto.php?id_pedido=" + id_pedido; // URL del archivo PHP
+            var url = "Pedidos_GA/App/Ver_Foto.php?id_pedido=" + id_pedido; // URL del archivo PHP
 
             fetch(url)
                 .then(response => response.json())
