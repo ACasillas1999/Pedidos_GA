@@ -1,4 +1,4 @@
-vendor/
+
 composer.phar
 error_log
 App/error_log
