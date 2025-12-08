@@ -14,7 +14,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 }
 
 // Verificar que sea rol JC o Admin
-$rolPermitido = in_array($_SESSION["Rol"] ?? '', ["Admin", "JC"]);
+$rolPermitido = in_array($_SESSION["Rol"] ?? '', ["Admin", "JC","VR"]);
 if (!$rolPermitido) {
     http_response_code(403);
     echo json_encode(["success" => false, "message" => "No tienes permisos para esta acción"]);
