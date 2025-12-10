@@ -919,9 +919,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'edita
 
         .veh-metrics {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(5, minmax(0, 1fr));
             gap: 10px;
             padding: 0 18px 14px
+        }
+
+        @media(max-width:1200px) {
+            .veh-metrics {
+                grid-template-columns: repeat(3, minmax(0, 1fr))
+            }
         }
 
         @media(max-width:960px) {
