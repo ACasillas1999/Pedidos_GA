@@ -643,6 +643,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'edita
     $nuevaSucursal = suc_norm($_POST['sucursal'] ?? '');
     $nuevaRazon = trim($_POST['razon_social'] ?? '');
     $nuevoKmActual   = max(0, (int)($_POST['km_actual'] ?? ($vehiculo['Km_Actual'] ?? 0)));
+    $nuevoKmTotal    = max($nuevoKmActual, (int)($_POST['km_total'] ?? ($vehiculo['Km_Total'] ?? 0)));
     $nuevoKmServicio = max(0, (int)($_POST['km_de_servicio'] ?? ($vehiculo['Km_de_Servicio'] ?? 0)));
 
     if ($nuevaPlaca !== '' && $nuevoTipo !== '' && $nuevaSerie !== '' && $id_vehiculo > 0) {
@@ -669,8 +670,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'edita
         }
 
         // Actualizar el vehículo
-        $stmt = $conn->prepare("UPDATE vehiculos SET placa = ?, tipo = ?, numero_serie = ?, Sucursal = ?, razon_social = ?, Km_Actual = ?, Km_de_Servicio = ? WHERE id_vehiculo = ?");
-        $stmt->bind_param("sssssiii", $nuevaPlaca, $nuevoTipo, $nuevaSerie, $nuevaSucursal, $nuevaRazon, $nuevoKmActual, $nuevoKmServicio, $id_vehiculo);
+        $stmt = $conn->prepare("UPDATE vehiculos SET placa = ?, tipo = ?, numero_serie = ?, Sucursal = ?, razon_social = ?, Km_Actual = ?, Km_Total = ?, Km_de_Servicio = ? WHERE id_vehiculo = ?");
+        $stmt->bind_param("sssssiiii", $nuevaPlaca, $nuevoTipo, $nuevaSerie, $nuevaSucursal, $nuevaRazon, $nuevoKmActual, $nuevoKmTotal, $nuevoKmServicio, $id_vehiculo);
         $stmt->execute();
 
         // Registrar el cambio si la sucursal cambió
@@ -2097,6 +2098,13 @@ function fmtDuracion($min){
                                min="0" step="1"
                                value="<?= (int)($vehiculo['Km_Actual'] ?? 0) ?>"
                                required placeholder="Kilometraje actual">
+                    </div>
+                    <div class="modal__row">
+                        <label class="modal__label">Km total (histórico) *</label>
+                        <input class="modal__field" type="number" name="km_total"
+                               min="0" step="1"
+                               value="<?= (int)($vehiculo['Km_Total'] ?? 0) ?>"
+                               required placeholder="Suma total recorrida">
                     </div>
                     <div class="modal__row">
                         <label class="modal__label">Próximo servicio (km) *</label>
