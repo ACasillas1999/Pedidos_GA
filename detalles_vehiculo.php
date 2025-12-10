@@ -1328,6 +1328,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'edita
                 <div class="m-value"><?= number_format($kmAct) ?></div>
             </div>
             <div class="metric">
+                <div class="m-title">Km total</div>
+                <div class="m-value"><?= number_format($kmTot) ?></div>
+            </div>
+            <div class="metric">
                 <div class="m-title">Próx. servicio</div>
                 <div class="m-value"><?= number_format($proxSrv) ?> km</div>
             </div>
