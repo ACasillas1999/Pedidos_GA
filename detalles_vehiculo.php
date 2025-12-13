@@ -1331,11 +1331,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'edita
                 <div class="m-value"><?= htmlspecialchars($sucV ?: '—') ?></div>
             </div>
             <div class="metric">
-                <div class="m-title">Km actual</div>
+                <div class="m-title">Km actual sin servicio</div>
                 <div class="m-value"><?= number_format($kmAct) ?></div>
             </div>
             <div class="metric">
-                <div class="m-title">Km total</div>
+                <div class="m-title">Km total del vehiculo</div>
                 <div class="m-value"><?= number_format($kmTot) ?></div>
             </div>
             <div class="metric">
