@@ -29,7 +29,8 @@ $SUCURSALES_CANON = [
     'GABSA',
     'QUERETARO',
     'PRESTAMOS',
-    'FORANEOS'
+    'FORANEOS',
+    'OVALO'
 ];
 
 // Helpers
