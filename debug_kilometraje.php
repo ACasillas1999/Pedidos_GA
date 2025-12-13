@@ -9,6 +9,11 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 }
 
 require_once __DIR__ . "/Conexiones/Conexion.php";
+
+// Verificar conexión
+if (!isset($conn) || $conn->connect_error) {
+    die("Error de conexión a la base de datos");
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -274,9 +279,16 @@ require_once __DIR__ . "/Conexiones/Conexion.php";
                                 WHERE c.Estado = 'Activo'
                                 ORDER BY c.Nombre";
                         $result = $conn->query($sql);
-                        while ($row = $result->fetch_assoc()) {
-                            $vehiculo = $row['placa'] ? " - Vehículo: {$row['placa']}" : " - Sin vehículo";
-                            echo "<option value='{$row['username']}' data-id='{$row['ID']}' data-vehiculo='{$row['id_vehiculo']}'>{$row['Nombre']} ({$row['username']}){$vehiculo}</option>";
+
+                        if (!$result) {
+                            echo "<option value=''>Error en consulta: " . $conn->error . "</option>";
+                        } elseif ($result->num_rows == 0) {
+                            echo "<option value=''>No hay choferes activos</option>";
+                        } else {
+                            while ($row = $result->fetch_assoc()) {
+                                $vehiculo = $row['placa'] ? " - Vehículo: {$row['placa']}" : " - Sin vehículo";
+                                echo "<option value='{$row['username']}' data-id='{$row['ID']}' data-vehiculo='{$row['id_vehiculo']}'>{$row['Nombre']} ({$row['username']}){$vehiculo}</option>";
+                            }
                         }
                         ?>
                     </select>
