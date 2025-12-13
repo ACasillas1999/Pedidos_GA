@@ -276,7 +276,7 @@ if (!isset($conn) || $conn->connect_error) {
                         $sql = "SELECT c.ID, c.username, c.Nombre, v.placa, v.id_vehiculo
                                 FROM choferes c
                                 LEFT JOIN vehiculos v ON v.id_chofer_asignado = c.ID
-                                WHERE c.Estado = 'Activo'
+                                WHERE c.Estado = 'ACTIVO'
                                 ORDER BY c.Nombre";
                         $result = $conn->query($sql);
 
