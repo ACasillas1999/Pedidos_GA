@@ -273,11 +273,11 @@ if (!isset($conn) || $conn->connect_error) {
                     <select id="chofer-select">
                         <option value="">-- Selecciona un chofer --</option>
                         <?php
-                        $sql = "SELECT c.ID, c.username, c.Nombre, v.placa, v.id_vehiculo
+                        $sql = "SELECT c.ID, c.username, c.Sucursal, v.placa, v.id_vehiculo
                                 FROM choferes c
                                 LEFT JOIN vehiculos v ON v.id_chofer_asignado = c.ID
                                 WHERE c.Estado = 'ACTIVO'
-                                ORDER BY c.Nombre";
+                                ORDER BY c.username";
                         $result = $conn->query($sql);
 
                         if (!$result) {
@@ -287,7 +287,8 @@ if (!isset($conn) || $conn->connect_error) {
                         } else {
                             while ($row = $result->fetch_assoc()) {
                                 $vehiculo = $row['placa'] ? " - Vehículo: {$row['placa']}" : " - Sin vehículo";
-                                echo "<option value='{$row['username']}' data-id='{$row['ID']}' data-vehiculo='{$row['id_vehiculo']}'>{$row['Nombre']} ({$row['username']}){$vehiculo}</option>";
+                                $sucursal = $row['Sucursal'] ? " [{$row['Sucursal']}]" : "";
+                                echo "<option value='{$row['username']}' data-id='{$row['ID']}' data-vehiculo='{$row['id_vehiculo']}'>{$row['username']}{$sucursal}{$vehiculo}</option>";
                             }
                         }
                         ?>
