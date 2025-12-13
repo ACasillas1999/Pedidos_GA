@@ -2114,8 +2114,8 @@ function fmtDuracion($min){
                         <label class="modal__label">Km total del vehiculo (histórico) *</label>
                         <input class="modal__field" type="number" name="km_total"
                                min="0" step="1"
-                               value="<?= (int)($vehiculo['Km_Total'] ?? 0) ?>"
-                               required placeholder="Suma total recorrida" enabled>
+                               value="<?= (int)($vehiculo['Km_Total'] ?? 0) ?>" readonly
+                               required placeholder="Suma total recorrida">
                     </div>
                     <div class="modal__row">
                         <label class="modal__label">Próximo servicio (km) *</label>
