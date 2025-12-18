@@ -129,9 +129,9 @@ $tipoEnvioTexto = strtoupper($tipoEnvio);
                         <tr>
                             <th>Estado</th>
 
-                            <?php if (($_SESSION["Rol"] === "JC") OR ($_SESSION["Rol"] === "Admin")): ?>
+                            <?php if (($_SESSION["Rol"] === "JC") OR ($_SESSION["Rol"] === "Admin") OR ($_SESSION["Rol"] === "VR")): ?>
                              <td>
-                                
+
         <select id="estado" onchange="cambiarEstado()">
             <option value="ACTIVO" <?php if ($row["ESTADO"] === "ACTIVO") echo "selected"; ?>>ACTIVO</option>
             <option value="EN RUTA" <?php if ($row["ESTADO"] === "EN RUTA") echo "selected"; ?>>EN RUTA</option>
@@ -142,10 +142,6 @@ $tipoEnvioTexto = strtoupper($tipoEnvio);
         </select>
         <span id="estado-actual" style="display: none;"><?php echo $row["ESTADO"]; ?></span>
     </td>
-    <?php endif; ?>
-
-    <?php if ($_SESSION["Rol"] === "VR"): ?>
-        <td><span><?php echo $row["ESTADO"]; ?></span></td>
     <?php endif; ?>
                       <th>Factura</th>
                             <td><span><?php echo $row["FACTURA"]; ?></span></td>
