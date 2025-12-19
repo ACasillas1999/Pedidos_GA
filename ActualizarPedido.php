@@ -19,6 +19,7 @@ $id_pedido = $_GET['id'];
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="/Pedidos_GA/Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
     <link rel="stylesheet" href="styles3.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <title>Formulario de Pedidos</title>
 </head>
     
@@ -114,7 +115,16 @@ if ($_SESSION["Rol"] === "VR") {
         $resultCheck = $stmtCheck->get_result();
 
         if ($resultCheck->num_rows === 0) {
-            echo "<script>alert('No tienes permisos para editar este pedido. Solo puedes editar tus propios pedidos.'); window.location.href='Pedidos_GA.php';</script>";
+            echo "<script>
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Acceso Denegado',
+                    text: 'No tienes permisos para editar este pedido. Solo puedes editar tus propios pedidos.',
+                    confirmButtonColor: '#d33'
+                }).then(() => {
+                    window.location.href = 'Pedidos_GA.php';
+                });
+            </script>";
             exit;
         }
     }

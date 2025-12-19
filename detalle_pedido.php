@@ -15,10 +15,11 @@
     
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
-   
+
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-   
-    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
     <style>
         .accion-container {
             margin-top: 20px;
@@ -61,7 +62,16 @@
                     $resultCheck = $stmtCheck->get_result();
 
                     if ($resultCheck->num_rows === 0) {
-                        echo "<script>alert('No tienes permisos para ver este pedido. Solo puedes ver tus propios pedidos.'); window.location.href='Pedidos_GA.php';</script>";
+                        echo "<script>
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Acceso Denegado',
+                                text: 'No tienes permisos para ver este pedido. Solo puedes ver tus propios pedidos.',
+                                confirmButtonColor: '#d33'
+                            }).then(() => {
+                                window.location.href = 'Pedidos_GA.php';
+                            });
+                        </script>";
                         exit;
                     }
                 }

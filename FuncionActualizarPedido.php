@@ -35,7 +35,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $resultCheck = $stmtCheck->get_result();
 
             if ($resultCheck->num_rows === 0) {
-                echo "<script>alert('No tienes permisos para modificar este pedido. Solo puedes modificar tus propios pedidos.'); window.location.href='Pedidos_GA.php';</script>";
+                echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>';
+                echo "<script>
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Acceso Denegado',
+                        text: 'No tienes permisos para modificar este pedido. Solo puedes modificar tus propios pedidos.',
+                        confirmButtonColor: '#d33'
+                    }).then(() => {
+                        window.location.href = 'Pedidos_GA.php';
+                    });
+                </script>";
                 exit;
             }
         }
