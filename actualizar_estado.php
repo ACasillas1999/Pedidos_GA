@@ -15,9 +15,38 @@ if(isset($_POST['id']) && isset($_POST['estado'])) {
     // Obtener los valores del POST
     $pedidoId = $_POST['id'];
     $nuevoEstado = $_POST['estado'];
-    
+
     // Establecer la conexión a la base de datos
 require_once __DIR__ . "/Conexiones/Conexion.php";
+
+    // Validación de permisos para VR (Vendedores)
+    if ($_SESSION["Rol"] === "VR") {
+        // Obtener el nombre del usuario actual desde la tabla usuarios
+        $username = $_SESSION["username"];
+        $sqlUser = "SELECT Nombre FROM usuarios WHERE username = ?";
+        $stmtUser = $conn->prepare($sqlUser);
+        $stmtUser->bind_param("s", $username);
+        $stmtUser->execute();
+        $resultUser = $stmtUser->get_result();
+
+        if ($resultUser->num_rows > 0) {
+            $userData = $resultUser->fetch_assoc();
+            $nombreVendedor = $userData['Nombre'];
+
+            // Verificar que el pedido pertenezca a este vendedor
+            $sqlCheck = "SELECT VENDEDOR FROM pedidos WHERE ID = ? AND VENDEDOR = ?";
+            $stmtCheck = $conn->prepare($sqlCheck);
+            $stmtCheck->bind_param("is", $pedidoId, $nombreVendedor);
+            $stmtCheck->execute();
+            $resultCheck = $stmtCheck->get_result();
+
+            if ($resultCheck->num_rows === 0) {
+                echo "Error: No tienes permisos para modificar este pedido.";
+                $conn->close();
+                exit;
+            }
+        }
+    }
 
     // Preparar la consulta SQL para actualizar el estado
     $sql = "UPDATE pedidos SET ESTADO = ? WHERE ID = ?";

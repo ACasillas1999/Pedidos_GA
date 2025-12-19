@@ -39,6 +39,34 @@
         if ($_SERVER["REQUEST_METHOD"] == "GET" && isset($_GET['id'])) {
             $pedidoId = $_GET['id'];
 
+            // Validación de permisos para VR (Vendedores)
+            if ($_SESSION["Rol"] === "VR") {
+                // Obtener el nombre del usuario actual desde la tabla usuarios
+                $username = $_SESSION["username"];
+                $sqlUser = "SELECT Nombre FROM usuarios WHERE username = ?";
+                $stmtUser = $conn->prepare($sqlUser);
+                $stmtUser->bind_param("s", $username);
+                $stmtUser->execute();
+                $resultUser = $stmtUser->get_result();
+
+                if ($resultUser->num_rows > 0) {
+                    $userData = $resultUser->fetch_assoc();
+                    $nombreVendedor = $userData['Nombre'];
+
+                    // Verificar que el pedido pertenezca a este vendedor
+                    $sqlCheck = "SELECT VENDEDOR FROM pedidos WHERE ID = ? AND VENDEDOR = ?";
+                    $stmtCheck = $conn->prepare($sqlCheck);
+                    $stmtCheck->bind_param("is", $pedidoId, $nombreVendedor);
+                    $stmtCheck->execute();
+                    $resultCheck = $stmtCheck->get_result();
+
+                    if ($resultCheck->num_rows === 0) {
+                        echo "<script>alert('No tienes permisos para ver este pedido. Solo puedes ver tus propios pedidos.'); window.location.href='Pedidos_GA.php';</script>";
+                        exit;
+                    }
+                }
+            }
+
             // Consulta SQL preparada para obtener los detalles del pedido con el ID proporcionado
             $sql = "SELECT * FROM pedidos WHERE ID = ?";
             $stmt = $conn->prepare($sql);

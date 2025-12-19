@@ -92,6 +92,33 @@ require_once __DIR__ . "/Conexiones/Conexion.php";
 
 // Obtener el ID del pedido a actualizar
 
+// Validación de permisos para VR (Vendedores)
+if ($_SESSION["Rol"] === "VR") {
+    // Obtener el nombre del usuario actual desde la tabla usuarios
+    $username = $_SESSION["username"];
+    $sqlUser = "SELECT Nombre FROM usuarios WHERE username = ?";
+    $stmtUser = $conn->prepare($sqlUser);
+    $stmtUser->bind_param("s", $username);
+    $stmtUser->execute();
+    $resultUser = $stmtUser->get_result();
+
+    if ($resultUser->num_rows > 0) {
+        $userData = $resultUser->fetch_assoc();
+        $nombreVendedor = $userData['Nombre'];
+
+        // Verificar que el pedido pertenezca a este vendedor
+        $sqlCheck = "SELECT VENDEDOR FROM pedidos WHERE ID = ? AND VENDEDOR = ?";
+        $stmtCheck = $conn->prepare($sqlCheck);
+        $stmtCheck->bind_param("is", $id_pedido, $nombreVendedor);
+        $stmtCheck->execute();
+        $resultCheck = $stmtCheck->get_result();
+
+        if ($resultCheck->num_rows === 0) {
+            echo "<script>alert('No tienes permisos para editar este pedido. Solo puedes editar tus propios pedidos.'); window.location.href='Pedidos_GA.php';</script>";
+            exit;
+        }
+    }
+}
 
 // Consulta SQL para obtener los datos del pedido
 $sql = "SELECT * FROM pedidos WHERE ID = $id_pedido";

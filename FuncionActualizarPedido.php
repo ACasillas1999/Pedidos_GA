@@ -13,6 +13,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $id_pedido = $_POST['id_pedido'];
 
+    // Validación de permisos para VR (Vendedores)
+    if ($_SESSION["Rol"] === "VR") {
+        // Obtener el nombre del usuario actual desde la tabla usuarios
+        $username = $_SESSION["username"];
+        $sqlUser = "SELECT Nombre FROM usuarios WHERE username = ?";
+        $stmtUser = $conn->prepare($sqlUser);
+        $stmtUser->bind_param("s", $username);
+        $stmtUser->execute();
+        $resultUser = $stmtUser->get_result();
+
+        if ($resultUser->num_rows > 0) {
+            $userData = $resultUser->fetch_assoc();
+            $nombreVendedor = $userData['Nombre'];
+
+            // Verificar que el pedido pertenezca a este vendedor
+            $sqlCheck = "SELECT VENDEDOR FROM pedidos WHERE ID = ? AND VENDEDOR = ?";
+            $stmtCheck = $conn->prepare($sqlCheck);
+            $stmtCheck->bind_param("is", $id_pedido, $nombreVendedor);
+            $stmtCheck->execute();
+            $resultCheck = $stmtCheck->get_result();
+
+            if ($resultCheck->num_rows === 0) {
+                echo "<script>alert('No tienes permisos para modificar este pedido. Solo puedes modificar tus propios pedidos.'); window.location.href='Pedidos_GA.php';</script>";
+                exit;
+            }
+        }
+    }
+
     $sql_pedido_actual = "SELECT * FROM pedidos WHERE ID = $id_pedido";
     $resultado_actual = $conn->query($sql_pedido_actual);
 
