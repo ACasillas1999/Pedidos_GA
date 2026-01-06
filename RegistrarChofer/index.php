@@ -65,6 +65,7 @@ document.addEventListener("DOMContentLoaded", function() {
     <label for="sucursal">Sucursal:</label>
     <select id="sucursal" name="sucursal" required>
       <option value="">Selecciona una sucursal</option>
+      <option value="CONSTITUYENTES">CONSTITUYENTES</option>
       <option value="DIMEGSA">DIMEGSA</option>
       <option value="DEASA">DEASA</option>
       <option value="AIESA">AIESA</option>
