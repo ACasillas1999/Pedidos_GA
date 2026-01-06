@@ -121,6 +121,7 @@ if ($result->num_rows > 0) {
 <select id="Sucursal" name="Sucursal" required>
     <option value="">Selecciona una sucursal</option>
     <option value="TODAS" <?php if ($row['Sucursal'] === 'TODAS') echo 'selected'; ?>>TODAS</option>
+    <option value="CONSTITUYENTES" <?php if ($row['Sucursal'] === 'CONSTITUYENTES') echo 'selected'; ?>>CONSTITUYENTES</option>
     <option value="DIMEGSA" <?php if ($row['Sucursal'] === 'DIMEGSA') echo 'selected'; ?>>DIMEGSA</option>
     <option value="DEASA" <?php if ($row['Sucursal'] === 'DEASA') echo 'selected'; ?>>DEASA</option>
     <option value="AIESA" <?php if ($row['Sucursal'] === 'AIESA') echo 'selected'; ?>>AIESA</option>

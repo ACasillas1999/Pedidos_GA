@@ -533,6 +533,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
           <option value="TALLER">TALLER</option>
           <option value="CODI">CODI</option>
           <option value="QUERETARO">QUERETARO</option>
+          <option value="CONSTITUYENTES">CONSTITUYENTES</option>
         </select>
       </form>
     <?php endif; ?>
@@ -553,6 +554,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
           <option value="TALLER">TALLER</option>
           <option value="CODI">CODI</option>
           <option value="QUERETARO">QUERETARO</option>
+          <option value="CONSTITUYENTES">CONSTITUYENTES</option>
         </select>
       </form>
     <?php endif; ?>
@@ -1056,6 +1058,7 @@ async function abrirModalGestionMasiva(pedidos) {
                 <option value="VALLARTA">VALLARTA</option>
                 <option value="CODI">CODI</option>
                 <option value="QUERETARO">QUERETARO</option>
+                <option value="CONSTITUYENTES">CONSTITUYENTES</option>
               </select>
             </div>
             <div>
@@ -1493,6 +1496,7 @@ async function abrirModalCrearGrupo(pedidos, moverDesdeOtrosGrupos = false) {
             <option value="VALLARTA">VALLARTA</option>
             <option value="CODI">CODI</option>
             <option value="QUERETARO">QUERETARO</option>
+            <option value="CONSTITUYENTES">CONSTITUYENTES</option>
           </select>
         </div>
 
