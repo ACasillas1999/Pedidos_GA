@@ -508,16 +508,51 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
                 accessToken: mapboxgl.accessToken,
                 mapboxgl: mapboxgl,
                 marker: false,
-                placeholder: 'Buscar dirección...',
-                countries: 'mx'
+                placeholder: 'Buscar dirección o coordenadas (ej: 20.6597,-103.3494)...',
+                countries: 'mx',
+                localGeocoder: function(query) {
+                    // Detectar si el input son coordenadas
+                    // Formatos aceptados: "20.6597,-103.3494" o "20.6597, -103.3494"
+                    const coordPattern = /^(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)$/;
+                    const match = query.trim().match(coordPattern);
+
+                    if (match) {
+                        const lat = parseFloat(match[1]);
+                        const lng = parseFloat(match[2]);
+
+                        // Validar que las coordenadas estén en rangos válidos
+                        if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+                            return [{
+                                id: 'coordenadas-manuales',
+                                type: 'Feature',
+                                place_name: `Coordenadas: ${lat.toFixed(6)}, ${lng.toFixed(6)}`,
+                                place_type: ['coordinate'],
+                                center: [lng, lat],
+                                geometry: {
+                                    type: 'Point',
+                                    coordinates: [lng, lat]
+                                },
+                                properties: {}
+                            }];
+                        }
+                    }
+                    return null;
+                }
             });
 
             document.getElementById('geocoder_mapa').appendChild(geocoder.onAdd(map));
 
-            // Cuando se selecciona una dirección del geocoder
+            // Cuando se selecciona una dirección o coordenadas del geocoder
             geocoder.on('result', (e) => {
                 const coords = e.result.geometry.coordinates;
                 agregarMarcador(coords);
+
+                // Centrar mapa en las coordenadas con animación
+                map.flyTo({
+                    center: coords,
+                    zoom: 15,
+                    essential: true
+                });
             });
 
                 // Click en el mapa para seleccionar ubicación
