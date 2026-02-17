@@ -555,7 +555,8 @@ $porcentajeForaneo = $stats['total_pedidos'] > 0 ? ($stats['total_foraneo'] / $s
     <script>
 
         mapboxgl.accessToken = 'pk.eyJ1IjoiYWNhc2lsbGFzNzY2IiwiYSI6ImNsdW12cTZyMjB4NnMya213MDdseXp6ZGgifQ.t7-l1lQfd8mgHILM5YrdNw';
-//aqui va
+
+
         const map = new mapboxgl.Map({
             container: 'map',
             style: 'mapbox://styles/mapbox/streets-v11',

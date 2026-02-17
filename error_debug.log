@@ -1,0 +1,35 @@
+[03-Dec-2025 23:19:18 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'gpoascen_pedidos_app.gasolina_semanal' doesn't exist in /var/www/html/Pedidos_GA/debug_detalles_vehiculo.php:79
+Stack trace:
+#0 /var/www/html/Pedidos_GA/debug_detalles_vehiculo.php(79): mysqli->query()
+#1 {main}
+  thrown in /var/www/html/Pedidos_GA/debug_detalles_vehiculo.php on line 79
+[03-Dec-2025 23:30:08 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'gpoascen_pedidos_app.gasolina_semanal' doesn't exist in /var/www/html/Pedidos_GA/debug_detalles_vehiculo.php:79
+Stack trace:
+#0 /var/www/html/Pedidos_GA/debug_detalles_vehiculo.php(79): mysqli->query()
+#1 {main}
+  thrown in /var/www/html/Pedidos_GA/debug_detalles_vehiculo.php on line 79
+[03-Dec-2025 23:44:37 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'gpoascen_pedidos_app.gasolina_semanal' doesn't exist in /var/www/html/Pedidos_GA/debug_detalles_vehiculo.php:79
+Stack trace:
+#0 /var/www/html/Pedidos_GA/debug_detalles_vehiculo.php(79): mysqli->query()
+#1 {main}
+  thrown in /var/www/html/Pedidos_GA/debug_detalles_vehiculo.php on line 79
+[03-Dec-2025 23:44:37 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'gpoascen_pedidos_app.gasolina_semanal' doesn't exist in /var/www/html/Pedidos_GA/debug_detalles_vehiculo.php:79
+Stack trace:
+#0 /var/www/html/Pedidos_GA/debug_detalles_vehiculo.php(79): mysqli->query()
+#1 {main}
+  thrown in /var/www/html/Pedidos_GA/debug_detalles_vehiculo.php on line 79
+[03-Dec-2025 23:44:39 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'gpoascen_pedidos_app.gasolina_semanal' doesn't exist in /var/www/html/Pedidos_GA/debug_detalles_vehiculo.php:79
+Stack trace:
+#0 /var/www/html/Pedidos_GA/debug_detalles_vehiculo.php(79): mysqli->query()
+#1 {main}
+  thrown in /var/www/html/Pedidos_GA/debug_detalles_vehiculo.php on line 79
+[03-Dec-2025 23:44:40 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'gpoascen_pedidos_app.gasolina_semanal' doesn't exist in /var/www/html/Pedidos_GA/debug_detalles_vehiculo.php:79
+Stack trace:
+#0 /var/www/html/Pedidos_GA/debug_detalles_vehiculo.php(79): mysqli->query()
+#1 {main}
+  thrown in /var/www/html/Pedidos_GA/debug_detalles_vehiculo.php on line 79
+[04-Dec-2025 00:40:31 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Table 'gpoascen_pedidos_app.gasolina_semanal' doesn't exist in /var/www/html/Pedidos_GA/debug_detalles_vehiculo.php:79
+Stack trace:
+#0 /var/www/html/Pedidos_GA/debug_detalles_vehiculo.php(79): mysqli->query()
+#1 {main}
+  thrown in /var/www/html/Pedidos_GA/debug_detalles_vehiculo.php on line 79
