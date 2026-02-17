@@ -6,7 +6,7 @@ if (typeof mapboxgl === 'undefined') {
     console.error('Mapbox GL JS no está cargado. Asegúrate de incluir el script de Mapbox antes de este archivo.');
 }
 
-// Token de Mapbox (el mismo usado en mapa_calor.php)
+// Toma el token desde una variable global inyectada por PHP.
 if (typeof mapboxgl !== 'undefined') {
     mapboxgl.accessToken = 'pk.eyJ1IjoiYWNhc2lsbGFzNzY2IiwiYSI6ImNsdW12cTZyMjB4NnMya213MDdseXp6ZGgifQ.t7-l1lQfd8mgHILM5YrdNw';
 }

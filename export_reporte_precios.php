@@ -21,6 +21,7 @@ $fecha_inicio = isset($_GET['fecha_inicio']) ? $_GET['fecha_inicio'] : date('Y-m
 $fecha_fin = isset($_GET['fecha_fin']) ? $_GET['fecha_fin'] : date('Y-m-d');
 $sucursal_filtro = isset($_GET['sucursal']) ? $_GET['sucursal'] : 'TODAS';
 $vendedor_filtro = isset($_GET['vendedor']) ? $_GET['vendedor'] : 'TODOS';
+$estado_filtro = isset($_GET['estado']) ? $_GET['estado'] : 'ACTIVOS'; // Default: ACTIVOS
 
 // Construir condiciones de filtro
 $where_conditions = ["FECHA_RECEPCION_FACTURA BETWEEN '$fecha_inicio' AND '$fecha_fin'"];
@@ -31,6 +32,14 @@ if ($sucursal_filtro != 'TODAS') {
 
 if ($vendedor_filtro != 'TODOS') {
     $where_conditions[] = "VENDEDOR = '$vendedor_filtro'";
+}
+
+if ($estado_filtro == 'ACTIVOS') {
+    $where_conditions[] = "ESTADO IN ('EN TIENDA', 'REPROGRAMADO', 'ACTIVO', 'EN RUTA')";
+} elseif ($estado_filtro == 'ENTREGADOS') {
+    $where_conditions[] = "ESTADO = 'ENTREGADO'";
+} elseif ($estado_filtro == 'CANCELADOS') {
+    $where_conditions[] = "ESTADO = 'CANCELADO'";
 }
 
 $where_clause = implode(" AND ", $where_conditions);
@@ -89,6 +98,7 @@ echo "\xEF\xBB\xBF"; // UTF-8 BOM
 <p><strong>Período:</strong> <?php echo $fecha_inicio; ?> al <?php echo $fecha_fin; ?></p>
 <p><strong>Sucursal:</strong> <?php echo $sucursal_filtro; ?></p>
 <p><strong>Vendedor:</strong> <?php echo $vendedor_filtro; ?></p>
+<p><strong>Estado:</strong> <?php echo $estado_filtro; ?></p>
 <p><strong>Generado por:</strong> <?php echo $_SESSION['Nombre']; ?> (<?php echo $_SESSION['username']; ?>)</p>
 <p><strong>Fecha de generación:</strong> <?php echo date('d/m/Y H:i:s'); ?></p>
 
@@ -171,15 +181,25 @@ $porcentaje_corregidos = ($stats['pedidos_con_precio'] > 0) ?
 <div class="header-section">2. PEDIDOS CON PRECIO MENOR A $1000 (NO CONVENIENTES)</div>
 
 <?php
-$sql_menores = "SELECT ID, SUCURSAL, VENDEDOR, FACTURA, NOMBRE_CLIENTE, DIRECCION,
-                       precio_factura_real, precio_validado_jc, FECHA_RECEPCION_FACTURA
+// Preparar condiciones con alias para evitar ambigüedad en el JOIN
+$where_clause_joined = str_replace(
+    ['SUCURSAL', 'VENDEDOR', 'FECHA_RECEPCION_FACTURA', 'precio_factura_real', 'ESTADO'], 
+    ['pedidos.SUCURSAL', 'pedidos.VENDEDOR', 'pedidos.FECHA_RECEPCION_FACTURA', 'pedidos.precio_factura_real', 'pedidos.ESTADO'], 
+    $where_clause
+);
+
+$sql_menores = "SELECT pedidos.ID, pedidos.SUCURSAL, pedidos.VENDEDOR, pedidos.FACTURA, pedidos.NOMBRE_CLIENTE, pedidos.DIRECCION,
+                       pedidos.precio_factura_real, pedidos.precio_validado_jc, pedidos.FECHA_RECEPCION_FACTURA,
+                       grupos_rutas.nombre_grupo
 FROM pedidos
-WHERE $where_clause AND precio_factura_real < 1000 AND precio_factura_real > 0
-ORDER BY precio_factura_real ASC";
+LEFT JOIN pedidos_grupos ON pedidos.ID = pedidos_grupos.pedido_id
+LEFT JOIN grupos_rutas ON pedidos_grupos.grupo_id = grupos_rutas.id AND grupos_rutas.estado = 'ACTIVO'
+WHERE $where_clause_joined AND pedidos.precio_factura_real < 1000 AND pedidos.precio_factura_real > 0
+ORDER BY pedidos.precio_factura_real ASC";
 
 $result_menores = $conn->query($sql_menores);
 
-if ($result_menores->num_rows > 0) {
+if ($result_menores && $result_menores->num_rows > 0) {
     echo "<table>";
     echo "<tr>
             <th>ID</th>
@@ -190,11 +210,13 @@ if ($result_menores->num_rows > 0) {
             <th>Cliente</th>
             <th>Dirección</th>
             <th>Precio</th>
+            <th>Grupo</th>
             <th>Validado</th>
           </tr>";
 
     while ($row = $result_menores->fetch_assoc()) {
         $validado = ($row['precio_validado_jc'] == 1) ? 'Sí' : 'No';
+        $grupo = !empty($row['nombre_grupo']) ? $row['nombre_grupo'] : '-';
 
         echo "<tr class='precio-bajo'>";
         echo "<td>{$row['ID']}</td>";
@@ -205,6 +227,7 @@ if ($result_menores->num_rows > 0) {
         echo "<td>{$row['NOMBRE_CLIENTE']}</td>";
         echo "<td>{$row['DIRECCION']}</td>";
         echo "<td>$" . number_format($row['precio_factura_real'], 2) . "</td>";
+        echo "<td>{$grupo}</td>";
         echo "<td>{$validado}</td>";
         echo "</tr>";
     }
@@ -392,6 +415,80 @@ if ($result_pendientes->num_rows > 0) {
     echo "</table>";
 } else {
     echo "<p>No hay pedidos pendientes de validación</p>";
+}
+?>
+
+<br><br>
+
+<!-- SECCIÓN 6: ANÁLISIS DE GRUPOS -->
+<div class="header-section">6. ANÁLISIS DE GRUPOS (ESTADÍSTICAS)</div>
+
+<?php
+// Preparar condiciones con alias 'pedidos' para evitar ambigüedad
+$where_joined_arr = ["pedidos.FECHA_RECEPCION_FACTURA BETWEEN '$fecha_inicio' AND '$fecha_fin'"];
+
+if ($sucursal_filtro != 'TODAS') $where_joined_arr[] = "pedidos.SUCURSAL = '$sucursal_filtro'";
+if ($vendedor_filtro != 'TODOS') $where_joined_arr[] = "pedidos.VENDEDOR = '$vendedor_filtro'";
+
+if ($estado_filtro == 'ACTIVOS') {
+    $where_joined_arr[] = "pedidos.ESTADO IN ('EN TIENDA', 'REPROGRAMADO', 'ACTIVO', 'EN RUTA')";
+} elseif ($estado_filtro == 'ENTREGADOS') {
+    $where_joined_arr[] = "pedidos.ESTADO = 'ENTREGADO'";
+} elseif ($estado_filtro == 'CANCELADOS') {
+    $where_joined_arr[] = "pedidos.ESTADO = 'CANCELADO'";
+}
+
+$where_clause_grupos = implode(" AND ", $where_joined_arr);
+
+$sql_grupos = "SELECT 
+                gr.nombre_grupo,
+                COUNT(pedidos.ID) as cantidad_pedidos,
+                SUM(pedidos.precio_factura_real) as total_grupo,
+                AVG(pedidos.precio_factura_real) as promedio_grupo,
+                MIN(pedidos.precio_factura_real) as min_precio,
+                MAX(pedidos.precio_factura_real) as max_precio
+            FROM pedidos
+            JOIN pedidos_grupos pg ON pedidos.ID = pg.pedido_id
+            JOIN grupos_rutas gr ON pg.grupo_id = gr.id
+            WHERE $where_clause_grupos 
+            AND gr.estado = 'ACTIVO' 
+            AND pedidos.precio_factura_real > 0
+            GROUP BY gr.id, gr.nombre_grupo
+            ORDER BY promedio_grupo ASC";
+
+$result_grupos = $conn->query($sql_grupos);
+
+if ($result_grupos && $result_grupos->num_rows > 0) {
+    echo "<table>";
+    echo "<tr>
+            <th>Grupo / Ruta</th>
+            <th>Cantidad Pedidos</th>
+            <th>Total Facturado</th>
+            <th>Promedio x Pedido</th>
+            <th>Mínimo</th>
+            <th>Máximo</th>
+          </tr>";
+
+    while ($row = $result_grupos->fetch_assoc()) {
+        $promedio = $row['promedio_grupo'];
+        
+        $estilo = '';
+        if ($promedio < 500) $estilo = 'precio-correcto';
+        elseif ($promedio > 5000) $estilo = 'precio-incorrecto';
+
+        echo "<tr class='$estilo'>";
+        echo "<td>{$row['nombre_grupo']}</td>";
+        echo "<td>{$row['cantidad_pedidos']}</td>";
+        echo "<td>$" . number_format($row['total_grupo'], 2) . "</td>";
+        echo "<td>$" . number_format($promedio, 2) . "</td>";
+        echo "<td>$" . number_format($row['min_precio'], 2) . "</td>";
+        echo "<td>$" . number_format($row['max_precio'], 2) . "</td>";
+        echo "</tr>";
+    }
+
+    echo "</table>";
+} else {
+    echo "<p>No hay datos de grupos con los filtros seleccionados.</p>";
 }
 ?>
 

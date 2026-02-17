@@ -102,7 +102,8 @@ if ($sucursalSesion === "TODAS") {
                        pg.orden_entrega,
                        gr.nombre_grupo,
                        gr.chofer_asignado as grupo_chofer,
-                       (SELECT COUNT(*) FROM pedidos_grupos WHERE grupo_id = pg.grupo_id) as total_en_grupo
+                       (SELECT COUNT(*) FROM pedidos_grupos WHERE grupo_id = pg.grupo_id) as total_en_grupo,
+                       p.tipo_zona
                 FROM pedidos p
                 LEFT JOIN pedidos_grupos pg ON p.ID = pg.pedido_id
                 LEFT JOIN grupos_rutas gr ON pg.grupo_id = gr.id AND gr.estado = 'ACTIVO'
@@ -298,7 +299,17 @@ if ($sucursalSesion === "TODAS") {
 
                     echo "<td style='background-color: $colorPrecio; text-align: right;' class='$clasePrecio'>" . $iconoPrecio . $textoPrecio . "</td>";
                     echo "<td>" . $row["DIRECCION"] . "</td>";
-                    echo "<td>" . $row["NOMBRE_CLIENTE"] . "</td>";
+                    
+                    // Badge de zona (LOCAL/FORÁNEO)
+                    $tipoZona = $row["tipo_zona"] ?? null;
+                    $badgeZona = '';
+                    if ($tipoZona === 'LOCAL') {
+                        $badgeZona = "<span class='badge-zona-local' title='Pedido dentro de la Zona Metropolitana de Guadalajara'>🏠 LOCAL</span>";
+                    } elseif ($tipoZona === 'FORANEO') {
+                        $badgeZona = "<span class='badge-zona-foraneo' title='Pedido fuera de la Zona Metropolitana de Guadalajara'>🌍 FORÁNEO</span>";
+                    }
+                    
+                    echo "<td>" . $row["NOMBRE_CLIENTE"] . " " . $badgeZona . "</td>";
                     echo "<td>" . $row["CONTACTO"] . "</td>";
                     echo "<td><a href='Inicio.php?id=" . $row["ID"] . "'>Ver Detalles</a></td>";
                     echo "</tr>";
@@ -358,7 +369,8 @@ if ($sucursalSesion === "TODAS") {
                        pg.orden_entrega,
                        gr.nombre_grupo,
                        gr.chofer_asignado as grupo_chofer,
-                       (SELECT COUNT(*) FROM pedidos_grupos WHERE grupo_id = pg.grupo_id) as total_en_grupo
+                       (SELECT COUNT(*) FROM pedidos_grupos WHERE grupo_id = pg.grupo_id) as total_en_grupo,
+                       p.tipo_zona
                 FROM pedidos p
                 LEFT JOIN pedidos_grupos pg ON p.ID = pg.pedido_id
                 LEFT JOIN grupos_rutas gr ON pg.grupo_id = gr.id AND gr.estado = 'ACTIVO'
@@ -551,7 +563,17 @@ if ($sucursalSesion === "TODAS") {
 
                     echo "<td style='background-color: $colorPrecio; text-align: right;' class='$clasePrecio'>" . $iconoPrecio . $textoPrecio . "</td>";
                     echo "<td>" . $row["DIRECCION"] . "</td>";
-                    echo "<td>" . $row["NOMBRE_CLIENTE"] . "</td>";
+                    
+                    // Badge de zona (LOCAL/FORÁNEO)
+                    $tipoZona = $row["tipo_zona"] ?? null;
+                    $badgeZona = '';
+                    if ($tipoZona === 'LOCAL') {
+                        $badgeZona = "<span class='badge-zona-local' title='Pedido dentro de la Zona Metropolitana de Guadalajara'>🏠 LOCAL</span>";
+                    } elseif ($tipoZona === 'FORANEO') {
+                        $badgeZona = "<span class='badge-zona-foraneo' title='Pedido fuera de la Zona Metropolitana de Guadalajara'>🌍 FORÁNEO</span>";
+                    }
+                    
+                    echo "<td>" . $row["NOMBRE_CLIENTE"] . " " . $badgeZona . "</td>";
                     echo "<td>" . $row["CONTACTO"] . "</td>";
                     echo "<td><a href='Inicio.php?id=" . $row["ID"] . "'>Ver Detalles</a></td>";
                     echo "</tr>";
@@ -731,6 +753,33 @@ $conn->close();
   color: #6b7280;
   margin-top: 5px;
   text-align: center;
+}
+
+/* Estilos para badges de zona LOCAL/FORÁNEO */
+.badge-zona-local {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  display: inline-block;
+  margin-left: 5px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  white-space: nowrap;
+}
+
+.badge-zona-foraneo {
+  background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+  color: white;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  display: inline-block;
+  margin-left: 5px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  white-space: nowrap;
 }
 
 </style>

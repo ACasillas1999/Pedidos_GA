@@ -190,6 +190,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
           <img src="\Pedidos_GA\Img\Botones entregas\Pedidos_GA\ESTNA2.png" alt="Estaditicas" class="icono-estadisticas" style="max-width: 70%; height: auto;">
         </a>
       </li>
+     
 
       <!-- Menú desplegable: Administración -->
       <?php if ($_SESSION["Rol"] === "Admin" || $_SESSION["Rol"] === "JC" || $_SESSION["Rol"] === "MEC"): ?>
@@ -205,6 +206,12 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
              <img src="\Pedidos_GA\Img\Botones entregas\Pedidos_GA\Mapa_calor.png" alt="calor" class="icono-calor" style="max-width: 60%; height: auto;">
             </a>
             </li>
+
+             <li>
+        <a href="reporte_zonas.php" title="Reporte de Zonas">
+          <img src="\Pedidos_GA\Img\zonascolor.png" alt="Reporte Zonas" class="icono-reporte-zonas" style="max-width: 70%; height: auto;">
+        </a>
+      </li>
           <?php endif; ?>
           <?php if ($_SESSION["Rol"] === "Admin" || $_SESSION["Rol"] === "JC" || $_SESSION["Rol"] === "MEC"): ?>
           <li>
@@ -298,6 +305,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
       var iconoU = document.querySelector(".icono-U");
       var iconoH = document.querySelector(".icono-H");
       var iconoReportePrecios = document.querySelector(".icono-reporte-precios");
+      var iconoReporteZonas = document.querySelector(".icono-reporte-zonas");
       var iconoMapaCalor = document.querySelector(".icono-mapa-calor");
       var iconoMaps = document.querySelector(".icono-Maps");
       var iconoHome = document.querySelector(".icono-Home");
@@ -390,6 +398,18 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
           });
           iconoReportePrecios.addEventListener("mouseout", function() {
               iconoReportePrecios.src = imgNormalReportePrecios;
+          });
+      }
+
+      if (iconoReporteZonas) {
+          var imgNormalReporteZonas = "/Pedidos_GA/Img/zonascolor.png";
+          var imgHoverReporteZonas = "/Pedidos_GA/Img/ZG_BC.png";
+          
+          iconoReporteZonas.addEventListener("mouseover", function() {
+              iconoReporteZonas.src = imgHoverReporteZonas;
+          });
+          iconoReporteZonas.addEventListener("mouseout", function() {
+              iconoReporteZonas.src = imgNormalReporteZonas;
           });
       }
 
@@ -1609,8 +1629,8 @@ async function abrirModalCrearGrupo(pedidos, moverDesdeOtrosGrupos = false) {
         });
       });
 
-      // Inicializar mapa de vista previa
-      mapboxgl.accessToken = 'pk.eyJ1IjoiYWNhc2lsbGFzNzY2IiwiYSI6ImNsdW12cTZyMjB4NnMya213MDdseXp6ZGgifQ.t7-l1lQfd8mgHILM5YrdNw';
+      // Inicializar mapa de vista previa AQUIIIIIIIIIIIIIIII
+     
 
       const previewMap = new mapboxgl.Map({
         container: 'preview-map',
@@ -2089,4 +2109,7 @@ async function crearGrupoRuta(datos, moverDesdeOtrosGrupos = false) {
 </style>
 
 <!-- Script para modal de destinatario -->
+<script>
+  
+</script>
 <script src="js/modal_destinatario.js"></script>

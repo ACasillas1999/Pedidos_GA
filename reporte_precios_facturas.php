@@ -21,6 +21,7 @@ $fecha_inicio = isset($_GET['fecha_inicio']) ? $_GET['fecha_inicio'] : date('Y-m
 $fecha_fin = isset($_GET['fecha_fin']) ? $_GET['fecha_fin'] : date('Y-m-d'); // Hoy
 $sucursal_filtro = isset($_GET['sucursal']) ? $_GET['sucursal'] : 'TODAS';
 $vendedor_filtro = isset($_GET['vendedor']) ? $_GET['vendedor'] : 'TODOS';
+$estado_filtro = isset($_GET['estado']) ? $_GET['estado'] : 'ACTIVOS'; // Default: ACTIVOS
 $seccion = isset($_GET['seccion']) ? $_GET['seccion'] : 'resumen';
 
 ?>
@@ -214,8 +215,16 @@ $seccion = isset($_GET['seccion']) ? $_GET['seccion'] : 'resumen';
                 ?>
             </select>
 
+            <label for="estado">Estado:</label>
+            <select id="estado" name="estado">
+                <option value="TODOS" <?php echo ($estado_filtro == 'TODOS') ? 'selected' : ''; ?>>TODOS</option>
+                <option value="ACTIVOS" <?php echo ($estado_filtro == 'ACTIVOS') ? 'selected' : ''; ?>>ACTIVOS (En Ruta, Tienda, etc)</option>
+                <option value="ENTREGADOS" <?php echo ($estado_filtro == 'ENTREGADOS') ? 'selected' : ''; ?>>ENTREGADOS</option>
+                <option value="CANCELADOS" <?php echo ($estado_filtro == 'CANCELADOS') ? 'selected' : ''; ?>>CANCELADOS</option>
+            </select>
+
             <input type="submit" value="Filtrar" style="margin-left: 10px;">
-            <a href="export_reporte_precios.php?fecha_inicio=<?php echo $fecha_inicio; ?>&fecha_fin=<?php echo $fecha_fin; ?>&sucursal=<?php echo $sucursal_filtro; ?>&vendedor=<?php echo $vendedor_filtro; ?>" class="btn-export">📥 Exportar a Excel</a>
+            <a href="export_reporte_precios.php?fecha_inicio=<?php echo $fecha_inicio; ?>&fecha_fin=<?php echo $fecha_fin; ?>&sucursal=<?php echo $sucursal_filtro; ?>&vendedor=<?php echo $vendedor_filtro; ?>&estado=<?php echo $estado_filtro; ?>" class="btn-export">📥 Exportar a Excel</a>
         </form>
     </div>
 
@@ -233,8 +242,11 @@ $seccion = isset($_GET['seccion']) ? $_GET['seccion'] : 'resumen';
         <button class="tab <?php echo ($seccion == 'vendedores') ? 'active' : ''; ?>" onclick="window.location.href='?seccion=vendedores&fecha_inicio=<?php echo $fecha_inicio; ?>&fecha_fin=<?php echo $fecha_fin; ?>&sucursal=<?php echo $sucursal_filtro; ?>&vendedor=<?php echo $vendedor_filtro; ?>'">
             Por Vendedor
         </button>
-        <button class="tab <?php echo ($seccion == 'pendientes') ? 'active' : ''; ?>" onclick="window.location.href='?seccion=pendientes&fecha_inicio=<?php echo $fecha_inicio; ?>&fecha_fin=<?php echo $fecha_fin; ?>&sucursal=<?php echo $sucursal_filtro; ?>&vendedor=<?php echo $vendedor_filtro; ?>'">
+        <button class="tab <?php echo ($seccion == 'pendientes') ? 'active' : ''; ?>" onclick="window.location.href='?seccion=pendientes&fecha_inicio=<?php echo $fecha_inicio; ?>&fecha_fin=<?php echo $fecha_fin; ?>&sucursal=<?php echo $sucursal_filtro; ?>&vendedor=<?php echo $vendedor_filtro; ?>&estado=<?php echo $estado_filtro; ?>'">
             Pendientes Validar
+        </button>
+        <button class="tab <?php echo ($seccion == 'grupos') ? 'active' : ''; ?>" onclick="window.location.href='?seccion=grupos&fecha_inicio=<?php echo $fecha_inicio; ?>&fecha_fin=<?php echo $fecha_fin; ?>&sucursal=<?php echo $sucursal_filtro; ?>&vendedor=<?php echo $vendedor_filtro; ?>&estado=<?php echo $estado_filtro; ?>'">
+            📊 Análisis de Grupos
         </button>
     </div>
 
@@ -248,10 +260,48 @@ $seccion = isset($_GET['seccion']) ? $_GET['seccion'] : 'resumen';
     }
 
     if ($vendedor_filtro != 'TODOS') {
-        $where_conditions[] = "VENDEDOR = '$vendedor_filtro'";
+        $where_conditions[] = "pedidos.VENDEDOR = '$vendedor_filtro'"; // Usar alias 'pedidos' por precaución
     }
 
-    $where_clause = implode(" AND ", $where_conditions);
+    if ($estado_filtro == 'ACTIVOS') {
+        $where_conditions[] = "pedidos.ESTADO IN ('EN TIENDA', 'REPROGRAMADO', 'ACTIVO', 'EN RUTA')";
+    } elseif ($estado_filtro == 'ENTREGADOS') {
+        $where_conditions[] = "pedidos.ESTADO = 'ENTREGADO'";
+    } elseif ($estado_filtro == 'CANCELADOS') {
+        $where_conditions[] = "pedidos.ESTADO = 'CANCELADO'";
+    }
+
+    // Asegurar que las fechas también usen el alias 'pedidos' si es necesario más adelante, 
+    // pero por ahora el reemplazo en secciones específicas lo maneja.
+    // MODIFICACION: Actualizar la condición de fecha para usar alias si existe join
+    $where_conditions[0] = "pedidos.FECHA_RECEPCION_FACTURA BETWEEN '$fecha_inicio' AND '$fecha_fin'";
+    
+    // Y si filtro de sucursal
+    if ($sucursal_filtro != 'TODAS') {
+         // Reemplazar la condición anterior q no tenía alias
+         $where_conditions[1] = "pedidos.SUCURSAL = '$sucursal_filtro'";
+    } else {
+        // Ajustar índice si no había sucursal
+    }
+
+    // RE-GENERAR where_clause GENÉRICO SIN ALIAS (para secciones que no hacen JOIN)
+    // Para no romper lo existente, haremos un hack:
+    // Las secciones existentes usan $where_clause simple.
+    // Vamos a reconstruir $where_clause simple y $where_clause_joined.
+
+    $where_simple_arr = ["FECHA_RECEPCION_FACTURA BETWEEN '$fecha_inicio' AND '$fecha_fin'"];
+    if ($sucursal_filtro != 'TODAS') $where_simple_arr[] = "SUCURSAL = '$sucursal_filtro'";
+    if ($vendedor_filtro != 'TODOS') $where_simple_arr[] = "VENDEDOR = '$vendedor_filtro'";
+    
+    if ($estado_filtro == 'ACTIVOS') {
+        $where_simple_arr[] = "ESTADO IN ('EN TIENDA', 'REPROGRAMADO', 'ACTIVO', 'EN RUTA')";
+    } elseif ($estado_filtro == 'ENTREGADOS') {
+        $where_simple_arr[] = "ESTADO = 'ENTREGADO'";
+    } elseif ($estado_filtro == 'CANCELADOS') {
+        $where_simple_arr[] = "ESTADO = 'CANCELADO'";
+    }
+    
+    $where_clause = implode(" AND ", $where_simple_arr);
 
     // SECCIÓN: RESUMEN GENERAL
     if ($seccion == 'resumen') {
@@ -321,18 +371,58 @@ $seccion = isset($_GET['seccion']) ? $_GET['seccion'] : 'resumen';
 
     // SECCIÓN: PEDIDOS MENORES A $1000
     elseif ($seccion == 'menores_1000') {
+        $filtro_grupo = isset($_GET['filtro_grupo']) ? $_GET['filtro_grupo'] : 'todos';
         ?>
         <h2>⚠️ Pedidos con Precio Menor a $1000 (No Convenientes)</h2>
 
+        <!-- Filtros de Grupo -->
+        <div style="margin-bottom: 20px;">
+            <a href="?seccion=menores_1000&fecha_inicio=<?php echo $fecha_inicio; ?>&fecha_fin=<?php echo $fecha_fin; ?>&sucursal=<?php echo $sucursal_filtro; ?>&vendedor=<?php echo $vendedor_filtro; ?>&filtro_grupo=todos" 
+               class="btn-export" style="background: <?php echo ($filtro_grupo == 'todos') ? '#005aa3' : '#6c757d'; ?>;">Todos</a>
+            
+            <a href="?seccion=menores_1000&fecha_inicio=<?php echo $fecha_inicio; ?>&fecha_fin=<?php echo $fecha_fin; ?>&sucursal=<?php echo $sucursal_filtro; ?>&vendedor=<?php echo $vendedor_filtro; ?>&filtro_grupo=con_grupo" 
+               class="btn-export" style="background: <?php echo ($filtro_grupo == 'con_grupo') ? '#005aa3' : '#6c757d'; ?>;">Con Grupo</a>
+            
+            <a href="?seccion=menores_1000&fecha_inicio=<?php echo $fecha_inicio; ?>&fecha_fin=<?php echo $fecha_fin; ?>&sucursal=<?php echo $sucursal_filtro; ?>&vendedor=<?php echo $vendedor_filtro; ?>&filtro_grupo=sin_grupo" 
+               class="btn-export" style="background: <?php echo ($filtro_grupo == 'sin_grupo') ? '#005aa3' : '#6c757d'; ?>;">Sin Grupo</a>
+        </div>
+
         <?php
-        $sql_menores = "SELECT ID, SUCURSAL, VENDEDOR, FACTURA, NOMBRE_CLIENTE, precio_factura_real, precio_validado_jc, FECHA_RECEPCION_FACTURA
+        // Preparar condiciones con alias para evitar ambigüedad en el JOIN
+        // Preparar condiciones con alias para evitar ambigüedad en el JOIN
+        $where_clause_joined = str_replace(
+            ['SUCURSAL', 'VENDEDOR', 'FECHA_RECEPCION_FACTURA', 'precio_factura_real', 'ESTADO'], 
+            ['pedidos.SUCURSAL', 'pedidos.VENDEDOR', 'pedidos.FECHA_RECEPCION_FACTURA', 'pedidos.precio_factura_real', 'pedidos.ESTADO'], 
+            $where_clause
+        );
+
+        // Subquery para contar miembros del grupo
+        $sql_menores = "SELECT pedidos.ID, pedidos.SUCURSAL, pedidos.VENDEDOR, pedidos.FACTURA, pedidos.NOMBRE_CLIENTE, 
+                               pedidos.precio_factura_real, pedidos.precio_validado_jc, pedidos.FECHA_RECEPCION_FACTURA,
+                               grupos_rutas.nombre_grupo, grupos_rutas.id as grupo_id,
+                               stats_grupo.total_grupo
         FROM pedidos
-        WHERE $where_clause AND precio_factura_real < 1000 AND precio_factura_real > 0
-        ORDER BY precio_factura_real ASC";
+        LEFT JOIN pedidos_grupos ON pedidos.ID = pedidos_grupos.pedido_id
+        LEFT JOIN grupos_rutas ON pedidos_grupos.grupo_id = grupos_rutas.id AND grupos_rutas.estado = 'ACTIVO'
+        LEFT JOIN (
+            SELECT grupo_id, COUNT(*) as total_grupo 
+            FROM pedidos_grupos 
+            GROUP BY grupo_id
+        ) as stats_grupo ON grupos_rutas.id = stats_grupo.grupo_id
+        WHERE $where_clause_joined AND pedidos.precio_factura_real < 1000 AND pedidos.precio_factura_real > 0";
+
+        // Aplicar filtro de grupo
+        if ($filtro_grupo == 'con_grupo') {
+            $sql_menores .= " AND grupos_rutas.id IS NOT NULL";
+        } elseif ($filtro_grupo == 'sin_grupo') {
+            $sql_menores .= " AND grupos_rutas.id IS NULL";
+        }
+
+        $sql_menores .= " ORDER BY pedidos.precio_factura_real ASC";
 
         $result_menores = $conn->query($sql_menores);
 
-        if ($result_menores->num_rows > 0) {
+        if ($result_menores && $result_menores->num_rows > 0) {
             echo "<table class='tabla-reporte'>";
             echo "<tr>
                     <th>ID</th>
@@ -342,6 +432,7 @@ $seccion = isset($_GET['seccion']) ? $_GET['seccion'] : 'resumen';
                     <th>Factura</th>
                     <th>Cliente</th>
                     <th>Precio</th>
+                    <th>Grupo</th>
                     <th>Validado</th>
                   </tr>";
 
@@ -349,6 +440,13 @@ $seccion = isset($_GET['seccion']) ? $_GET['seccion'] : 'resumen';
                 $validado_icon = ($row['precio_validado_jc'] == 1) ?
                     "<span style='color: #28a745;'>✓ Sí</span>" :
                     "<span style='color: #ffc107;'>⏳ No</span>";
+
+                // Badge de Grupo con Conteo
+                $badge_grupo = "-";
+                if (!empty($row['nombre_grupo'])) {
+                     $count = $row['total_grupo'];
+                     $badge_grupo = "<span style='background: #17a2b8; color: white; padding: 3px 8px; border-radius: 10px; font-size: 0.85em;' title='Grupo con $count pedidos'>🚚 " . htmlspecialchars($row['nombre_grupo']) . " ($count)</span>";
+                }
 
                 echo "<tr>";
                 echo "<td><a href='Inicio.php?id={$row['ID']}'>{$row['ID']}</a></td>";
@@ -358,13 +456,18 @@ $seccion = isset($_GET['seccion']) ? $_GET['seccion'] : 'resumen';
                 echo "<td>{$row['FACTURA']}</td>";
                 echo "<td>{$row['NOMBRE_CLIENTE']}</td>";
                 echo "<td style='background-color: #fff3cd; color: #856404; font-weight: bold;'>$" . number_format($row['precio_factura_real'], 2) . "</td>";
+                echo "<td>{$badge_grupo}</td>";
                 echo "<td>{$validado_icon}</td>";
                 echo "</tr>";
             }
 
             echo "</table>";
         } else {
-            echo "<p style='text-align: center; color: #28a745; padding: 20px;'>✓ No hay pedidos con precio menor a $1000 en el período seleccionado</p>";
+            if(!$result_menores) {
+                echo "<p style='color:red;'>Error en consulta: " . $conn->error . "</p>";
+            } else {
+                echo "<p style='text-align: center; color: #28a745; padding: 20px;'>✓ No hay pedidos con precio menor a $1000 que coincidan con los filtros.</p>";
+            }
         }
     }
 
@@ -538,6 +641,85 @@ $seccion = isset($_GET['seccion']) ? $_GET['seccion'] : 'resumen';
             echo "</table>";
         } else {
             echo "<p style='text-align: center; color: #28a745; padding: 20px;'>✓ No hay pedidos pendientes de validación</p>";
+        }
+    }
+
+    // SECCIÓN: ANÁLISIS DE GRUPOS
+    elseif ($seccion == 'grupos') {
+        ?>
+        <h2>📊 Análisis de Costos por Grupo de Ruta</h2>
+        <p>Promedio de costo de factura por grupo logístico.</p>
+
+        <?php
+        // Preparar condiciones con alias 'pedidos'
+        $where_joined_arr = ["pedidos.FECHA_RECEPCION_FACTURA BETWEEN '$fecha_inicio' AND '$fecha_fin'"];
+        if ($sucursal_filtro != 'TODAS') $where_joined_arr[] = "pedidos.SUCURSAL = '$sucursal_filtro'";
+        if ($vendedor_filtro != 'TODOS') $where_joined_arr[] = "pedidos.VENDEDOR = '$vendedor_filtro'";
+        
+        if ($estado_filtro == 'ACTIVOS') {
+            $where_joined_arr[] = "pedidos.ESTADO IN ('EN TIENDA', 'REPROGRAMADO', 'ACTIVO', 'EN RUTA')";
+        } elseif ($estado_filtro == 'ENTREGADOS') {
+            $where_joined_arr[] = "pedidos.ESTADO = 'ENTREGADO'";
+        } elseif ($estado_filtro == 'CANCELADOS') {
+            $where_joined_arr[] = "pedidos.ESTADO = 'CANCELADO'";
+        }
+        
+        $where_clause_grupos = implode(" AND ", $where_joined_arr);
+
+        $sql_grupos = "SELECT 
+                        gr.nombre_grupo,
+                        COUNT(pedidos.ID) as cantidad_pedidos,
+                        SUM(pedidos.precio_factura_real) as total_grupo,
+                        AVG(pedidos.precio_factura_real) as promedio_grupo,
+                        MIN(pedidos.precio_factura_real) as min_precio,
+                        MAX(pedidos.precio_factura_real) as max_precio
+                    FROM pedidos
+                    JOIN pedidos_grupos pg ON pedidos.ID = pg.pedido_id
+                    JOIN grupos_rutas gr ON pg.grupo_id = gr.id
+                    WHERE $where_clause_grupos 
+                    AND gr.estado = 'ACTIVO' 
+                    AND pedidos.precio_factura_real > 0
+                    GROUP BY gr.id, gr.nombre_grupo
+                    ORDER BY promedio_grupo ASC";
+
+        $result_grupos = $conn->query($sql_grupos);
+
+        if ($result_grupos && $result_grupos->num_rows > 0) {
+            echo "<table class='tabla-reporte'>";
+            echo "<tr>
+                    <th>Grupo / Ruta</th>
+                    <th>Cantidad Pedidos</th>
+                    <th>Total Facturado</th>
+                    <th>Promedio x Pedido</th>
+                    <th>Rango Precios</th>
+                  </tr>";
+
+            while ($row = $result_grupos->fetch_assoc()) {
+                $promedio = $row['promedio_grupo'];
+                
+                // Colores para el promedio
+                $bg_color = '';
+                if ($promedio < 500) $bg_color = '#d4edda'; // Verde claro (muy bueno/barato)
+                elseif ($promedio < 1500) $bg_color = '#ffffff'; // Normal
+                else $bg_color = '#fff3cd'; // Amarillo (caro)
+                if ($promedio > 5000) $bg_color = '#f8d7da'; // Rojo (muy caro)
+
+                echo "<tr>";
+                echo "<td><strong style='color: #005aa3;'>🚚 " . htmlspecialchars($row['nombre_grupo']) . "</strong></td>";
+                echo "<td style='text-align: center; font-weight: bold;'>{$row['cantidad_pedidos']}</td>";
+                echo "<td style='text-align: right;'>$" . number_format($row['total_grupo'], 2) . "</td>";
+                echo "<td style='background-color: $bg_color; text-align: right; font-weight: bold;'>$" . number_format($promedio, 2) . "</td>";
+                echo "<td style='text-align: center; font-size: 0.9em; color: #666;'>$" . number_format($row['min_precio'], 0) . " - $" . number_format($row['max_precio'], 0) . "</td>";
+                echo "</tr>";
+            }
+
+            echo "</table>";
+        } else {
+            if(!$result_grupos) {
+                echo "<p style='color:red;'>Error en consulta: " . $conn->error . "</p>";
+            } else {
+                echo "<p style='text-align: center; color: #6c757d; padding: 20px;'>ℹ️ No se encontraron pedidos agrupados con los filtros seleccionados.</p>";
+            }
         }
     }
     ?>

@@ -1013,6 +1013,96 @@ while ($c = $choferes->fetch_assoc()) {
       position: relative;
       z-index: 2;
     }
+
+    /* ==== ESTILOS PARQUE VEHICULAR (NUEVO TAB) ==== */
+    .fleet-container {
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+    
+    .fleet-shelf {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      border: 1px solid #e2e8f0;
+    }
+    
+    .fleet-shelf-header {
+      display: inline-block;
+      background: #ed6b1f; /* Brand 2 (Orange) */
+      color: white;
+      font-weight: 800;
+      padding: 6px 16px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 4px rgba(237, 107, 31, 0.3);
+    }
+
+    .fleet-grid-icons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      align-items: flex-end;
+    }
+
+    .fleet-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      width: 60px;
+      position: relative;
+      transition: transform 0.2s;
+    }
+
+    .fleet-item:hover {
+      transform: scale(1.1);
+      z-index: 10;
+    }
+    
+    .fleet-icon-wrapper {
+        font-size: 32px;
+        color: #ed6b1f; /* Default Active */
+        filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
+    }
+
+    /* Colores por estado */
+    .fleet-item.en-taller .fleet-icon-wrapper {
+        color: #94a3b8; /* Grey for workshop */
+    }
+    
+    .fleet-item.particular .fleet-icon-wrapper {
+        color: #3b82f6; /* Blue for particular */
+    }
+
+    .fleet-tooltip {
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1e293b;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      margin-bottom: 5px;
+      z-index: 20;
+    }
+
+    .fleet-item:hover .fleet-tooltip {
+      opacity: 1;
+    }
+
   </style>
 
   <!-- Font Awesome (iconos) -->
@@ -1066,6 +1156,7 @@ while ($c = $choferes->fetch_assoc()) {
       <nav class="tabs">
         <button class="tab active" data-tab="vehicles">Vehículos</button>
         <button class="tab" data-tab="drivers">Choferes</button>
+        <button class="tab" data-tab="fleet">Parque Vehicular</button>
       </nav>
       <div class='global-search' style='margin-left:auto'>
         <input id='global-q' type='search' placeholder='Buscar vehiculos y choferes...' style='padding:8px 12px;border:1px solid #e5e7eb;border-radius:12px;min-width:260px'>
@@ -1083,6 +1174,16 @@ while ($c = $choferes->fetch_assoc()) {
       <section id="drivers-view" class="hide">
         <div id="drivers-header" class="sectionHeader"></div>
         <div id="drivers-grid" class="grid" data-selected="false"></div>
+      </section>
+
+      <!-- Parque Vehicular (Visual) -->
+      <section id="fleet-view" class="hide">
+        <div style="text-align: center; margin-bottom: 30px;">
+           <span style="background:#005aa3; color:white; padding: 10px 20px; border-radius: 8px; font-weight:800; font-size:1.2rem; box-shadow: 0 4px 10px rgba(0,90,163,0.3);">
+             Parque Vehicular
+           </span>
+        </div>
+        <div id="fleet-container" class="fleet-container"></div>
       </section>
     </main>
 
@@ -1145,10 +1246,17 @@ while ($c = $choferes->fetch_assoc()) {
         if (tab === 'vehicles') {
           $('#vehicles-view').classList.remove('hide');
           $('#drivers-view').classList.add('hide');
+          $('#fleet-view').classList.add('hide');
           renderVehicles();
+        } else if (tab === 'fleet') {
+            $('#vehicles-view').classList.add('hide');
+            $('#drivers-view').classList.add('hide');
+            $('#fleet-view').classList.remove('hide');
+            renderFleet();
         } else {
           $('#drivers-view').classList.remove('hide');
           $('#vehicles-view').classList.add('hide');
+          $('#fleet-view').classList.add('hide');
           renderDrivers();
         }
         animateBars();
@@ -1426,6 +1534,74 @@ while ($c = $choferes->fetch_assoc()) {
         dGrid.dataset.selected = "false";
       }
     }
+
+    // Render Parque Vehicular (Visual)
+    function renderFleet() {
+        const container = $('#fleet-container');
+        container.innerHTML = '';
+
+        // Agrupar por Sucursal
+        const grouped = {};
+        
+        // Orden de sucursales deseado (opcional, si quieres un orden específico ponlo aquí)
+        // Por ahora alfabético natural
+        
+        VEHICLES.forEach(v => {
+            const suc = v.sucursal || 'Sin Sucursal';
+            if (!grouped[suc]) grouped[suc] = [];
+            grouped[suc].push(v);
+        });
+
+        const sucursales = Object.keys(grouped).sort();
+
+        // Icono base por tipo (simple mapping logic)
+        function getIconClass(tipo) {
+            const t = (tipo || '').toLowerCase();
+            if (t.includes('moto')) return 'fa-motorcycle';
+            if (t.includes('auto') || t.includes('carro')) return 'fa-car';
+            if (t.includes('pickup')) return 'fa-truck-pickup'; // FontAwesome 6
+            if (t.includes('panel')) return 'fa-shuttle-van'; // FontAwesome 6
+            return 'fa-truck'; // Default big truck
+        }
+
+        sucursales.forEach(suc => {
+            const vehs = grouped[suc];
+            
+            // Crear estante
+            const shelf = document.createElement('div');
+            shelf.className = 'fleet-shelf';
+            
+            let html = `
+                <div class="fleet-shelf-header">${suc}</div>
+                <div class="fleet-grid-icons">
+            `;
+            
+            vehs.forEach(v => {
+                const iconClass = getIconClass(v.tipo);
+                let stateClass = '';
+                if (v.en_taller) stateClass = 'en-taller';
+                else if (v.es_particular) stateClass = 'particular';
+                
+                const alias = v.alias || v.nombre || v.placa;
+
+                html += `
+                    <div class="fleet-item ${stateClass}" onclick="window.location.href='/Pedidos_GA/detalles_vehiculo.php?id=${v.id}'">
+                        <div class="fleet-icon-wrapper">
+                            <i class="fa-solid ${iconClass}"></i>
+                        </div>
+                        <div class="fleet-tooltip">
+                            ${alias}<br><span style="opacity:0.8">${v.tipo}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `</div>`; // Close grid
+            shelf.innerHTML = html;
+            container.appendChild(shelf);
+        });
+    }
+
     dGrid.addEventListener('click', e => {
       const c = e.target.closest('.branch-card');
       if (!c) return;

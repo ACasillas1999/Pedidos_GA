@@ -16,3 +16,4 @@ Conexiones/Conexion.php
 .DS_Store
 Thumbs.db
 desktop.ini
+.claude/

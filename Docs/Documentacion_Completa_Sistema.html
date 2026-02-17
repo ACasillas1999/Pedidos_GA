@@ -1,0 +1,1550 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Documentacion_Completa_Sistema.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="sistema-de-log%C3%ADstica-pedidos-ga">SISTEMA DE LOGÍSTICA PEDIDOS GA</h1>
+<h2 id="documentaci%C3%B3n-completa-de-funcionalidades">Documentación Completa de Funcionalidades</h2>
+<hr>
+<p><strong>Versión del Documento:</strong> 2.0
+<strong>Fecha:</strong> 02 de Diciembre de 2025
+<strong>Empresa:</strong> Grupo Ascendente
+<strong>Responsable:</strong> Equipo de Desarrollo y Operaciones</p>
+<hr>
+<h2 id="%C3%ADndice-de-contenido">ÍNDICE DE CONTENIDO</h2>
+<ol>
+<li><a href="#resumen-ejecutivo">Resumen Ejecutivo</a></li>
+<li><a href="#arquitectura-y-tecnolog%C3%ADas">Arquitectura y Tecnologías</a></li>
+<li><a href="#m%C3%B3dulo-de-pedidos">Módulo de Pedidos</a></li>
+<li><a href="#m%C3%B3dulo-de-rutas">Módulo de Rutas</a></li>
+<li><a href="#m%C3%B3dulo-de-veh%C3%ADculos">Módulo de Vehículos</a></li>
+<li><a href="#m%C3%B3dulo-de-choferes">Módulo de Choferes</a></li>
+<li><a href="#m%C3%B3dulo-de-gasolina">Módulo de Gasolina</a></li>
+<li><a href="#m%C3%B3dulo-de-servicios">Módulo de Servicios</a></li>
+<li><a href="#m%C3%B3dulo-de-inventario">Módulo de Inventario</a></li>
+<li><a href="#m%C3%B3dulo-de-observaciones">Módulo de Observaciones</a></li>
+<li><a href="#estad%C3%ADsticas-y-reportes">Estadísticas y Reportes</a></li>
+<li><a href="#mapa-de-calor">Mapa de Calor</a></li>
+<li><a href="#reporte-de-precios">Reporte de Precios</a></li>
+<li><a href="#aplicaci%C3%B3n-m%C3%B3vil">Aplicación Móvil</a></li>
+<li><a href="#notificaciones-whatsapp">Notificaciones WhatsApp</a></li>
+<li><a href="#conclusiones-y-recomendaciones">Conclusiones y Recomendaciones</a></li>
+</ol>
+<hr>
+<h2 id="resumen-ejecutivo">RESUMEN EJECUTIVO</h2>
+<p>El <strong>Sistema de Logística Pedidos GA</strong> es una plataforma web integral que centraliza la gestión de pedidos, rutas de entrega, vehículos, choferes, servicios de mantenimiento, control de gasolina, inventario de repuestos, reportes de análisis y una aplicación móvil para operadores en campo.</p>
+<h3 id="objetivos-principales">Objetivos Principales</h3>
+<ul>
+<li>Optimizar la gestión de pedidos y rutas de entrega</li>
+<li>Controlar la flota vehicular y su mantenimiento</li>
+<li>Monitorear el consumo de gasolina y repuestos</li>
+<li>Facilitar la comunicación con choferes vía WhatsApp</li>
+<li>Generar reportes y estadísticas para toma de decisiones</li>
+<li>Proporcionar herramientas móviles para operación en campo</li>
+</ul>
+<h3 id="beneficios-clave">Beneficios Clave</h3>
+<p>Las mejoras recientes han reforzado la <strong>trazabilidad</strong> con validaciones y control de precios por factura, aumentado la <strong>productividad</strong> mediante optimización de rutas y drag &amp; drop, mejorado la <strong>visibilidad</strong> con filtros avanzados y dashboards, y fortalecido la <strong>comunicación</strong> mediante notificaciones automáticas por WhatsApp.</p>
+<hr>
+<h2 id="arquitectura-y-tecnolog%C3%ADas">ARQUITECTURA Y TECNOLOGÍAS</h2>
+<h3 id="21-stack-tecnol%C3%B3gico">2.1 Stack Tecnológico</h3>
+<ul>
+<li><strong>Backend:</strong> PHP 7+ con arquitectura modular</li>
+<li><strong>Base de Datos:</strong> MySQL/MariaDB</li>
+<li><strong>Frontend:</strong> HTML5, CSS3, JavaScript (Vanilla JS, AJAX)</li>
+<li><strong>Mapas:</strong> Mapbox GL JS para visualización geográfica</li>
+<li><strong>Mensajería:</strong> Integración con API de WhatsApp</li>
+<li><strong>Exportación:</strong> PHPExcel para reportes Excel</li>
+<li><strong>PDF:</strong> MPDF para generación de documentos</li>
+<li><strong>Autenticación:</strong> Sistema de sesiones PHP seguras</li>
+<li><strong>Versionado:</strong> Control de versiones para app móvil</li>
+</ul>
+<h3 id="22-arquitectura-del-sistema">2.2 Arquitectura del Sistema</h3>
+<p>El sistema utiliza una arquitectura modular con tres capas principales:</p>
+<ol>
+<li><strong>Capa de Presentación:</strong> Interfaces HTML/PHP con JavaScript para interactividad</li>
+<li><strong>Capa de Lógica de Negocio:</strong> Scripts PHP organizados por dominio funcional</li>
+<li><strong>Capa de Datos:</strong> Base de datos MySQL con conexiones compartidas y transacciones</li>
+</ol>
+<h3 id="23-navegaci%C3%B3n-del-sistema">2.3 Navegación del Sistema</h3>
+<p>El sistema cuenta con un <strong>sidebar organizado mediante acordeones</strong> que agrupa las funcionalidades por categorías:</p>
+<ul>
+<li><strong>Operaciones Principales:</strong> Agregar Pedido, Estadísticas, Inicio</li>
+<li><strong>Administración:</strong> Usuarios, Permisos, Configuración</li>
+<li><strong>Pedidos y Rutas:</strong> Gestión de pedidos, grupos de rutas, optimización</li>
+<li><strong>Vehículos y Choferes:</strong> Control de flota y personal</li>
+<li><strong>Servicios:</strong> Mantenimiento, Gasolina, Inventario</li>
+<li><strong>Reportes:</strong> Estadísticas, Mapa de Calor, Reporte de Precios</li>
+<li><strong>Aplicación Móvil:</strong> Descargas y configuración</li>
+</ul>
+<hr>
+<h2 id="m%C3%B3dulo-de-pedidos">MÓDULO DE PEDIDOS</h2>
+<h3 id="31-vista-principal-pedidos-ga">3.1 Vista Principal (Pedidos GA)</h3>
+<p>La pantalla principal de pedidos es el <strong>centro de operaciones</strong> del sistema. Permite visualizar, filtrar y gestionar todos los pedidos de manera eficiente.</p>
+<h4 id="funcionalidades-principales">Funcionalidades principales:</h4>
+<ul>
+<li>✅ Barra de filtrado actualizada con múltiples criterios combinables</li>
+<li>✅ Filtros por: Fecha, Estado, Sucursal, Tipo de pedido, Chofer asignado</li>
+<li>✅ Búsqueda en tiempo real sin recargar la página</li>
+<li>✅ <strong>Columna de Precio Factura</strong> para control y conciliación</li>
+<li>✅ Botón de descarga de aplicación móvil</li>
+<li>✅ <strong>Guía de pedidos generada</strong> con ayuda contextual</li>
+<li>✅ Selección múltiple para asignación masiva</li>
+<li>✅ <strong>Asignación de pedidos a grupos de ruta</strong></li>
+<li>✅ Visualización de pedidos por estado (Kanban/Cards/Lista)</li>
+<li>✅ Indicadores visuales de estado y prioridad</li>
+<li>✅ Acceso rápido a detalles del pedido</li>
+<li>✅ Exportación de datos filtrados</li>
+</ul>
+<h3 id="32-agregar-pedido">3.2 Agregar Pedido</h3>
+<p>Esta funcionalidad permite registrar nuevos pedidos con toda la información necesaria.</p>
+<h4 id="caracter%C3%ADsticas">Características:</h4>
+<ul>
+<li><strong>Formulario de captura con múltiples facturas</strong> en un mismo pedido</li>
+<li><strong>Campo de precio por factura</strong> para control financiero</li>
+<li><strong>Selección de coordenadas de destino mediante mini mapa interactivo</strong></li>
+<li>Validación de campos obligatorios</li>
+<li>Captura de información del cliente y destinatario</li>
+<li>Selección de tipo de envío (Domicilio/Paquetería)</li>
+<li>Asignación de sucursal de origen</li>
+<li>Notas y observaciones adicionales</li>
+<li>Carga de documentos adjuntos (PDFs, imágenes)</li>
+<li>Preview de información antes de guardar</li>
+</ul>
+<h3 id="33-detalles-del-pedido">3.3 Detalles del Pedido</h3>
+<p>Pantalla detallada con toda la información del pedido seleccionado.</p>
+<h4 id="informaci%C3%B3n-mostrada">Información mostrada:</h4>
+<ul>
+<li><strong>Datos generales:</strong> Número de pedido, fecha, sucursal</li>
+<li><strong>Cliente:</strong> Nombre, teléfono, dirección</li>
+<li><strong>Facturas asociadas</strong> con montos individuales</li>
+<li><strong>Precio total del pedido</strong> (nuevo campo)</li>
+<li>Coordenadas de origen y destino en mapa</li>
+<li>Estado actual y historial de cambios</li>
+<li>Chofer asignado con datos de contacto</li>
+<li>Grupo de ruta al que pertenece</li>
+<li>Fecha estimada de entrega</li>
+<li>Fotografías de evidencia (si aplica)</li>
+<li>Observaciones y notas</li>
+<li><strong>Botones de acción:</strong> Editar, Cancelar, Reprogramar</li>
+</ul>
+<h3 id="34-actualizar-pedido">3.4 Actualizar Pedido</h3>
+<p>Permite modificar la información de pedidos existentes con controles de validación.</p>
+<h4 id="funcionalidades-clave">Funcionalidades clave:</h4>
+<ul>
+<li>⚠️ <strong>Checkbox &quot;Validar&quot;</strong> para control de calidad de datos</li>
+<li>⚠️ <strong>Restricción de asignación de chofer si no está validado</strong></li>
+<li>Validación de datos completos, precio y coordenadas</li>
+<li>Modificación de estado del pedido</li>
+<li>Reasignación de chofer con notificación automática</li>
+<li>Cambio de grupo de ruta</li>
+<li>Actualización de fechas y prioridades</li>
+<li>Registro de motivos de cambio</li>
+<li>Historial de modificaciones con usuario y fecha</li>
+<li><strong>Notificación automática al chofer por WhatsApp al asignar</strong></li>
+</ul>
+<h3 id="35-estados-de-pedidos">3.5 Estados de Pedidos</h3>
+<p>El sistema maneja los siguientes estados:</p>
+<table>
+<thead>
+<tr>
+<th>Estado</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>PENDIENTE</strong></td>
+<td>Pedido registrado, esperando asignación</td>
+</tr>
+<tr>
+<td><strong>ASIGNADO</strong></td>
+<td>Chofer asignado, pendiente de salir a ruta</td>
+</tr>
+<tr>
+<td><strong>EN RUTA</strong></td>
+<td>Pedido en proceso de entrega</td>
+</tr>
+<tr>
+<td><strong>ENTREGADO</strong></td>
+<td>Entrega exitosa con evidencia</td>
+</tr>
+<tr>
+<td><strong>EN TIENDA</strong></td>
+<td>Cliente recogerá en sucursal</td>
+</tr>
+<tr>
+<td><strong>REPROGRAMADO</strong></td>
+<td>Requiere nueva fecha de entrega</td>
+</tr>
+<tr>
+<td><strong>CANCELADO</strong></td>
+<td>Pedido cancelado por cliente o sistema</td>
+</tr>
+<tr>
+<td><strong>CANCELADO CLIENTE</strong></td>
+<td>Cancelación específica del cliente</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="m%C3%B3dulo-de-rutas">MÓDULO DE RUTAS</h2>
+<h3 id="41-grupos-de-ruta">4.1 Grupos de Ruta</h3>
+<p>Los grupos de ruta permiten organizar múltiples pedidos que serán entregados por un mismo chofer en una jornada.</p>
+<h4 id="funcionalidades">Funcionalidades:</h4>
+<ul>
+<li>Crear grupos de ruta por sucursal y chofer</li>
+<li>Asignar múltiples pedidos a un grupo</li>
+<li><strong>Selección de grupos para visualización en mapa</strong></li>
+<li>Filtrado de pedidos disponibles para agrupar</li>
+<li>Verificación de pedidos ya asignados a otros grupos</li>
+<li>Cálculo automático de totales por grupo</li>
+<li>Indicadores de capacidad y prioridad</li>
+<li>Estado del grupo (Activo, En Ruta, Completado)</li>
+<li>Notas y observaciones del grupo</li>
+<li>Historial de grupos por chofer</li>
+</ul>
+<h3 id="42-detalles-de-ruta">4.2 Detalles de Ruta</h3>
+<p>Pantalla avanzada para gestionar y optimizar las rutas de entrega con herramientas de planificación.</p>
+<h4 id="caracter%C3%ADsticas-principales">Características principales:</h4>
+<ul>
+<li>🎯 <strong>Desactivar grupo (separar por factura):</strong> Permite pausar o dividir grupos cuando las facturas requieren tratamiento individual</li>
+<li>🚀 <strong>Optimización automática de ruta:</strong> Calcula el orden óptimo para minimizar distancia y tiempo</li>
+<li>🖱️ <strong>Drag and Drop de prioridad:</strong> Ajuste manual del orden de entregas arrastrando pedidos</li>
+<li>Visualización en mapa con puntos ordenados</li>
+<li>Cálculo de distancia total y tiempo estimado</li>
+<li>Información detallada de cada parada</li>
+<li>Modificar orden manualmente si es necesario</li>
+<li>Exportar ruta a Google Maps</li>
+<li>Añadir/quitar pedidos del grupo</li>
+<li>Marcar pedidos como prioritarios</li>
+<li>Guardar y publicar ruta finalizada</li>
+<li>Compartir ruta con el chofer</li>
+</ul>
+<h3 id="43-optimizaci%C3%B3n-de-rutas">4.3 Optimización de Rutas</h3>
+<p>El sistema utiliza algoritmos avanzados para optimizar las rutas de entrega.</p>
+<h4 id="criterios-de-optimizaci%C3%B3n">Criterios de optimización:</h4>
+<ul>
+<li>Minimización de distancia total recorrida</li>
+<li>Consideración de prioridades de pedidos</li>
+<li>Tiempo estimado de entrega</li>
+<li>Capacidad del vehículo</li>
+<li>Ventanas horarias de entrega</li>
+<li>Restricciones de tráfico</li>
+<li>Punto de partida desde sucursal</li>
+<li>Retorno a sucursal al finalizar</li>
+</ul>
+<hr>
+<h2 id="m%C3%B3dulo-de-veh%C3%ADculos">MÓDULO DE VEHÍCULOS</h2>
+<h3 id="51-gesti%C3%B3n-de-veh%C3%ADculos-inicio">5.1 Gestión de Vehículos (Inicio)</h3>
+<p>Dashboard completo para administrar toda la flota vehicular con vista organizada por razón social y ubicación física.</p>
+<h4 id="funcionalidades-principales">Funcionalidades principales:</h4>
+<ul>
+<li>📊 <strong>Dashboard por razón social y ubicación física</strong></li>
+<li>Vista resumida de flota por sede/propietario</li>
+<li>Indicadores de estado de vehículos (Disponible, En Ruta, En Taller)</li>
+<li>Filtros por sucursal, estado, tipo de vehículo</li>
+<li>Cards clickeables con información relevante</li>
+<li>Avatar o foto del vehículo</li>
+<li>Placa, modelo y año</li>
+<li>Chofer asignado actualmente</li>
+<li>Kilometraje actual</li>
+<li>Próximo servicio programado</li>
+<li>🔧 <strong>Badge &quot;En Taller&quot;</strong> cuando aplica</li>
+<li><strong>Gestión de choferes por ubicación física</strong></li>
+<li><strong>Asignación/Designación/Cambio de vehículo a chofer</strong></li>
+<li>Acceso rápido a detalles completos</li>
+</ul>
+<h3 id="52-detalles-de-veh%C3%ADculo">5.2 Detalles de Vehículo</h3>
+<p>Pantalla completa con toda la información del vehículo y sus registros históricos.</p>
+<h4 id="secciones-de-informaci%C3%B3n">Secciones de información:</h4>
+<p><strong>INFORMACIÓN GENERAL:</strong></p>
+<ul>
+<li>Datos básicos: Placa, marca, modelo, año</li>
+<li>Razón social propietaria</li>
+<li>Asignación de sucursal del vehículo</li>
+<li>Tipo de vehículo y capacidad</li>
+<li>Estado actual (Disponible/En Ruta/En Taller)</li>
+<li>Fotografía del vehículo</li>
+</ul>
+<p><strong>KILOMETRAJE:</strong></p>
+<ul>
+<li>Kilometraje actual registrado</li>
+<li>⚠️ <strong>Kilometraje próximo servicio con alerta preventiva</strong></li>
+<li>Registro de nuevo kilometraje</li>
+<li>Historial completo de kilometraje con fechas</li>
+<li>Gráfico de evolución de kilometraje</li>
+</ul>
+<p><strong>ASIGNACIONES:</strong></p>
+<ul>
+<li>Chofer asignado actualmente</li>
+<li>Historial de conductores con períodos</li>
+<li>Botón para asignar/cambiar chofer</li>
+<li>Fechas de asignación y desasignación</li>
+</ul>
+<p><strong>SERVICIOS:</strong></p>
+<ul>
+<li>Registro de servicios realizados</li>
+<li>Fecha del último servicio</li>
+<li>Próximo servicio programado</li>
+<li>Historial completo de mantenimientos</li>
+<li>Costos de servicios</li>
+</ul>
+<p><strong>GASOLINA:</strong></p>
+<ul>
+<li>Consumos de gasolina registrados</li>
+<li>Litros cargados por fecha</li>
+<li>Costo por carga</li>
+<li>Estadísticas de consumo</li>
+<li>Rendimiento promedio</li>
+</ul>
+<p><strong>OBSERVACIONES:</strong></p>
+<ul>
+<li>Notas operativas del vehículo</li>
+<li>Hallazgos de inspecciones</li>
+<li>Incidencias reportadas</li>
+<li>Historial de observaciones</li>
+</ul>
+<h3 id="53-asignaci%C3%B3n-de-veh%C3%ADculos">5.3 Asignación de Vehículos</h3>
+<p>Control completo del proceso de asignación de vehículos a choferes.</p>
+<h4 id="proceso-de-asignaci%C3%B3n">Proceso de asignación:</h4>
+<ol>
+<li>Seleccionar vehículo disponible</li>
+<li>Verificar que el vehículo no esté en taller</li>
+<li>Seleccionar chofer activo de la misma sucursal</li>
+<li>Verificar que el chofer no tenga otro vehículo asignado</li>
+<li>Registrar fecha de asignación</li>
+<li>Guardar en historial de asignaciones</li>
+<li>Actualizar estado del vehículo</li>
+<li>Notificar al chofer de la asignación</li>
+<li>Generar registro de trazabilidad</li>
+</ol>
+<hr>
+<h2 id="m%C3%B3dulo-de-choferes">MÓDULO DE CHOFERES</h2>
+<h3 id="61-gesti%C3%B3n-de-choferes">6.1 Gestión de Choferes</h3>
+<p>Dashboard para administrar el personal de choferes con información completa y métricas de desempeño.</p>
+<h4 id="funcionalidades">Funcionalidades:</h4>
+<ul>
+<li>Listado completo de choferes activos</li>
+<li>Búsqueda por nombre, sucursal o teléfono</li>
+<li>Filtros por estado y sucursal</li>
+<li>Cards con foto de perfil o avatar inicial</li>
+<li>Información visible: Nombre, sucursal, teléfono, vehículo asignado</li>
+<li>Métricas de desempeño en período seleccionado</li>
+<li>📱 <strong>Botón de acceso a WhatsApp directo</strong></li>
+<li>📞 <strong>Botón de llamada telefónica</strong></li>
+<li>Estado del chofer (Activo/Inactivo)</li>
+<li>Indicador de vehículo asignado</li>
+<li>Acceso a detalles completos</li>
+</ul>
+<h3 id="62-detalles-de-chofer">6.2 Detalles de Chofer</h3>
+<p>Vista detallada con toda la información personal, operativa e histórica del chofer.</p>
+<h4 id="informaci%C3%B3n-completa">Información completa:</h4>
+<p><strong>DATOS PERSONALES:</strong></p>
+<ul>
+<li>Nombre completo</li>
+<li>Fotografía de perfil</li>
+<li>Número de teléfono</li>
+<li>Correo electrónico</li>
+<li>Fecha de ingreso</li>
+<li>Sucursal asignada</li>
+<li>Estado (Activo/Inactivo)</li>
+<li>Botón de editar información</li>
+</ul>
+<p><strong>CONTACTO RÁPIDO:</strong></p>
+<ul>
+<li>Acceso directo a WhatsApp</li>
+<li>Botón para llamada telefónica</li>
+<li>Envío de mensajes predefinidos</li>
+</ul>
+<p><strong>RESUMEN DE DESEMPEÑO:</strong></p>
+<ul>
+<li>📅 <strong>Filtro por rango de fechas</strong></li>
+<li>Total de pedidos asignados</li>
+<li>Pedidos entregados</li>
+<li>Pedidos en ruta</li>
+<li>Pedidos reprogramados</li>
+<li>Pedidos cancelados</li>
+<li>Porcentaje de efectividad</li>
+<li>Gráficos de desempeño</li>
+</ul>
+<p><strong>PEDIDOS RECIENTES:</strong></p>
+<ul>
+<li>Últimos 10 pedidos</li>
+<li>Estado actual de cada uno</li>
+<li>Acceso rápido a detalles</li>
+</ul>
+<p><strong>VEHÍCULO ASIGNADO:</strong></p>
+<ul>
+<li>Información del vehículo actual</li>
+<li>Placa y modelo</li>
+<li>Fecha de asignación</li>
+<li>Estado del vehículo</li>
+</ul>
+<p><strong>HISTORIAL DE VEHÍCULOS:</strong></p>
+<ul>
+<li>Vehículos asignados anteriormente</li>
+<li>Períodos de asignación</li>
+<li>Trazabilidad completa</li>
+</ul>
+<p><strong>OBSERVACIONES:</strong></p>
+<ul>
+<li>Lista de incidencias reportadas</li>
+<li>Notas operativas</li>
+<li>Observaciones de desempeño</li>
+<li>Historial acumulado</li>
+</ul>
+<hr>
+<h2 id="m%C3%B3dulo-de-gasolina">MÓDULO DE GASOLINA</h2>
+<h3 id="71-control-de-gasolina">7.1 Control de Gasolina</h3>
+<p>Módulo completo para gestionar y monitorear el consumo de combustible de toda la flota vehicular.</p>
+<h4 id="funcionalidades-principales">Funcionalidades principales:</h4>
+<p><strong>FILTRADO Y CONSULTAS:</strong></p>
+<ul>
+<li>📅 Filtrado por rango de fechas</li>
+<li>📆 Filtrado mensual con selector de mes/año</li>
+<li>🚗 Filtro por vehículo específico</li>
+<li>🏢 Filtro por sucursal</li>
+<li>🔍 Búsqueda avanzada de registros</li>
+</ul>
+<p><strong>REGISTRO INDIVIDUAL:</strong></p>
+<ul>
+<li>Captura de gasolina para vehículo en fecha específica</li>
+<li>Litros cargados</li>
+<li>Costo de la carga</li>
+<li>Kilometraje al momento de la carga</li>
+<li>Estación de servicio</li>
+<li>Tipo de combustible</li>
+<li>Observaciones</li>
+</ul>
+<p><strong>IMPORTACIÓN MASIVA:</strong></p>
+<ul>
+<li>📥 <strong>Descarga de machote en formato Excel</strong></li>
+<li>📤 <strong>Importación masiva desde archivo Excel</strong></li>
+<li>⚠️ <strong>Validación de formato requerido</strong></li>
+<li>⚠️ <strong>La importación DEBE usar el machote, de lo contrario falla</strong></li>
+<li>Validación de vehículos existentes</li>
+<li>⚠️ <strong>Registros con vehículos inexistentes quedan en PENDIENTES DE ALTA</strong></li>
+</ul>
+<p><strong>PENDIENTES DE ALTA:</strong></p>
+<ul>
+<li>Lista de registros que no se cargaron</li>
+<li>Motivo: Vehículos no registrados en el sistema</li>
+<li>Se procesan automáticamente al registrar el vehículo faltante</li>
+<li>Sincronización automática después de alta de vehículo</li>
+</ul>
+<p><strong>HISTORIAL DE IMPORTACIÓN:</strong></p>
+<ul>
+<li>Registro de todas las importaciones realizadas</li>
+<li>Fecha y usuario que importó</li>
+<li>Número de registros procesados</li>
+<li>Registros exitosos vs pendientes</li>
+<li>Archivo fuente de importación</li>
+</ul>
+<p><strong>EXPORTACIÓN DE REPORTES:</strong></p>
+<ul>
+<li>Descarga del reporte consultado en Excel</li>
+<li>Aplica los filtros activos</li>
+<li>Incluye totales y estadísticas</li>
+<li>Formato listo para análisis</li>
+</ul>
+<h3 id="72-requisitos-operativos">7.2 Requisitos Operativos</h3>
+<p>⚠️ <strong>IMPORTANTE - Condiciones para correcto funcionamiento:</strong></p>
+<ul>
+<li>⚠️ Todos los vehículos DEBEN estar registrados en el sistema antes de importar</li>
+<li>⚠️ La importación masiva REQUIERE usar el machote descargado del sistema</li>
+<li>⚠️ Si se usa otro formato, la importación fallará completamente</li>
+<li>⚠️ Los registros sin vehículo válido quedarán en PENDIENTES hasta sincronizar</li>
+<li>✅ Una vez registrado el vehículo faltante, los pendientes se procesan automáticamente</li>
+<li>💡 Se recomienda revisar el módulo de vehículos antes de cada importación masiva</li>
+</ul>
+<hr>
+<h2 id="m%C3%B3dulo-de-servicios">MÓDULO DE SERVICIOS</h2>
+<h3 id="81-gesti%C3%B3n-de-servicios">8.1 Gestión de Servicios</h3>
+<p>Sistema completo de administración de servicios y mantenimiento vehicular con tablero Kanban y control de inventario.</p>
+<h4 id="funcionalidades-principales">Funcionalidades principales:</h4>
+<p><strong>TABLERO DRAG AND DROP:</strong></p>
+<ul>
+<li>📋 <strong>Tablero Kanban por estatus de servicio</strong></li>
+<li>Estados: Pendiente, Programado, En Taller, Completado, Cancelado</li>
+<li>🖱️ Mover servicios entre estados arrastrando cards</li>
+<li>Reorganizar prioridades dentro de cada columna</li>
+<li>Colores diferenciados por tipo de servicio</li>
+<li>Indicadores de urgencia y prioridad</li>
+</ul>
+<p><strong>FILTROS Y VISTAS:</strong></p>
+<ul>
+<li>Filtrado por rango de fechas</li>
+<li>Filtro por vehículo</li>
+<li>Filtro por tipo de servicio</li>
+<li>Filtro por sucursal</li>
+<li>📋 <strong>Vista en lista</strong> (alternativa al tablero)</li>
+<li>Cambio entre vista tablero y lista</li>
+</ul>
+<p><strong>MODAL AGREGAR SERVICIO:</strong></p>
+<ul>
+<li>Selección de vehículo</li>
+<li>Selección de tipo de servicio del catálogo</li>
+<li>Fecha programada</li>
+<li>Prioridad del servicio</li>
+<li>Descripción y observaciones</li>
+<li>Materiales requeridos (del inventario)</li>
+<li>Estimación de costo</li>
+</ul>
+<p><strong>IMPACTO EN INVENTARIO:</strong></p>
+<ul>
+<li>⚠️ <strong>El inventario solo se descuenta cuando el servicio pasa a PROGRAMADO</strong></li>
+<li>No se descuenta al crear el servicio</li>
+<li>Validación de existencias antes de programar</li>
+<li>Alerta si no hay suficiente inventario</li>
+<li>Registro de materiales utilizados</li>
+</ul>
+<p><strong>VEHÍCULO EN TALLER:</strong></p>
+<ul>
+<li>⚠️ Al marcar servicio <strong>&quot;En Taller&quot;</strong>, el vehículo queda <strong>DESHABILITADO</strong></li>
+<li>No se puede asignar a nuevos pedidos</li>
+<li>Indicador visible en módulo de vehículos</li>
+<li>Se libera automáticamente al completar o cancelar servicio</li>
+<li>Historial de tiempos en taller</li>
+</ul>
+<h3 id="82-agregar-servicio-cat%C3%A1logo">8.2 Agregar Servicio (Catálogo)</h3>
+<p>Administración del catálogo de tipos de servicios disponibles.</p>
+<h4 id="funcionalidades">Funcionalidades:</h4>
+<ul>
+<li>Listado de todos los servicios disponibles</li>
+<li>Opciones de editar y eliminar servicios</li>
+</ul>
+<p><strong>FORMULARIO DE ALTA:</strong></p>
+<ul>
+<li>Nombre del servicio</li>
+<li>Descripción detallada</li>
+<li>Materiales requeridos del inventario</li>
+<li>Vehículos a los que aplica</li>
+<li>Periodicidad recomendada (opcional)</li>
+<li>Costo estimado promedio</li>
+<li>Control de materiales por servicio</li>
+<li>Define qué se descuenta cuando se programa/ejecuta</li>
+</ul>
+<h3 id="83-flujo-de-estados-del-servicio">8.3 Flujo de Estados del Servicio</h3>
+<pre class="hljs"><code><div>PENDIENTE → Servicio identificado pero sin programar
+    ↓
+PROGRAMADO → Fecha asignada, inventario descontado, servicio agendado
+    ↓
+EN TALLER → Vehículo deshabilitado, servicio en ejecución
+    ↓
+COMPLETADO → Servicio finalizado, vehículo liberado
+</div></code></pre>
+<p><strong>Alternativa:</strong></p>
+<pre class="hljs"><code><div>CANCELADO → Servicio cancelado, inventario devuelto (si aplica)
+</div></code></pre>
+<hr>
+<h2 id="m%C3%B3dulo-de-inventario">MÓDULO DE INVENTARIO</h2>
+<h3 id="91-gesti%C3%B3n-de-inventario">9.1 Gestión de Inventario</h3>
+<p>Control completo de repuestos y materiales para mantenimiento vehicular con trazabilidad de movimientos.</p>
+<h4 id="funcionalidades-principales">Funcionalidades principales:</h4>
+<p><strong>LISTADO DE MATERIALES:</strong></p>
+<ul>
+<li>Todos los productos en stock</li>
+<li>Código de producto</li>
+<li>Nombre y descripción</li>
+<li>Cantidad en stock</li>
+<li>Unidad de medida</li>
+<li>Precio unitario</li>
+<li>Valor total en inventario</li>
+<li>Ubicación física</li>
+<li>Punto de reorden</li>
+</ul>
+<p><strong>FILTROS:</strong></p>
+<ul>
+<li>Filtro por tipo de stock (Repuestos, Lubricantes, Llantas, etc.)</li>
+<li>Filtro por sucursal</li>
+<li>Búsqueda por nombre o código</li>
+<li>Stock bajo (menor al punto de reorden)</li>
+<li>Stock crítico (agotado o muy bajo)</li>
+</ul>
+<p><strong>OPERACIONES:</strong></p>
+<ul>
+<li>➕ Agregar nuevo producto al inventario</li>
+<li>✏️ Editar información de productos existentes</li>
+<li>🔄 Ajustar cantidades (entradas y salidas)</li>
+<li>❌ Eliminar productos (con validaciones)</li>
+<li>🔄 Transferencias entre sucursales</li>
+</ul>
+<p><strong>ALTA DE PRODUCTO:</strong></p>
+<ul>
+<li>Código de producto</li>
+<li>Nombre descriptivo</li>
+<li>Categoría o tipo</li>
+<li>Cantidad inicial</li>
+<li>Unidad de medida</li>
+<li>Precio unitario</li>
+<li>Proveedor</li>
+<li>Punto de reorden</li>
+<li><strong>Vehículos a los que aplica</strong></li>
+<li>Ubicación de almacenamiento</li>
+</ul>
+<p><strong>TRAZABILIDAD:</strong></p>
+<ul>
+<li>Historial de movimientos por producto</li>
+<li>Entradas (compras, devoluciones)</li>
+<li>Salidas (servicios, ajustes)</li>
+<li>Usuario que realizó el movimiento</li>
+<li>Fecha y hora de cada movimiento</li>
+<li>Servicio asociado (si aplica)</li>
+</ul>
+<h3 id="92-estad%C3%ADsticas-de-inventario">9.2 Estadísticas de Inventario</h3>
+<p>Dashboard con KPIs y análisis del inventario para toma de decisiones.</p>
+<h4 id="m%C3%A9tricas-e-indicadores">Métricas e indicadores:</h4>
+<p><strong>FILTRO POR RANGO DE FECHAS:</strong></p>
+<ul>
+<li>Análisis de movimientos en período seleccionado</li>
+</ul>
+<p><strong>TOP DE MATERIAL CON STOCK BAJO:</strong></p>
+<ul>
+<li>Productos por debajo del punto de reorden</li>
+<li>⚠️ Alerta temprana para reposición</li>
+<li>Priorización de compras</li>
+</ul>
+<p><strong>TOP DE MATERIAL EN STOCK CON MAYOR VALOR:</strong></p>
+<ul>
+<li>Productos con mayor valor monetario en stock</li>
+<li>Control de items costosos</li>
+<li>Análisis de inversión en inventario</li>
+</ul>
+<p><strong>ESTADÍSTICAS GENERALES:</strong></p>
+<ul>
+<li>Total de productos registrados</li>
+<li>Valor total del inventario</li>
+<li>Productos con stock crítico</li>
+<li>Consumos del período</li>
+<li>Entradas del período</li>
+<li>Ajustes realizados</li>
+<li>📊 Gráficos de tendencias</li>
+<li>Análisis por categoría</li>
+</ul>
+<hr>
+<h2 id="m%C3%B3dulo-de-observaciones">MÓDULO DE OBSERVACIONES</h2>
+<h3 id="101-gesti%C3%B3n-de-observaciones">10.1 Gestión de Observaciones</h3>
+<p>Módulo para recibir, gestionar y dar seguimiento a incidencias reportadas por choferes y personal operativo.</p>
+<h4 id="funcionalidades-principales">Funcionalidades principales:</h4>
+<p><strong>RECEPCIÓN DE INCIDENCIAS:</strong></p>
+<ul>
+<li>Recibe reportes de choferes desde la app móvil</li>
+<li>Registro manual desde el sistema web</li>
+<li>Captura de observaciones durante inspecciones</li>
+<li><strong>Crea registros fechados automáticamente</strong></li>
+</ul>
+<p><strong>INFORMACIÓN CAPTURADA:</strong></p>
+<ul>
+<li>Vehículo afectado</li>
+<li>Tipo de observación (categoría)</li>
+<li>Descripción detallada</li>
+<li>Nivel de severidad</li>
+<li>Chofer que reporta</li>
+<li>Fecha y hora del reporte</li>
+<li>Fotografías de evidencia (opcional)</li>
+<li>Ubicación del reporte</li>
+</ul>
+<p><strong>FILTROS:</strong></p>
+<ul>
+<li>Filtro por tipo de observación</li>
+<li>Filtro por vehículo</li>
+<li>Filtro por chofer</li>
+<li>Filtro por severidad</li>
+<li>Filtro por estado (Pendiente, En Proceso, Resuelta)</li>
+<li>Rango de fechas</li>
+</ul>
+<p><strong>TIPOS DE OBSERVACIÓN:</strong></p>
+<ul>
+<li>🔧 Mecánica</li>
+<li>⚡ Eléctrica</li>
+<li>🚗 Llantas</li>
+<li>🛑 Frenos</li>
+<li>🎨 Carrocería</li>
+<li>🧹 Limpieza</li>
+<li>📄 Documentación</li>
+<li>🛡️ Seguridad</li>
+<li>📌 Otras</li>
+</ul>
+<p><strong>ACCIONES:</strong></p>
+<ul>
+<li><strong>Crear servicio basado en observación</strong></li>
+<li>Asignar prioridad</li>
+<li>Agregar comentarios de seguimiento</li>
+<li>Marcar como resuelta</li>
+<li>Vincular con orden de servicio</li>
+<li>Notificar al chofer de la resolución</li>
+</ul>
+<h3 id="102-historial-de-resoluci%C3%B3n">10.2 Historial de Resolución</h3>
+<p>Análisis de observaciones resueltas para <strong>evaluar tipos de servicios generados y tiempos de respuesta</strong>.</p>
+<h4 id="m%C3%A9tricas-e-indicadores">Métricas e indicadores:</h4>
+<ul>
+<li>Evaluación de tipos de servicios más frecuentes</li>
+<li>Tiempo promedio de resolución por tipo</li>
+<li>Observaciones pendientes vs resueltas</li>
+<li>Choferes con más reportes</li>
+<li>Vehículos con más incidencias</li>
+<li>Tendencias de problemas por período</li>
+<li>Efectividad de las resoluciones</li>
+<li>Reincidencia de problemas</li>
+</ul>
+<hr>
+<h2 id="estad%C3%ADsticas-y-reportes">ESTADÍSTICAS Y REPORTES</h2>
+<h3 id="111-estad%C3%ADsticas-generales">11.1 Estadísticas Generales</h3>
+<p>Dashboard principal con KPIs y métricas clave del sistema para análisis de desempeño operativo.</p>
+<h4 id="funcionalidades">Funcionalidades:</h4>
+<p><strong>FILTROS:</strong></p>
+<ul>
+<li>📅 <strong>Rango de fechas actualizado</strong> con selector visual</li>
+<li>Filtro por sucursal</li>
+<li>Filtro por tipo de pedido</li>
+<li>Comparativa con períodos anteriores</li>
+</ul>
+<p><strong>CONTENEDORES REDISEÑADOS:</strong></p>
+<ul>
+<li>📦 <strong>Bloques más legibles y organizados</strong></li>
+<li>Indicadores visuales con colores</li>
+<li>Iconos representativos</li>
+<li>Métricas destacadas</li>
+</ul>
+<p><strong>MÉTRICAS PRINCIPALES:</strong></p>
+<ul>
+<li>Total de pedidos en período</li>
+<li>Pedidos entregados</li>
+<li>Pedidos en ruta</li>
+<li>Pedidos pendientes</li>
+<li>Pedidos reprogramados</li>
+<li>Pedidos cancelados</li>
+<li>📈 Tasa de efectividad</li>
+<li>⏱️ Tiempo promedio de entrega</li>
+<li>Pedidos por chofer</li>
+<li>Pedidos por sucursal</li>
+<li>💰 Ingresos por pedidos</li>
+<li>💵 Costos operativos</li>
+</ul>
+<p><strong>GRÁFICOS:</strong></p>
+<ul>
+<li>📊 Evolución de pedidos por día</li>
+<li>📈 Distribución por estado</li>
+<li>📊 Comparativa por sucursal</li>
+<li>📉 Desempeño por chofer</li>
+<li>📈 Tendencias temporales</li>
+</ul>
+<hr>
+<h2 id="mapa-de-calor">MAPA DE CALOR</h2>
+<h3 id="121-an%C3%A1lisis-geogr%C3%A1fico">12.1 Análisis Geográfico</h3>
+<p>Herramienta avanzada de análisis geográfico que visualiza la densidad y distribución de pedidos en el mapa.</p>
+<h4 id="funcionalidades-principales">Funcionalidades principales:</h4>
+<p><strong>FILTROS DISPONIBLES:</strong></p>
+<ul>
+<li>📅 <strong>Filtro de rango de fechas</strong> (desde-hasta)</li>
+<li>♾️ Opción <strong>&quot;Todos los tiempos&quot;</strong> para análisis histórico completo</li>
+<li>📦 <strong>Filtro por tipo de pedido</strong> (Domicilio/Paquetería)</li>
+<li>✅ Toggles independientes para cada tipo</li>
+<li>🏢 <strong>Filtro por sucursal específica</strong></li>
+<li>🌐 Opción de &quot;Todas las sucursales&quot;</li>
+</ul>
+<p><strong>VISUALIZACIÓN DE SUCURSALES:</strong></p>
+<ul>
+<li>☑️ Checkboxes para mostrar/ocultar sucursales</li>
+<li>📍 Marcadores en el mapa por sucursal</li>
+<li>🎨 Colores diferenciados por ubicación</li>
+<li>🔘 Toggle individual para cada sucursal</li>
+</ul>
+<p><strong>ANÁLISIS POR ZONA:</strong></p>
+<ul>
+<li>🎯 <strong>Selección de zona en el mapa</strong></li>
+<li>🖱️ Botón <strong>&quot;Elegir centro en mapa&quot;</strong></li>
+<li>📏 <strong>Configuración de radio en metros</strong> (100-20,000m)</li>
+<li>⭕ Dibujo de círculo de análisis</li>
+<li>🔢 Cálculo de pedidos dentro de la zona</li>
+<li>🧹 Botón <strong>&quot;Limpiar zona&quot;</strong> para reiniciar</li>
+</ul>
+<p><strong>RESUMEN GENERAL DE LA ZONA:</strong></p>
+<ul>
+<li>Total de pedidos en el área seleccionada</li>
+<li>Distribución por tipo (Domicilio/Paquetería)</li>
+<li>Densidad de pedidos por km²</li>
+<li>Sucursales que atienden la zona</li>
+<li>Cobertura actual vs demanda</li>
+<li>💡 Sugerencias de mejora</li>
+</ul>
+<p><strong>VISUALIZACIÓN:</strong></p>
+<ul>
+<li>🔥 <strong>Mapa de calor</strong> con gradiente de intensidad</li>
+<li>🎨 <strong>Leyenda:</strong> Baja, Media, Alta densidad</li>
+<li>📍 Puntos de entrega individuales</li>
+<li>🛣️ Rutas frecuentes destacadas</li>
+<li>⚠️ Zonas de alta demanda resaltadas</li>
+</ul>
+<p><strong>ESTADÍSTICAS:</strong></p>
+<ul>
+<li>Panel con estadísticas generales</li>
+<li>Total de pedidos filtrados</li>
+<li>Desglose por tipo</li>
+<li>Estadísticas por sucursal</li>
+<li>Comparativas y tendencias</li>
+</ul>
+<h3 id="122-casos-de-uso">12.2 Casos de Uso</h3>
+<ul>
+<li>Identificar zonas con alta demanda para apertura de nuevas sucursales</li>
+<li>Analizar cobertura actual vs necesidades del mercado</li>
+<li>Optimizar asignación de recursos por zona geográfica</li>
+<li>Detectar áreas desatendidas o con bajo servicio</li>
+<li>Planificar expansión de rutas y cobertura</li>
+<li>Evaluar desempeño por zona geográfica</li>
+<li>Análisis de competencia y oportunidades de mercado</li>
+<li>Determinar radio óptimo de cobertura por sucursal</li>
+</ul>
+<hr>
+<h2 id="reporte-de-precios">REPORTE DE PRECIOS</h2>
+<h3 id="131-an%C3%A1lisis-de-precios-y-facturaci%C3%B3n">13.1 Análisis de Precios y Facturación</h3>
+<p>Herramienta completa para auditoría y análisis de precios de facturas con detección de anomalías.</p>
+<h4 id="funcionalidades-principales">Funcionalidades principales:</h4>
+<p><strong>FILTROS:</strong></p>
+<ul>
+<li>📅 Filtrado por rango de fechas</li>
+<li>🏢 Filtro por sucursal</li>
+<li>👤 Filtro por vendedor</li>
+<li>🔗 Combinación de múltiples filtros</li>
+</ul>
+<p><strong>RESUMEN GENERAL:</strong></p>
+<ul>
+<li>Total de pedidos analizados</li>
+<li>Suma total de precios facturados</li>
+<li>Precio promedio por pedido</li>
+<li>Precio mínimo registrado</li>
+<li>Precio máximo registrado</li>
+<li>📊 Desviación estándar</li>
+</ul>
+<p><strong>PEDIDOS MENORES A $1,000:</strong></p>
+<ul>
+<li>⚠️ <strong>Listado de pedidos con precio bajo</strong></li>
+<li>🚨 <strong>Bandera de alerta para rentabilidad</strong></li>
+<li>Posibles errores de captura</li>
+<li>Validación de precios sospechosos</li>
+<li>Detalle completo de cada caso</li>
+</ul>
+<p><strong>CORRECCIÓN DE PRECIO:</strong></p>
+<ul>
+<li>📝 Registro de ajustes realizados</li>
+<li>⬇️ <strong>Correcciones a favor del cliente</strong></li>
+<li>⬆️ <strong>Correcciones a favor de la empresa</strong></li>
+<li>Motivo de la corrección</li>
+<li>Usuario que autorizó</li>
+<li>Fecha de corrección</li>
+<li>💼 Impacto en conciliación contable</li>
+</ul>
+<p><strong>ESTADÍSTICAS POR VENDEDOR:</strong></p>
+<ul>
+<li>Total de pedidos por vendedor</li>
+<li>Suma de precios por vendedor</li>
+<li>Precio promedio por vendedor</li>
+<li>📊 Comparativa entre vendedores</li>
+<li>Consistencia de precios</li>
+<li>Desempeño individual</li>
+<li>🏆 Ranking de vendedores</li>
+</ul>
+<p><strong>PEDIDOS PENDIENTES:</strong></p>
+<ul>
+<li>⏰ <strong>Lista de pedidos atrasados de revisar</strong></li>
+<li>Pedidos sin validación de precio</li>
+<li>Pendientes de autorización</li>
+<li>Alertas de seguimiento</li>
+<li>Priorización de revisión</li>
+</ul>
+<p><strong>EXPORTAR EN EXCEL:</strong></p>
+<ul>
+<li>📥 Descarga del reporte completo</li>
+<li>Aplica filtros activos</li>
+<li>Incluye todas las secciones</li>
+<li>Formato para auditorías</li>
+<li>Listo para envío a finanzas</li>
+</ul>
+<h3 id="132-casos-de-uso">13.2 Casos de Uso</h3>
+<ul>
+<li>Auditoría de precios facturados por período</li>
+<li>Detección de errores de captura de precios</li>
+<li>Análisis de rentabilidad por tipo de pedido</li>
+<li>Evaluación de desempeño de vendedores</li>
+<li>Conciliación contable de facturas</li>
+<li>Identificación de patrones de precios anómalos</li>
+<li>Seguimiento de correcciones y ajustes</li>
+<li>Reportes para área financiera</li>
+</ul>
+<hr>
+<h2 id="aplicaci%C3%B3n-m%C3%B3vil">APLICACIÓN MÓVIL</h2>
+<h3 id="141-descripci%C3%B3n-general">14.1 Descripción General</h3>
+<p>Aplicación móvil para choferes y personal operativo en campo, sincronizada con el sistema web.</p>
+<h4 id="funcionalidades-principales">Funcionalidades principales:</h4>
+<p><strong>CONTROLES DE ACCESO:</strong></p>
+<ul>
+<li>✅ <strong>Validación de versión de la app</strong></li>
+<li>⚠️ <strong>Restricción si la versión no es vigente</strong></li>
+<li>🔄 Forzar actualización cuando hay nueva versión</li>
+<li>🚗 <strong>Verificación de vehículo asignado</strong></li>
+<li>⚠️ <strong>Restricción si no tiene vehículo asignado</strong></li>
+<li>🔐 Control de sesión persistente</li>
+</ul>
+<p><strong>MODAL OBLIGATORIO DE KILOMETRAJE:</strong></p>
+<ul>
+<li>⚠️ Al iniciar la jornada, <strong>captura obligatoria de kilometraje</strong></li>
+<li>🚫 No permite continuar sin registrar</li>
+<li>✅ Validación de kilometraje coherente</li>
+<li>🔄 Comparación con último registro</li>
+<li>🔧 <strong>Genera servicio automático si supera umbral de servicio</strong></li>
+<li>⚠️ Alerta si el kilometraje excede el programado para mantenimiento</li>
+</ul>
+<p><strong>FORMULARIO DE CONDICIONES DEL VEHÍCULO:</strong></p>
+<ul>
+<li>✅ <strong>Checklist de condiciones al iniciar</strong></li>
+<li>⚠️ <strong>Obligatorio completar antes de salir</strong></li>
+<li>Validación de cada punto crítico</li>
+<li>📸 Captura de fotografías de evidencia</li>
+<li>🚨 Reporte de anomalías detectadas</li>
+<li>📝 Genera observaciones automáticas</li>
+</ul>
+<p><strong>GESTIÓN DE PEDIDOS:</strong></p>
+<ul>
+<li>Vista de pedidos asignados al chofer</li>
+<li>Detalle completo de cada pedido</li>
+<li>Información de cliente y dirección</li>
+<li>Facturas asociadas</li>
+<li>🗺️ Botón de navegación a destino</li>
+<li>🔄 Actualización de estado del pedido</li>
+<li>📸 Captura de evidencia fotográfica</li>
+<li>✍️ Registro de firma del cliente</li>
+<li>📝 Observaciones de entrega</li>
+</ul>
+<p><strong>AGRUPACIÓN DE FACTURAS:</strong></p>
+<ul>
+<li>Vista de grupos de ruta asignados</li>
+<li>Listado de facturas por grupo</li>
+<li>Orden de entrega sugerido</li>
+<li>🗺️ Mapa de ruta completo</li>
+<li>✅ Marcar facturas como entregadas</li>
+<li>🔄 Reordenar entregas manualmente</li>
+</ul>
+<p><strong>MAPA DE RUTA:</strong></p>
+<ul>
+<li>Visualización de todas las entregas</li>
+<li>📍 Punto actual del chofer (GPS)</li>
+<li>🔢 Puntos de destino numerados</li>
+<li>🛣️ Ruta optimizada trazada</li>
+<li>🗺️ <strong>Exportar ruta a Google Maps</strong></li>
+<li>🧭 Navegación turn-by-turn</li>
+<li>🔄 Actualización en tiempo real</li>
+</ul>
+<p><strong>MÓDULO DE VEHÍCULO:</strong></p>
+<ul>
+<li>Información del vehículo asignado</li>
+<li>Placa, modelo, año</li>
+<li>Kilometraje actual</li>
+<li>Próximo servicio</li>
+<li>Historial de servicios</li>
+<li>⛽ Registro de gasolina desde app</li>
+<li>🚨 Reporte de incidencias</li>
+</ul>
+<p><strong>EXCEPCIONES Y CONECTIVIDAD:</strong></p>
+<ul>
+<li>📡 Manejo de pérdida de conexión</li>
+<li>📴 <strong>Modo offline con sincronización posterior</strong></li>
+<li>💾 Caché de información crítica</li>
+<li>📤 Cola de sincronización</li>
+<li>🔔 Notificaciones de errores</li>
+<li>🔄 Reintentos automáticos</li>
+</ul>
+<h3 id="142-restricciones-y-validaciones">14.2 Restricciones y Validaciones</h3>
+<p>⚠️ <strong>IMPORTANTE - La app móvil tiene restricciones obligatorias:</strong></p>
+<ul>
+<li>⚠️ No permite operar sin versión vigente - debe actualizar</li>
+<li>⚠️ No permite operar sin vehículo asignado</li>
+<li>⚠️ Bloquea hasta registrar kilometraje inicial del día</li>
+<li>⚠️ Bloquea hasta completar formulario de condiciones del vehículo</li>
+<li>🔧 Genera servicio automático si kilometraje supera umbral</li>
+<li>📡 Requiere conexión para sincronización de datos críticos</li>
+<li>✅ Valida coherencia de datos antes de enviar al servidor</li>
+</ul>
+<hr>
+<h2 id="notificaciones-whatsapp">NOTIFICACIONES WHATSAPP</h2>
+<h3 id="151-sistema-de-notificaciones">15.1 Sistema de Notificaciones</h3>
+<p>Integración completa con WhatsApp para notificaciones automáticas a choferes y usuarios.</p>
+<h4 id="funcionalidades">Funcionalidades:</h4>
+<p><strong>NOTIFICACIÓN AUTOMÁTICA AL ASIGNAR PEDIDO:</strong></p>
+<ul>
+<li>📲 <strong>Se envía automáticamente al asignar chofer</strong></li>
+<li>Mensaje con datos clave del pedido</li>
+<li>Información del cliente y dirección</li>
+<li>Fecha y hora de entrega</li>
+<li>Número de facturas</li>
+<li>Contacto del cliente</li>
+<li>📉 Reduce llamadas telefónicas</li>
+<li>✅ Asegura acuse de recibo</li>
+</ul>
+<p><strong>PLANTILLAS DE MENSAJES:</strong></p>
+<ul>
+<li>📋 Plantilla de asignación de pedido</li>
+<li>🔄 Plantilla de cambio de ruta</li>
+<li>⚠️ Plantilla de pedido urgente</li>
+<li>❌ Plantilla de cancelación</li>
+<li>⏰ Plantilla de recordatorio</li>
+<li>✏️ Plantillas personalizables</li>
+</ul>
+<p><strong>MENSAJES DESDE EL SISTEMA:</strong></p>
+<ul>
+<li>📱 Botón de WhatsApp en detalle de chofer</li>
+<li>📝 Envío de mensajes personalizados</li>
+<li>📋 Mensajes predefinidos comunes</li>
+<li>📜 Historial de mensajes enviados</li>
+</ul>
+<p><strong>CASOS DE USO:</strong></p>
+<ul>
+<li>✅ Confirmación de asignación</li>
+<li>🔄 Cambios de última hora</li>
+<li>⚠️ Alertas de urgencia</li>
+<li>⏰ Recordatorios de tareas</li>
+<li>💬 Comunicación bidireccional</li>
+<li>🔄 Coordinación en tiempo real</li>
+</ul>
+<hr>
+<h2 id="conclusiones-y-recomendaciones">CONCLUSIONES Y RECOMENDACIONES</h2>
+<h3 id="161-mejores-pr%C3%A1cticas-operativas">16.1 Mejores Prácticas Operativas</h3>
+<p><strong>PEDIDOS:</strong></p>
+<ul>
+<li>✅ Exigir validación de pedidos antes de asignar chofer</li>
+<li>📝 Registrar cambios de precio con trazabilidad completa</li>
+<li>📄 Usar la función de múltiples facturas para agilizar captura</li>
+<li>🗺️ Aprovechar el mini mapa para coordenadas precisas</li>
+</ul>
+<p><strong>RUTAS:</strong></p>
+<ul>
+<li>🚀 Utilizar la optimización automática como base</li>
+<li>🖱️ Ajustar manualmente con drag &amp; drop según necesidades del negocio</li>
+<li>📚 Capacitar usuarios en priorización efectiva</li>
+<li>✅ Revisar grupos antes de publicar la ruta</li>
+</ul>
+<p><strong>VEHÍCULOS:</strong></p>
+<ul>
+<li>🔧 Programar mantenimientos preventivos según kilometraje</li>
+<li>📝 Mantener actualizado el registro de servicios</li>
+<li>⛽ Monitorear consumos de gasolina regularmente</li>
+<li>🔄 Sincronizar catálogo de vehículos antes de importaciones</li>
+</ul>
+<p><strong>GASOLINA:</strong></p>
+<ul>
+<li>📥 Descargar siempre el machote oficial para importaciones</li>
+<li>✅ Verificar vehículos registrados antes de importar</li>
+<li>🔍 Revisar pendientes de alta después de importaciones</li>
+<li>📊 Exportar reportes periódicamente para análisis</li>
+</ul>
+<p><strong>SERVICIOS E INVENTARIO:</strong></p>
+<ul>
+<li>📋 Supervisar tablero de servicios diariamente</li>
+<li>⚠️ Evitar desabasto monitoreando stock bajo</li>
+<li>📅 Programar servicios considerando disponibilidad de inventario</li>
+<li>🚗 Dar seguimiento a vehículos inmovilizados</li>
+</ul>
+<p><strong>COMUNICACIÓN:</strong></p>
+<ul>
+<li>📱 Aprovechar notificaciones automáticas de WhatsApp</li>
+<li>📊 Monitorear entregabilidad de mensajes</li>
+<li>🔄 Mantener plantillas actualizadas</li>
+</ul>
+<p><strong>APP MÓVIL:</strong></p>
+<ul>
+<li>🔄 Reforzar cumplimiento de versión vigente</li>
+<li>🚗 Asegurar vehículos asignados antes de jornada</li>
+<li>📊 Verificar registro de kilometraje diario</li>
+<li>✅ Validar completado de formularios obligatorios</li>
+</ul>
+<h3 id="162-beneficios-del-sistema">16.2 Beneficios del Sistema</h3>
+<p>✅ Centralización completa de operaciones logísticas
+✅ Trazabilidad total de pedidos, vehículos y personal
+✅ Optimización de rutas para reducir costos
+✅ Control preventivo de mantenimiento vehicular
+✅ Visibilidad en tiempo real de operaciones
+✅ Reducción de errores mediante validaciones
+✅ Comunicación efectiva con choferes
+✅ Reportes y análisis para toma de decisiones
+✅ Gestión eficiente de inventario de repuestos
+✅ Herramientas móviles para operación en campo
+✅ Alertas automáticas de situaciones críticas
+✅ Integración entre todos los módulos del sistema</p>
+<h3 id="163-puntos-cr%C3%ADticos-de-atenci%C3%B3n">16.3 Puntos Críticos de Atención</h3>
+<p>⚠️ Validación obligatoria de pedidos antes de asignar
+⚠️ Sincronización de vehículos antes de importar gasolina
+⚠️ Uso del machote oficial para importaciones masivas
+⚠️ Monitoreo de vehículos en taller
+⚠️ Control de inventario al programar servicios
+⚠️ Verificación de versión vigente de app móvil
+⚠️ Registro diario de kilometraje por choferes
+⚠️ Revisión de pedidos pendientes de validación de precio
+⚠️ Supervisión de observaciones no resueltas
+⚠️ Seguimiento de correcciones de precio</p>
+<hr>
+<h2 id="tabla-resumen-de-cambios-clave">TABLA RESUMEN DE CAMBIOS CLAVE</h2>
+<table>
+<thead>
+<tr>
+<th>Módulo</th>
+<th>Cambio</th>
+<th>Qué Aporta</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Global</strong></td>
+<td>Notificación WhatsApp al asignar pedido</td>
+<td>Confirma al chofer su tarea y reduce errores de comunicación</td>
+</tr>
+<tr>
+<td><strong>Global</strong></td>
+<td>Sidebar con acordeones</td>
+<td>Navegación más rápida y organizada por dominio</td>
+</tr>
+<tr>
+<td><strong>Pedidos GA</strong></td>
+<td>Filtros, descarga app, guía, precio factura, agrupación y selección de grupos</td>
+<td>Mejora búsqueda, onboarding y preparación de rutas</td>
+</tr>
+<tr>
+<td><strong>Detalle ruta</strong></td>
+<td>Desactivar grupo, optimizar, drag &amp; drop</td>
+<td>Control fino de rutas y prioridades</td>
+</tr>
+<tr>
+<td><strong>Agregar pedido</strong></td>
+<td>Múltiples facturas, precio, mini mapa</td>
+<td>Captura completa en un solo paso</td>
+</tr>
+<tr>
+<td><strong>Actualizar pedido</strong></td>
+<td>Checkbox Validar y bloqueo sin validar</td>
+<td>Calidad de datos y control operativo</td>
+</tr>
+<tr>
+<td><strong>Estadísticas</strong></td>
+<td>Filtros de fecha y contenedores rediseñados</td>
+<td>Lectura más clara de indicadores</td>
+</tr>
+<tr>
+<td><strong>Mapa de calor</strong></td>
+<td>Filtros, zona y tamaño</td>
+<td>Análisis geográfico accionable</td>
+</tr>
+<tr>
+<td><strong>Reporte de precios</strong></td>
+<td>Filtros, anomalías (&lt;1000), correcciones, Excel</td>
+<td>Auditoría y seguimiento comercial</td>
+</tr>
+<tr>
+<td><strong>Vehículos</strong></td>
+<td>Dashboard por razón social/ubicación y gestión de choferes</td>
+<td>Gobierno de flota centralizado</td>
+</tr>
+<tr>
+<td><strong>Detalle vehículo</strong></td>
+<td>Registros e historiales completos</td>
+<td>Mantenimiento preventivo y trazabilidad</td>
+</tr>
+<tr>
+<td><strong>Detalle chofer</strong></td>
+<td>Contacto, resumen, históricos, observaciones</td>
+<td>Seguimiento integral de desempeño</td>
+</tr>
+<tr>
+<td><strong>Gasolina</strong></td>
+<td>Filtros, importación/exportación, pendientes de alta</td>
+<td>Control de combustible y normalización</td>
+</tr>
+<tr>
+<td><strong>Servicios</strong></td>
+<td>Tablero drag &amp; drop, filtros, vista lista, modal de alta</td>
+<td>Planificación y ejecución de servicios</td>
+</tr>
+<tr>
+<td><strong>Inventario</strong></td>
+<td>Altas/ajustes/eliminación con filtros</td>
+<td>Control de stock y aplicación a vehículos</td>
+</tr>
+<tr>
+<td><strong>Estadísticas inventario</strong></td>
+<td>Top bajo stock, mayor valor, KPI por fechas</td>
+<td>Vigilancia de riesgos y costos</td>
+</tr>
+<tr>
+<td><strong>App móvil</strong></td>
+<td>Controles de versión, vehículo, kilometraje, rutas y formularios</td>
+<td>Operación en campo segura y guiada</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p><strong>FIN DEL DOCUMENTO</strong></p>
+<p><em>Sistema de Logística Pedidos GA</em>
+<em>Grupo Ascendente © 2025</em></p>
+<hr>
+
+</body>
+</html>

@@ -22,6 +22,10 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 // Conexión a la base de datos
 require_once __DIR__ . "/Conexiones/Conexion.php";
 
+// Incluir funciones para determinar zona geográfica
+require_once __DIR__ . "/funciones_zona.php";
+
+
 
 // Obtener los datos del formulario (datos comunes)
 $sucursal = $_POST['sucursal'];
@@ -81,6 +85,9 @@ $primer_pedido_id = null;
 $pedidos_creados = 0;
 $errores = [];
 
+// Determinar el tipo de zona basándose en las coordenadas de destino
+$tipo_zona = determinarTipoZona($coord_destino);
+
 // Iterar sobre cada factura y crear un registro
 for ($i = 0; $i < count($facturas); $i++) {
     $factura = $conn->real_escape_string(trim($facturas[$i]));
@@ -100,7 +107,8 @@ for ($i = 0; $i < count($facturas); $i++) {
         MIN_VENTANA_HORARIA_1, MAX_VENTANA_HORARIA_1,
         NOMBRE_CLIENTE, TELEFONO, CONTACTO, COMENTARIOS,
         Coord_Origen, Coord_Destino, tipo_envio, Ruta,
-        precio_factura_vendedor, precio_factura_real, precio_validado_jc
+        precio_factura_vendedor, precio_factura_real, precio_validado_jc,
+        tipo_zona
     ) VALUES (
         '$sucursal', '$estado', " . validarFecha($fecha_recepcion_factura) . ", " . validarFecha($fecha_entrega_cliente) . ",
         '$chofer_asignado', '$vendedor', '$factura', '$direccion',
@@ -110,7 +118,8 @@ for ($i = 0; $i < count($facturas); $i++) {
         '$coord_origen', '$coord_destino', '$tipo_envio', '$ruta',
         " . ($precio_factura_vendedor > 0 ? $precio_factura_vendedor : "NULL") . ",
         " . ($precio_factura_vendedor > 0 ? $precio_factura_vendedor : "NULL") . ",
-        0
+        0,
+        " . ($tipo_zona !== null ? "'$tipo_zona'" : "NULL") . "
     )";
 
     if ($conn->query($sql) === TRUE) {

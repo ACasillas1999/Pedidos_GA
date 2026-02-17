@@ -1,20 +1,20 @@
 # Bloquear acceso directo a archivos de migración e importación
-<FilesMatch "^(importar_vehiculos\.php|importar_migracion\.php|limpiar_e_importar\.php|EJECUTAR_ESTA_MIGRACION\.sql)$">
-    Order Allow,Deny
-    Deny from all
-</FilesMatch>
+#<FilesMatch "^(importar_vehiculos\.php|importar_migracion\.php|limpiar_e_importar\.php|EJECUTAR_ESTA_MIGRACION\.sql)$">
+  #  Order Allow,Deny
+ #   Deny from all
+#</FilesMatch>
 
 # Bloquear acceso a archivos de configuración
-<FilesMatch "^(Conexion\.php|conexion\.php)$">
-    Order Allow,Deny
-    Deny from all
-</FilesMatch>
+#<FilesMatch "^(Conexion\.php|conexion\.php)$">
+  #  Order Allow,Deny
+ #   Deny from all
+#</FilesMatch>
 
 # Bloquear acceso a directorios sensibles
-<DirectoryMatch "^.*/migrations.*$">
-    Order Allow,Deny
-    Deny from all
-</DirectoryMatch>
+#<DirectoryMatch "^.*/migrations.*$">
+  #  Order Allow,Deny
+ #   Deny from all
+#</DirectoryMatch>
 
 # Permitir solo a localhost (IP del servidor) acceder a archivos de migración
 # Si necesitas ejecutarlos, descomenta las siguientes líneas:

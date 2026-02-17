@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Sistema de Logistica Pedidos GA - Documentacion</title>
+  <style>
+    :root {
+      --bg: #f7f8fa;
+      --card: #ffffff;
+      --text: #1f2933;
+      --muted: #4b5563;
+      --accent: #0f766e;
+      --border: #e5e7eb;
+      --shadow: 0 10px 30px rgba(0,0,0,0.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .page {
+      max-width: 1100px;
+      margin: 32px auto;
+      padding: 0 24px 48px;
+    }
+    header {
+      background: linear-gradient(135deg, #0ea5e9 0%, #0f766e 100%);
+      color: #fff;
+      padding: 28px 28px 22px;
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+    }
+    header h1 { margin: 0 0 6px; font-size: 30px; }
+    header p { margin: 0; color: rgba(255,255,255,0.9); }
+    section {
+      background: var(--card);
+      padding: 22px 24px;
+      border-radius: 14px;
+      margin-top: 18px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+    }
+    h2 { margin: 0 0 10px; color: var(--accent); font-size: 22px; }
+    h3 { margin: 16px 0 8px; color: #0f172a; font-size: 18px; }
+    p { margin: 8px 0; }
+    ul { margin: 6px 0 10px 20px; padding: 0; }
+    li { margin-bottom: 4px; }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 12px 18px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #0f766e; color: #fff; }
+    code { font-family: "Cascadia Code", Consolas, monospace; background: #f0f4f8; padding: 1px 5px; border-radius: 4px; }
+    .muted { color: var(--muted); }
+    .pill {
+      display: inline-block;
+      background: #e0f2fe;
+      color: #0f172a;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      margin-right: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>Sistema de Logistica Pedidos GA</h1>
+      <p>Documentacion tecnica integral (version 1.4)</p>
+    </header>
+
+    <section>
+      <h2>Portada</h2>
+      <ul>
+        <li>Proyecto: Plataforma de Logistica y Pedidos (Pedidos GA)</li>
+        <li>Version del documento: 1.4</li>
+        <li>Fecha: <span class="muted">(actualizar al publicar)</span></li>
+        <li>Responsables: Equipo de Desarrollo / Operaciones</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Resumen ejecutivo</h2>
+      <p>La plataforma centraliza pedidos, rutas, choferes, vehiculos, servicios, gasolina, inventario, reportes y aplicacion movil. Las mejoras recientes refuerzan trazabilidad (validaciones y precios por factura), productividad (optimizacion de rutas, drag & drop, tableros), visibilidad (filtros avanzados, dashboards, mapa de calor, estadisticas de inventario) y comunicacion (notificaciones WhatsApp). Se agregaron flujos completos de gasolina con importacion masiva, tablero de servicios drag & drop que impacta inventario, controles de observaciones, y mejoras en la app movil (kilometraje obligatorio, condiciones del vehiculo, restriccion por version y vehiculo asignado).</p>
+    </section>
+
+    <section>
+      <h2>Tecnologias utilizadas</h2>
+      <div class="grid-2">
+        <ul>
+          <li>Backend: PHP 7+ (scripts y endpoints por modulo), MySQL/MariaDB.</li>
+          <li>Frontend: HTML5, CSS (<code>styles*.css</code>), JavaScript (DOM, AJAX).</li>
+          <li>Mensajeria: WhatsApp (<code>Mensajes_WP/*</code>, <code>Mensaje_WP.php</code>).</li>
+        </ul>
+        <ul>
+          <li>Mapas/geo: mini mapa, calculo y visualizacion de distancias (<code>update_distance.php</code>, <code>api_mapa_datos.php</code>, <code>mapa_calor.php</code>).</li>
+          <li>Exportes: Excel (<code>export_reporte_precios.php</code>, <code>reporte_precios_facturas.php</code>).</li>
+          <li>Sesion y seguridad: <code>check_session.php</code>, <code>logout.php</code>, validaciones de asignacion y version en app.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <h2>Arquitectura del sistema</h2>
+      <ul>
+        <li>Modelo: Aplicacion web PHP modular (paginas autocontenidas + endpoints AJAX + app movil que consume endpoints dedicados).</li>
+        <li>Capas:
+          <ul>
+            <li>Presentacion: vistas PHP/HTML con JS y CSS por pagina.</li>
+            <li>Logica de negocio: scripts por dominio (pedidos, rutas, vehiculos, choferes, servicios, inventario, gasolina, reportes).</li>
+            <li>Integraciones: WhatsApp, Excel, mapas/geo.</li>
+            <li>Datos: MySQL via conexiones compartidas (<code>Conexiones/Conexion.php</code>, <code>App/Conexiones/Conexion.php</code>).</li>
+          </ul>
+        </li>
+        <li>Navegacion: Sidebar con acordeones (pedidos/rutas, vehiculos/choferes, servicios/gasolina/inventario, estadisticas/reportes, app).</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Estructura del proyecto (archivos clave)</h2>
+      <ul>
+        <li><strong>Raiz</strong>: Pedidos y rutas (<code>Pedidos_GA.php</code>, <code>pedidos_kanban.php</code>, <code>pedidos_cards.php</code>, <code>detalle_pedido.php</code>, <code>detalle_ruta.php</code>, <code>crear_grupo_ruta.php</code>, <code>obtener_pedidos*.php</code>, <code>obtener_grupos.php</code>, <code>verificar_pedidos_en_grupos.php</code>); Altas/actualizaciones (<code>ActualizarPedido.php</code>, <code>ActualizarPedidosMasivo.php</code>, <code>FuncionActualizarPedido.php</code>); Choferes (<code>Choferes.php</code>, <code>ConsultarChofer.php</code>, <code>Actualizar_choferes.php</code>, <code>Funcion_ActualizarChofer.php</code>, <code>subir_foto_chofer.php</code>); Vehiculos (<code>vehiculos.php</code>, <code>detalles_vehiculo.php</code>, <code>asignar_vehiculo.php</code>, <code>desasignar_vehiculo.php</code>, <code>ActualizarVehiculo.php</code>); Reportes/estadisticas (<code>Estadisticas*.php</code>, <code>reporte_precios_facturas.php</code>, <code>export_reporte_precios.php</code>, <code>facturas_por_chofer*.php</code>, <code>total_facturas_por_sucursal.php</code>); Servicios y soporte (<code>Servicios.php</code>, <code>Detalle_Servicio.php</code>, <code>RegistrarServicio.php</code>, <code>RegistrarGasolina.php</code>, <code>guardar_destinatario.php</code>, <code>descargar_plantilla_paqueteria.php</code>); Utilitarios (<code>Mensaje_WP.php</code>, <code>enviar_correo.php</code>, <code>mapa_calor.php</code>, <code>api_mapa_datos.php</code>, <code>update_distance.php</code>, <code>check_session.php</code>, <code>logout.php</code>, <code>upload.php</code>).</li>
+        <li><strong>App/</strong>: Endpoints para app movil/web (pedidos, checklist, kilometraje, autenticacion, fotos, versiones, rutas, servicios).</li>
+        <li><strong>Mensajes_WP/</strong>: Plantillas y controladores de notificaciones WhatsApp.</li>
+        <li><strong>Servicios/</strong>: APIs y vistas de servicios, inventario y estadisticas (<code>servicios_api.php</code>, <code>inventario_api.php</code>, <code>inventario_estadisticas.php</code>, <code>servicios_estadisticas.php</code>).</li>
+        <li><strong>Registrar/</strong>, <strong>RegistrarChofer/</strong>: Flujos de alta de usuarios y choferes.</li>
+        <li><strong>Gas/</strong>: Modulo de gasolina (<code>Gas.php</code>).</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Tabla resumen de cambios clave</h2>
+      <table>
+        <tr><th>Modulo</th><th>Cambio</th><th>Que aporta</th></tr>
+        <tr><td>Global</td><td>Notificacion WhatsApp al asignar pedido</td><td>Confirma al chofer su tarea y reduce errores</td></tr>
+        <tr><td>Global</td><td>Sidebar con acordeones</td><td>Navegacion mas rapida y organizada por dominio</td></tr>
+        <tr><td>Pedidos GA</td><td>Filtros, descarga app, guia, precio factura, agrupacion y seleccion de grupos</td><td>Mejora busqueda, onboarding y preparacion de rutas</td></tr>
+        <tr><td>Detalle ruta</td><td>Desactivar grupo, optimizar, drag & drop</td><td>Control fino de rutas y prioridades</td></tr>
+        <tr><td>Agregar pedido</td><td>Multiples facturas, precio, mini mapa</td><td>Captura completa en un solo paso</td></tr>
+        <tr><td>Actualizar pedido</td><td>Checkbox Validar y bloqueo sin validar</td><td>Calidad de datos y control operativo</td></tr>
+        <tr><td>Estadisticas</td><td>Filtros de fecha y contenedores redisenados</td><td>Lectura mas clara de indicadores</td></tr>
+        <tr><td>Mapa de calor</td><td>Filtros, zona y tamano</td><td>Analisis geografico accionable</td></tr>
+        <tr><td>Reporte de precios</td><td>Filtros, anomalias (&lt;1000), correcciones, Excel</td><td>Auditoria y seguimiento comercial</td></tr>
+        <tr><td>Vehiculos</td><td>Dashboard por razon social/ubicacion y gestion de choferes</td><td>Gobierno de flota centralizado</td></tr>
+        <tr><td>Detalle vehiculo</td><td>Registros e historiales completos</td><td>Mantenimiento preventivo y trazabilidad</td></tr>
+        <tr><td>Detalle chofer</td><td>Contacto, resumen, historicos, observaciones</td><td>Seguimiento integral de desempeno</td></tr>
+        <tr><td>Gasolina</td><td>Filtros, importacion/exporte, pendientes de alta</td><td>Control de combustible y normalizacion</td></tr>
+        <tr><td>Servicios</td><td>Tablero drag & drop, filtros, vista lista, modal de alta</td><td>Planificacion y ejecucion de servicios</td></tr>
+        <tr><td>Inventario</td><td>Altas/ajustes/eliminacion con filtros</td><td>Control de stock y aplicacion a vehiculos</td></tr>
+        <tr><td>Estadisticas inventario</td><td>Top bajo stock, mayor valor, KPIs por fechas</td><td>Vigilancia de riesgos y costos</td></tr>
+        <tr><td>App movil</td><td>Controles de version, vehiculo, kilometraje, rutas y formularios</td><td>Operacion en campo segura y guiada</td></tr>
+      </table>
+    </section>
+
+    <section>
+      <h2>Flujos principales (resumidos)</h2>
+      <ul>
+        <li>Alta de pedido: datos + multiples facturas y precio + coordenada en mini mapa -&gt; validar -&gt; asignar chofer (WhatsApp) -&gt; agrupar en ruta -&gt; optimizar/ordenar (drag & drop) -&gt; seguimiento y estadisticas.</li>
+        <li>Gestion de rutas: crear grupos -&gt; desactivar/separar por factura si aplica -&gt; optimizar -&gt; ajustar orden manual -&gt; guardar/publicar.</li>
+        <li>Vehiculos/choferes: alta/edicion -&gt; asignacion por ubicacion -&gt; registro kilometraje/servicio/gasolina -&gt; historicos y observaciones.</li>
+        <li>Servicios/gasolina/inventario: alta y registro -&gt; impacto en inventario (cuando servicio pasa a programado) -&gt; observaciones -&gt; estadisticas.</li>
+        <li>Reporte de precios: filtrar fecha/sucursal/vendedor -&gt; detectar &lt;1000 y correcciones -&gt; pendientes -&gt; exportar Excel.</li>
+        <li>Mapa de calor: filtros -&gt; zona y tamano -&gt; resumen para decisiones de cobertura.</li>
+        <li>App movil: validar version/vehiculo/kilometraje -&gt; checklist de condiciones -&gt; gestionar rutas y facturas -&gt; exportar a Google Maps.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Documentacion por modulo y cambios</h2>
+
+      <h3>1. Funcionalidad global</h3>
+      <ul>
+        <li>Notificacion automatica via WhatsApp al asignar pedido: al confirmar asignacion se envia mensaje con datos clave al chofer usando <code>Mensajes_WP/*</code>; reduce llamadas y asegura acuse.</li>
+        <li>Sidebar con acordeones: accesos agrupados por dominio (pedidos/rutas, vehiculos/choferes, servicios/inventario, reportes, app) para menor scroll y acceso rapido.</li>
+      </ul>
+
+      <h3>2. Pedidos GA (Inicio)</h3>
+      <ul>
+        <li>Barra de filtrado actualizada: filtros por fecha, estado, sucursal, tipo; combinables sin recargar la pagina.</li>
+        <li>Boton de descarga de la aplicacion: enlace directo a instalador/tienda para choferes y operadores.</li>
+        <li>Guia de pedidos generada: ayuda contextual sobre estados, acciones y filtros.</li>
+        <li>Columna Precio Factura: visibilidad del monto facturado en listado para control y conciliacion.</li>
+        <li>Asignacion de grupo para generar ruta: permite armar grupos con prioridad y orden de trabajo.</li>
+        <li>Seleccion de grupos para mostrar ruta: elegir que grupos se proyectan en mapa/listado para enfocar operaciones.</li>
+      </ul>
+
+      <h3>3. Detalles de ruta</h3>
+      <ul>
+        <li>Desactivar grupo (separar por factura): pausa o divide grupos cuando las facturas requieren tratamiento individual.</li>
+        <li>Optimizacion de ruta: orden sugerido para minimizar distancia/tiempo con los puntos del grupo activo.</li>
+        <li>Drag and drop de prioridad: ajuste manual del orden propuesto.</li>
+      </ul>
+
+      <h3>4. Agregar pedido</h3>
+      <ul>
+        <li>Multiples facturas por pedido en un solo formulario.</li>
+        <li>Campo de precio: registra monto facturado y alimenta columnas/reportes.</li>
+        <li>Coordenada destino desde mini mapa: seleccion guiada de lat/long para evitar errores.</li>
+      </ul>
+
+      <h3>5. Detalles del pedido</h3>
+      <ul>
+        <li>Nuevo campo Precio Factura: validacion visual y control de discrepancias.</li>
+      </ul>
+
+      <h3>6. Actualizar pedido</h3>
+      <ul>
+        <li>Checkbox de Validar: control de calidad (datos completos, precio, coordenadas).</li>
+        <li>Bloqueo de asignacion de chofer si no esta validado.</li>
+      </ul>
+
+      <h3>7. Estadisticas</h3>
+      <ul>
+        <li>Filtro de rango de fecha actualizado: recalcula KPIs y graficos.</li>
+        <li>Contenedores redisenados: bloques mas legibles para indicadores.</li>
+      </ul>
+
+      <h3>8. Mapa de Calor</h3>
+      <ul>
+        <li>Filtro de rango de fecha, tipo de pedido y sucursal.</li>
+        <li>Seleccion de zona de mapa y tamano (km).</li>
+        <li>Resumen general de la zona: totales y concentraciones.</li>
+      </ul>
+
+      <h3>9. Reporte de precios</h3>
+      <ul>
+        <li>Filtrado por rango de fecha, sucursal y vendedor.</li>
+        <li>Resumen general y pedidos menores a 1000 como alerta.</li>
+        <li>Correccion de precio (a favor/en contra) y estadisticas por vendedor.</li>
+        <li>Pedidos pendientes (atrasados) y exportar en Excel con filtros aplicados.</li>
+      </ul>
+
+      <h3>10. Vehiculos (Inicio)</h3>
+      <ul>
+        <li>Dashboard por razon social y ubicacion fisica.</li>
+        <li>Gestion de choferes por ubicacion fisica.</li>
+        <li>Asignacion/Designacion/Cambio de vehiculo a chofer.</li>
+      </ul>
+
+      <h3>11. Detalles de vehiculo</h3>
+      <ul>
+        <li>Informacion general (ficha de unidad).</li>
+        <li>Kilometraje proximo servicio.</li>
+        <li>Asignacion de sucursal y chofer.</li>
+        <li>Registro de kilometraje, servicio y gasolina.</li>
+        <li>Historial de kilometraje y de conductores.</li>
+        <li>Observaciones.</li>
+        <li>Gasolina y Servicios: consumo y trabajos realizados.</li>
+      </ul>
+
+      <h3>12. Detalles de Chofer</h3>
+      <ul>
+        <li>Editar chofer.</li>
+        <li>Acceso directo a WhatsApp o llamada.</li>
+        <li>Resumen por rango de fecha de pedidos.</li>
+        <li>Pedidos recientes y vehiculo asignado (resumen).</li>
+        <li>Historial de vehiculos y observaciones acumuladas.</li>
+        <li>Contacto centralizado.</li>
+      </ul>
+
+      <h3>13. Gas (Gasolina)</h3>
+      <ul>
+        <li>Filtrado por rango de fecha o mensual.</li>
+        <li>Registro de gasolina por vehiculo y fecha.</li>
+        <li>Historial de importacion y pendientes de alta cuando faltan vehiculos.</li>
+        <li>Descarga de machote e importacion masiva (obligatorio usar formato); exporte de reporte filtrado.</li>
+        <li>Requisito: los vehiculos deben existir para mover registros de pendientes a activos.</li>
+      </ul>
+
+      <h3>14. Servicios</h3>
+      <ul>
+        <li>Tablero drag and drop por estatus y vista en lista.</li>
+        <li>Filtrado por fecha.</li>
+        <li>Impacto en inventario solo cuando el servicio pasa a programado.</li>
+        <li>Vehiculo en taller: deshabilitado hasta cambiar estatus.</li>
+        <li>Modal para agregar servicio a un vehiculo.</li>
+      </ul>
+
+      <h3>15. Agregar Servicio</h3>
+      <ul>
+        <li>Listado de servicios disponibles con editar/eliminar.</li>
+        <li>Alta de servicio: nombre, materiales requeridos y vehiculos aplicables.</li>
+        <li>Control de materiales para descuento al programar/ejecutar.</li>
+      </ul>
+
+      <h3>16. Observaciones</h3>
+      <ul>
+        <li>Registro de incidencias de choferes; pueden originar servicios.</li>
+        <li>Filtro por tipo de observacion.</li>
+        <li>Historial de resultas: tipos de servicios generados y tiempos de resolucion.</li>
+      </ul>
+
+      <h3>17. Inventario</h3>
+      <ul>
+        <li>Listado de materiales en stock con editar/ajustar/eliminar.</li>
+        <li>Filtros por tipo de stock y sucursal.</li>
+        <li>Alta de producto: datos esenciales y vehiculos aplicables.</li>
+      </ul>
+
+      <h3>18. Estadisticas de inventario</h3>
+      <ul>
+        <li>KPIs por rango de fechas seleccionado.</li>
+        <li>Top de material con stock bajo.</li>
+        <li>Top de material con mayor valor.</li>
+        <li>Estadisticas generales (consumos, entradas, ajustes).</li>
+      </ul>
+
+      <h3>19. Aplicacion movil</h3>
+      <ul>
+        <li>Modal obligatorio de kilometraje y formulario de condiciones.</li>
+        <li>Genera servicio si el kilometraje supera el umbral.</li>
+        <li>Agrupacion de facturas, gestion de mapa de ruta y exportar ruta a Google Maps.</li>
+        <li>Modulo de vehiculo y gestion de formulario del vehiculo.</li>
+        <li>Conserva sesion y maneja excepciones de conexion.</li>
+        <li>Actualizacion por API REST; restriccion si la version no es vigente.</li>
+        <li>Restricciones si no tiene vehiculo asignado, kilometraje o formulario de condiciones.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Casos de uso (ejemplos)</h2>
+      <ul>
+        <li>Asignar pedido a chofer con notificacion: operador valida -&gt; asigna chofer -&gt; sistema envia WhatsApp con datos clave -&gt; chofer confirma.</li>
+        <li>Optimizar y priorizar ruta: supervisor agrupa pedidos -&gt; optimiza -&gt; ajusta orden con drag & drop -&gt; guarda -&gt; chofer sigue prioridad.</li>
+        <li>Alta de pedido con multiples facturas: ingresa datos -&gt; agrega facturas y precio -&gt; selecciona coordenada -&gt; guarda -&gt; listo para asignacion.</li>
+        <li>Reporte de precios: filtra por fecha/sucursal/vendedor -&gt; revisa pedidos &lt; 1000 y correcciones -&gt; marca pendientes -&gt; exporta Excel.</li>
+        <li>Control de gasolina: importa masivo con machote -&gt; revisa pendientes por vehiculos faltantes -&gt; sincroniza -&gt; exporta reporte filtrado.</li>
+        <li>Servicios e inventario: mueve servicio a programado -&gt; inventario descuenta materiales -&gt; vehiculo en taller queda bloqueado -&gt; se libera al cerrar.</li>
+        <li>App movil: chofer valida version y vehiculo -&gt; captura kilometraje y condiciones -&gt; si excede umbral, se genera servicio -&gt; sigue ruta y exporta a Google Maps.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Recomendaciones finales</h2>
+      <ul>
+        <li>Validar pedidos antes de asignar chofer y registrar cambios de precio con trazabilidad.</li>
+        <li>Monitorear integraciones de WhatsApp y exportes Excel para asegurar entregabilidad y formato.</li>
+        <li>Capacitar usuarios en filtros (fecha, sucursal, tipo) y en priorizacion de rutas con drag & drop.</li>
+        <li>Programar mantenimientos preventivos segun kilometraje proximo servicio y consumos de gasolina.</li>
+        <li>Mantener catalogo de vehiculos sincronizado antes de importaciones masivas de gasolina.</li>
+        <li>Supervisar tablero de servicios e inventario para evitar desabasto y vehiculos inmovilizados.</li>
+        <li>En la app movil, reforzar cumplimiento de version, vehiculo asignado y kilometraje para garantizar datos completos.</li>
+      </ul>
+    </section>
+  </div>
+</body>
+</html>
