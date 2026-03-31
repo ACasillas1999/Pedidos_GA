@@ -29,12 +29,14 @@ input[type="submit"]:hover {
 }
 
 #filtroEstadoForm {
-    display: -webkit-inline-box;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 20px; /* Espacio inferior */
-    
+    display: grid;
+    grid-template-columns: auto auto minmax(160px,1fr) minmax(180px,1fr) minmax(220px,1fr);
+    gap: 0 12px;
+    align-items: start;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 #filtroEstadoForm label {
@@ -171,8 +173,9 @@ input[type="submit"]:hover {
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
-    margin-right: 10px; /* Espacio entre el campo de búsqueda y el botón */
-    width: 200px; /* Ancho del campo de búsqueda */
+    margin-right: 10px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 

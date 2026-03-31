@@ -585,7 +585,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
       
 
       <!-- 1. Filtrar por Estado -->
-      <div style="margin-bottom: 15px; padding-bottom: 12px; border-bottom: 1px solid #dee2e6;">
+      <div style="padding-bottom: 6px;">
         <label class="label" style="font-weight: bold; font-size: 13px; margin-bottom: 8px; display: block; color: #495057;">Filtrar por Estado:</label>
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">
           <div style="display: flex; align-items: center;">
@@ -615,8 +615,28 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         </div>
       </div>
 
+      <!-- 1b. Filtrar por Zona (LOCAL / FORÁNEO) -->
+      <div style="padding-bottom: 6px;">
+        <label class="label" style="font-weight: bold; font-size: 13px; margin-bottom: 8px; display: block; color: #495057;">Filtrar por Zona:</label>
+        <div style="display: flex; gap: 8px;">
+          <button type="button" id="zonaBtn-TODAS" class="zona-btn zona-btn-active" data-zona="" onclick="seleccionarZona('')"
+            style="flex:1; padding:7px 10px; border:2px solid #6c757d; border-radius:20px; background:#6c757d; color:#fff; font-size:12px; font-weight:700; cursor:pointer; transition:all .2s;">
+            TODOS
+          </button>
+          <button type="button" id="zonaBtn-LOCAL" class="zona-btn" data-zona="LOCAL" onclick="seleccionarZona('LOCAL')"
+            style="flex:1; padding:7px 10px; border:2px solid #28a745; border-radius:20px; background:#fff; color:#28a745; font-size:12px; font-weight:700; cursor:pointer; transition:all .2s;">
+            🏠 LOCAL
+          </button>
+          <button type="button" id="zonaBtn-FORANEO" class="zona-btn" data-zona="FORANEO" onclick="seleccionarZona('FORANEO')"
+            style="flex:1; padding:7px 10px; border:2px solid #ff9800; border-radius:20px; background:#fff; color:#ff9800; font-size:12px; font-weight:700; cursor:pointer; transition:all .2s;">
+            🌍 FORÁNEO
+          </button>
+        </div>
+        <input type="hidden" id="filtroZona" name="filtroZona" value="">
+      </div>
+
       <!-- 2. Filtrar por Grupo -->
-      <div style="margin-bottom: 15px; padding-bottom: 12px; border-bottom: 1px solid #dee2e6;    margin-left: 37px;">
+      <div style="padding-bottom: 6px;">
         <label class="label" style="font-weight: bold; font-size: 13px; margin-bottom: 8px; display: block; color: #495057;">Filtrar por Grupo:</label>
         <select id="filtroGrupo" name="filtroGrupo" style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 13px; box-sizing: border-box; margin-bottom: 8px;">
           <option value="">Todos los pedidos</option>
@@ -627,7 +647,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
       </div>
 
       <!-- 3. Rango de Fechas -->
-      <div style="margin-bottom: 15px; padding-bottom: 12px; border-bottom: 1px solid #dee2e6;     padding-right: 79px;margin-left: 74px;">
+      <div style="padding-bottom: 6px;">
         <label class="label" style="font-weight: bold; font-size: 13px; margin-bottom: 8px; display: block; color: #495057;">Rango de Fechas:</label>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
           <div>
@@ -643,12 +663,13 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
       </div>
 
       <!-- 4. Búsqueda General -->
-      <div>
+      <div style="padding-bottom: 6px;">
         <label class="label" style="font-weight: bold; font-size: 13px; margin-bottom: 8px; display: block; color: #495057;">Búsqueda General:</label>
         <div style="display: flex; gap: 8px; align-items: stretch;">
-          <input type="text" id="busqueda" name="busqueda" placeholder="Buscar pedido..." style="flex: 1; padding: 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 13px; box-sizing: border-box;">
+          <input type="text" id="busqueda" name="busqueda" placeholder="Buscar en todo (nombre, factura, chofer, dirección...)" style="flex: 1; padding: 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 13px; box-sizing: border-box;">
           <button type="button" id="boton-buscar" class="boton-consultar" style="padding: 8px 16px; font-size: 13px; white-space: nowrap; box-sizing: border-box;">Buscar</button>
         </div>
+        <div id="busqueda-hint" style="font-size: 11px; color: #888; margin-top: 4px;">Busca en: N°, vendedor, estado, chofer, factura, dirección, cliente, contacto, sucursal, tipo envío</div>
       </div>
 
     </form>
@@ -688,6 +709,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         var buscarGrupo = document.getElementById("buscarGrupo").value;
         var fechaInicio = document.getElementById("fechaInicio").value;
         var fechaFin = document.getElementById("fechaFin").value;
+        var filtroZona = document.getElementById("filtroZona").value;
 
         var xhr = new XMLHttpRequest();
         xhr.open("POST", "filtrar.php", true);
@@ -714,7 +736,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
                      "&filtro_grupo=" + encodeURIComponent(filtroGrupo) +
                      "&buscar_grupo=" + encodeURIComponent(buscarGrupo) +
                      "&fecha_inicio=" + encodeURIComponent(fechaInicio) +
-                     "&fecha_fin=" + encodeURIComponent(fechaFin);
+                     "&fecha_fin=" + encodeURIComponent(fechaFin) +
+                     "&filtro_zona=" + encodeURIComponent(filtroZona);
         xhr.send(params);
       }
       
@@ -764,11 +787,15 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 
       // Dispara el filtrado al cargar la página
       filterData();
-      
-      // Manejo de la búsqueda (sin cambios)
-      document.getElementById("boton-buscar").addEventListener("click", function(event) {
-        event.preventDefault();
+
+      // ---- Función de búsqueda general ----
+      function ejecutarBusqueda() {
         var busqueda = document.getElementById("busqueda").value.trim();
+        if (busqueda === '') {
+          // Si borra todo, vuelve al filtrado normal
+          filterData();
+          return;
+        }
         var xhr = new XMLHttpRequest();
         xhr.open("POST", "buscar.php", true);
         xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
@@ -778,7 +805,57 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
           }
         };
         xhr.send("busqueda=" + encodeURIComponent(busqueda));
+      }
+
+      // Búsqueda al hacer clic en botón
+      document.getElementById("boton-buscar").addEventListener("click", function(event) {
+        event.preventDefault();
+        ejecutarBusqueda();
       });
+
+      // Búsqueda en tiempo real al escribir (debounce 400ms)
+      var busquedaTimer = null;
+      document.getElementById("busqueda").addEventListener("input", function() {
+        clearTimeout(busquedaTimer);
+        busquedaTimer = setTimeout(function() {
+          ejecutarBusqueda();
+        }, 400);
+      });
+
+      // Enter en el campo de búsqueda
+      document.getElementById("busqueda").addEventListener("keydown", function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          clearTimeout(busquedaTimer);
+          ejecutarBusqueda();
+        }
+      });
+
+      // ---- Función para seleccionar zona LOCAL/FORÁNEO ----
+      window.seleccionarZona = function(zona) {
+        document.getElementById('filtroZona').value = zona;
+        // Actualizar estilos de botones
+        var btns = document.querySelectorAll('.zona-btn');
+        btns.forEach(function(btn) {
+          var bzona = btn.getAttribute('data-zona');
+          var isSelected = (bzona === zona);
+          if (bzona === '' && zona === '') isSelected = true;
+          if (isSelected) {
+            btn.classList.add('zona-btn-active');
+            if (bzona === '') { btn.style.background = '#6c757d'; btn.style.color = '#fff'; }
+            else if (bzona === 'LOCAL') { btn.style.background = '#28a745'; btn.style.color = '#fff'; }
+            else if (bzona === 'FORANEO') { btn.style.background = '#ff9800'; btn.style.color = '#fff'; }
+          } else {
+            btn.classList.remove('zona-btn-active');
+            if (bzona === '') { btn.style.background = '#fff'; btn.style.color = '#6c757d'; }
+            else if (bzona === 'LOCAL') { btn.style.background = '#fff'; btn.style.color = '#28a745'; }
+            else if (bzona === 'FORANEO') { btn.style.background = '#fff'; btn.style.color = '#ff9800'; }
+          }
+        });
+        offset = 0;
+        currentPage = 1;
+        filterData();
+      };
       
       // Evitar que el submit del formulario de filtrado recargue la página
       document.getElementById("filtroEstadoForm").addEventListener("submit", function(event) {
