@@ -675,6 +675,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'edita
         $stmt->bind_param("sssssiiii", $nuevaPlaca, $nuevoTipo, $nuevaSerie, $nuevaSucursal, $nuevaRazon, $nuevoKmActual, $nuevoKmTotal, $nuevoKmServicio, $id_vehiculo);
         $stmt->execute();
 
+        // Sincronizar con el último registro en registro_kilometraje para evitar desajustes en el historial
+        $stmt_hist = $conn->prepare("UPDATE registro_kilometraje SET kilometraje_final = ? WHERE id_vehiculo = ? ORDER BY id_registro DESC LIMIT 1");
+        $stmt_hist->bind_param("ii", $nuevoKmTotal, $id_vehiculo);
+        $stmt_hist->execute();
+
         // Registrar el cambio si la sucursal cambió
         if ($nuevaSucursal !== suc_norm($vehiculo['Sucursal'] ?? '')) {
             $sucursalAnterior = suc_norm($vehiculo['Sucursal'] ?? '');
@@ -2114,7 +2119,7 @@ function fmtDuracion($min){
                         <label class="modal__label">Km total del vehiculo (histórico) *</label>
                         <input class="modal__field" type="number" name="km_total"
                                min="0" step="1"
-                               value="<?= (int)($vehiculo['Km_Total'] ?? 0) ?>" readonly
+                               value="<?= (int)($vehiculo['Km_Total'] ?? 0) ?>"
                                required placeholder="Suma total recorrida">
                     </div>
                     <div class="modal__row">

@@ -23,11 +23,12 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
   <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-  <!-- Mapbox GL JS para modal de destinatario -->
+  <!-- Mapbox GL JS para modal de destinatario y vista general -->
   <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
   <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
   <script src='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js'></script>
   <link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.css' type='text/css' />
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 
   <!-- Estilos para modal de destinatario -->
   <style>
@@ -173,6 +174,109 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
       margin-top: 5px;
       text-align: center;
     }
+
+    /* Estilos para el toggle de vista */
+    .view-toggle-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+      gap: 0;
+    }
+
+    .view-toggle-btn {
+      padding: 10px 25px;
+      font-size: 14px;
+      font-weight: 600;
+      border: 1px solid #005aa3;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: #fff;
+      color: #005aa3;
+    }
+
+    .view-toggle-btn.active {
+      background: #005aa3;
+      color: #fff;
+    }
+
+    .view-toggle-btn:first-child {
+      border-radius: 20px 0 0 20px;
+    }
+
+    .view-toggle-btn:last-child {
+      border-radius: 0 20px 20px 0;
+    }
+
+    #map-and-table-wrapper {
+      display: none;
+      align-items: stretch;
+      height: 75vh;
+      min-height: 500px;
+      margin-bottom: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      background: white;
+      overflow: hidden;
+    }
+
+    #map-view-container {
+      flex: 1;
+      position: relative;
+    }
+
+    #map-stats-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 10;
+      background: white;
+      padding: 10px 15px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      font-size: 13px;
+      color: #333;
+      border-left: 4px solid #005aa3;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .clickable-stat {
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .clickable-stat:hover {
+      color: #ed6b1f;
+      text-decoration: underline;
+    }
+
+    /* Estilos para marcadores personalizados */
+    .custom-marker {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      border: 2px solid white;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .custom-marker:hover {
+      transform: rotate(-45deg) scale(1.1);
+    }
+
+    .marker-inner {
+      transform: rotate(45deg);
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
   </style>
 </head>
     
@@ -208,8 +312,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
             </li>
 
              <li>
-        <a href="reporte_zonas.php" title="Reporte de Zonas">
-          <img src="\Pedidos_GA\Img\zonascolor.png" alt="Reporte Zonas" class="icono-reporte-zonas" style="max-width: 70%; height: auto;">
+        <a href="reporte_zonas.php" title="Reporte de Zonas" style="display:flex; align-items:center; justify-content:center;">
+          <img src="\Pedidos_GA\Img\zonascolor.png" alt="Reporte Zonas" class="icono-reporte-zonas" style="max-width: 60%; height: auto;">
         </a>
       </li>
           <?php endif; ?>
@@ -674,6 +778,45 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 
     </form>
     
+    <!-- Toggle de Vista (Solo Admin y JC) -->
+    <?php if (in_array($_SESSION["Rol"], ["Admin", "JC"])): ?>
+    <div class="view-toggle-container">
+      <button type="button" id="btn-view-table" class="view-toggle-btn active" onclick="switchView('table')">
+        📋 Vista Tabla
+      </button>
+      <button type="button" id="btn-view-map" class="view-toggle-btn" onclick="switchView('map')">
+        🗺️ Vista Mapa
+      </button>
+    </div>
+
+    <div id="map-and-table-wrapper">
+      <div id="map-table-container" style="flex: 0 0 25%; overflow-y: auto; border-right: 2px solid #ddd;">
+        <table class="mi-tabla" id="map-orders-table" style="width: 100%; margin: 0; font-size: 11px; border-collapse: collapse; text-align: left;">
+          <thead style="position: sticky; top: 0; background: #005aa3; color: white; z-index: 1;">
+            <tr>
+              <th style="padding: 4px;">Pedido</th>
+              <th style="padding: 4px;">Factura</th>
+              <th style="padding: 4px;">Cliente</th>
+              <th style="padding: 4px;">Sucursal</th>
+              <th style="padding: 4px;">Estado</th>
+              <th style="padding: 4px; text-align: center;">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="map-view-container">
+        <div id="map-stats-badge">
+          <div id="stat-total">Total: <strong>0</strong></div>
+          <div id="stat-missing" class="clickable-stat" onclick="showMissingCoordsList()">Sin coordenadas: <strong style="color: #dc3545;">0</strong></div>
+        </div>
+        <div id="map-main" style="width: 100%; height: 100%;"></div>
+      </div>
+    </div>
+    <?php endif; ?>
+    
     <p></p>
     <!-- Contenedor para mostrar resultados -->
     <div id="resultado">
@@ -694,6 +837,245 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
       var offset = 0;
       var registrosPorPagina = 100;
       var currentPage = 1;
+      
+      // Variables para el Mapa Principal
+      mapboxgl.accessToken = 'pk.eyJ1IjoiYWNhc2lsbGFzNzY2IiwiYSI6ImNsdW12cTZyMjB4NnMya213MDdseXp6ZGgifQ.t7-l1lQfd8mgHILM5YrdNw';
+      var mainMap = null;
+      var mainMarkers = [];
+      var currentView = 'table';
+      var missingCoordsOrders = []; // Pedidos que no tienen coordenadas válidas
+
+      // Colores por sucursal
+      const branchColors = {
+        'GABSA': '#005aa3',
+        'ILUMINACION': '#ed6b1f',
+        'DIMEGSA': '#28a745',
+        'DEASA': '#6f42c1',
+        'AIESA': '#e83e8c',
+        'SEGSA': '#20c997',
+        'FESA': '#fd7e14',
+        'TAPATIA': '#004d6f',
+        'VALLARTA': '#17a2b8',
+        'CODI': '#d63384',
+        'QUERETARO': '#ffc107',
+        'CONSTITUYENTES': '#495057',
+        'OTRA': '#6c757d'
+      };
+
+      function getSucursalColor(sucursal) {
+        return branchColors[sucursal] || branchColors['OTRA'];
+      }
+
+      // Mostrar modal con lista de pedidos sin coordenadas
+      window.showMissingCoordsList = function() {
+        if (missingCoordsOrders.length === 0) {
+          Swal.fire({
+            icon: 'info',
+            title: 'Todo bien',
+            text: 'Todos los pedidos de esta página tienen coordenadas válidas.'
+          });
+          return;
+        }
+
+        let html = '<div style="text-align: left; max-height: 400px; overflow-y: auto;">';
+        html += '<p style="margin-bottom: 15px; color: #666; font-size: 14px;">Haz clic en cualquier fila para ver los detalles del pedido.</p>';
+        html += '<table class="mi-tabla" style="width: 100%;">';
+        html += '<tr><th>ID</th><th>Factura</th><th>Cliente</th><th>Sucursal</th><th>Dirección</th></tr>';
+        missingCoordsOrders.forEach(p => {
+          html += `<tr onclick="window.open('Inicio.php?id=${p.id}', '_blank')" style="cursor: pointer;">
+            <td>${p.id}</td>
+            <td>${p.factura}</td>
+            <td>${p.cliente}</td>
+            <td>${p.sucursal}</td>
+            <td style="font-size: 11px;">${p.direccion}</td>
+          </tr>`;
+        });
+        html += '</table></div>';
+
+        Swal.fire({
+          title: 'Pedidos sin Coordenadas',
+          html: html,
+          width: '850px',
+          confirmButtonColor: '#005aa3'
+        });
+      };
+
+      // Función para cambiar de vista (Tabla/Mapa)
+      window.switchView = function(view) {
+        currentView = view;
+        const resDiv = document.getElementById("resultado");
+        const pagDiv = document.getElementById("pagination");
+        const mapWrapperDiv = document.getElementById("map-and-table-wrapper");
+        const btnTable = document.getElementById("btn-view-table");
+        const btnMap = document.getElementById("btn-view-map");
+
+        if (view === 'map') {
+          resDiv.style.display = 'none';
+          pagDiv.style.display = 'none';
+          if(mapWrapperDiv) mapWrapperDiv.style.display = 'flex';
+          btnMap.classList.add('active');
+          btnTable.classList.remove('active');
+          
+          if (!mainMap) {
+            initMainMap();
+          } else {
+            setTimeout(() => mainMap.resize(), 100);
+          }
+          updateMapMarkers();
+        } else {
+          resDiv.style.display = 'block';
+          pagDiv.style.display = 'block';
+          if(mapWrapperDiv) mapWrapperDiv.style.display = 'none';
+          btnTable.classList.add('active');
+          btnMap.classList.remove('active');
+        }
+      };
+
+      function initMainMap() {
+        mainMap = new mapboxgl.Map({
+          container: 'map-main',
+          style: 'mapbox://styles/mapbox/streets-v12',
+          center: [-103.35, 20.67], // Guadalajara
+          zoom: 11
+        });
+        mainMap.addControl(new mapboxgl.NavigationControl());
+      }
+
+      function updateMapMarkers() {
+        if (!mainMap) return;
+        
+        // Limpiar marcadores anteriores
+        mainMarkers.forEach(m => m.remove());
+        mainMarkers = [];
+        missingCoordsOrders = [];
+        
+        const checkboxes = document.querySelectorAll('.pedido-checkbox');
+        const bounds = new mapboxgl.LngLatBounds();
+        let plottedCount = 0;
+
+        const tbody = document.querySelector('#map-orders-table tbody');
+        if(tbody) tbody.innerHTML = '';
+        const fragment = document.createDocumentFragment();
+
+        checkboxes.forEach(cb => {
+          const coordsRaw = cb.dataset.coordenadas;
+          const sucursal = cb.dataset.sucursal;
+          const color = getSucursalColor(sucursal);
+          const hasDriver = cb.dataset.chofer && cb.dataset.chofer !== '';
+          const hasGroup = cb.dataset.grupoId && cb.dataset.grupoId !== '';
+
+          if (coordsRaw && coordsRaw.includes(',')) {
+            const [lat, lng] = coordsRaw.split(',').map(Number);
+            if (!isNaN(lat) && !isNaN(lng)) {
+              // Crear elemento de marcador personalizado
+              const el = document.createElement('div');
+              el.className = 'custom-marker';
+              el.style.backgroundColor = color;
+              
+              const inner = document.createElement('div');
+              inner.className = 'marker-inner';
+              // Si tiene chofer o grupo, mostrar icono de camión, si no, un punto
+              inner.innerHTML = (hasDriver || hasGroup) ? '🚚' : '📍';
+              el.appendChild(inner);
+
+              const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
+                  <div style="font-family: 'Segoe UI', sans-serif; min-width: 180px;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 5px;">
+                        <h4 style="margin: 0; color: ${color};">Pedido #${cb.dataset.id}</h4>
+                        <span style="font-size: 10px; background: #eee; padding: 2px 5px; border-radius: 4px;">${sucursal}</span>
+                    </div>
+                    <p style="margin: 2px 0;"><strong>Factura:</strong> ${cb.dataset.factura}</p>
+                    <p style="margin: 2px 0;"><strong>Cliente:</strong> ${cb.dataset.cliente}</p>
+                    <p style="margin: 2px 0;"><strong>Estado:</strong> ${cb.dataset.estado}</p>
+                    ${hasDriver ? `<p style="margin: 2px 0; color: #155724; font-weight: bold;">🚚 Chofer: ${cb.dataset.chofer}</p>` : ''}
+                    <p style="margin: 2px 0; font-size: 11px; color: #666;">${cb.dataset.direccion}</p>
+                    <hr style="margin: 8px 0; border: 0; border-top: 1px solid #eee;">
+                    <a href="Inicio.php?id=${cb.dataset.id}" target="_blank" style="color: #ed6b1f; font-weight: bold; text-decoration: none; font-size: 12px;">Ver Detalles →</a>
+                  </div>
+                `);
+
+              popup.on('open', () => {
+                document.querySelectorAll('.map-table-row').forEach(r => r.style.backgroundColor = '');
+                const row = document.querySelector(`.map-table-row[data-id="${cb.dataset.id}"]`);
+                if(row) {
+                  row.style.backgroundColor = '#e7f3ff';
+                  row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+              });
+
+              popup.on('close', () => {
+                const row = document.querySelector(`.map-table-row[data-id="${cb.dataset.id}"]`);
+                if(row) row.style.backgroundColor = '';
+              });
+
+              const marker = new mapboxgl.Marker(el)
+                .setLngLat([lng, lat])
+                .setPopup(popup)
+                .addTo(mainMap);
+              
+              marker.pedidoId = cb.dataset.id;
+              mainMarkers.push(marker);
+              bounds.extend([lng, lat]);
+              plottedCount++;
+              
+              if(tbody) {
+                const tr = document.createElement('tr');
+                tr.className = 'map-table-row';
+                tr.dataset.id = cb.dataset.id;
+                tr.style.cursor = 'pointer';
+                tr.innerHTML = `
+                  <td style="padding: 3px 4px; border-bottom: 1px solid #eee;">
+                    <a href="Inicio.php?id=${cb.dataset.id}" target="_blank" style="color: #005aa3; font-weight: bold; text-decoration: none;" onclick="event.stopPropagation();">#${cb.dataset.id}</a>
+                  </td>
+                  <td style="padding: 3px 4px; border-bottom: 1px solid #eee;">${cb.dataset.factura}</td>
+                  <td style="padding: 3px 4px; border-bottom: 1px solid #eee; max-width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${cb.dataset.cliente}">${cb.dataset.cliente}</td>
+                  <td style="padding: 3px 4px; border-bottom: 1px solid #eee;">
+                    <span style="background: ${color}; color: white; padding: 2px 4px; border-radius: 4px; font-size: 9px;">${sucursal}</span>
+                  </td>
+                  <td style="padding: 3px 4px; border-bottom: 1px solid #eee;">${cb.dataset.estado}</td>
+                  <td style="padding: 3px 4px; border-bottom: 1px solid #eee; text-align: center;">
+                    <a href="Inicio.php?id=${cb.dataset.id}" target="_blank" onclick="event.stopPropagation();" style="display: inline-block; background-color: #ed6b1f; color: white; padding: 3px 6px; border-radius: 4px; font-size: 9px; font-weight: bold; text-decoration: none; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#d35400'" onmouseout="this.style.backgroundColor='#ed6b1f'">Detalles</a>
+                  </td>
+                `;
+                
+                tr.addEventListener('click', function() {
+                  document.querySelectorAll('.map-table-row').forEach(r => r.style.backgroundColor = '');
+                  this.style.backgroundColor = '#e7f3ff';
+                  const m = mainMarkers.find(mark => mark.pedidoId === cb.dataset.id);
+                  if(m) {
+                    mainMap.flyTo({ center: m.getLngLat(), zoom: 15 });
+                    if (!m.getPopup().isOpen()) {
+                      m.togglePopup();
+                    }
+                  }
+                });
+                
+                tr.addEventListener('dblclick', function() {
+                  window.open(`Inicio.php?id=${cb.dataset.id}`, '_blank');
+                });
+                
+                fragment.appendChild(tr);
+              }
+            } else {
+              missingCoordsOrders.push({ id: cb.dataset.id, factura: cb.dataset.factura, cliente: cb.dataset.cliente, sucursal: sucursal, direccion: cb.dataset.direccion });
+            }
+          } else {
+            missingCoordsOrders.push({ id: cb.dataset.id, factura: cb.dataset.factura, cliente: cb.dataset.cliente, sucursal: sucursal, direccion: cb.dataset.direccion });
+          }
+        });
+
+        if(tbody) tbody.appendChild(fragment);
+
+        // Actualizar estadísticas del mapa (si existe el contenedor)
+        const totalStat = document.querySelector('#stat-total strong');
+        const missingStat = document.querySelector('#stat-missing strong');
+        if (totalStat) totalStat.textContent = checkboxes.length;
+        if (missingStat) missingStat.textContent = missingCoordsOrders.length;
+
+        if (plottedCount > 0 && currentView === 'map') {
+            mainMap.fitBounds(bounds, { padding: 50, maxZoom: 15 });
+        }
+      }
       
       // Función para enviar los filtros a filtrar.php mediante AJAX, incluyendo el offset
       function filterData() {
@@ -727,6 +1109,11 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
             }
             // Actualizar el indicador de página
             document.getElementById("currentPage").textContent = "Página " + currentPage;
+            
+            // Si la vista mapa está activa, actualizar marcadores
+            if (currentView === 'map') {
+                updateMapMarkers();
+            }
           }
         };
         // Enviamos todos los parámetros
@@ -802,6 +1189,10 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         xhr.onreadystatechange = function() {
           if (xhr.readyState == 4 && xhr.status == 200) {
             document.getElementById("resultado").innerHTML = xhr.responseText;
+            // Si la vista mapa está activa, actualizar marcadores
+            if (currentView === 'map') {
+                updateMapMarkers();
+            }
           }
         };
         xhr.send("busqueda=" + encodeURIComponent(busqueda));

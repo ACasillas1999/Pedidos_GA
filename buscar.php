@@ -72,9 +72,11 @@ if (!empty($sucursales_permitidas)) {
 $whereSql = implode(' AND ', $where);
 
 // ---------- Consulta segura ----------
-$sql = "SELECT * FROM pedidos
+$sql = "SELECT p.*, pd.lat, pd.lng 
+        FROM pedidos p
+        LEFT JOIN pedidos_destinatario pd ON p.ID = pd.pedido_id
         WHERE $whereSql
-        ORDER BY FECHA_RECEPCION_FACTURA DESC
+        ORDER BY p.FECHA_RECEPCION_FACTURA DESC
         LIMIT 500";
 
 $stmt = $conn->prepare($sql);
@@ -85,7 +87,13 @@ $result = $stmt->get_result();
 // ---------- Render ----------
 if ($result && $result->num_rows > 0) {
     echo "<table class='mi-tabla' border='1'>";
+    
+    // Mostrar columna de checkbox solo para Admin y JC (igual que en filtrar.php)
+    $mostrarCheckbox = in_array($rolSesion, ["Admin", "JC"]);
+    $checkboxHeader = $mostrarCheckbox ? "<th><input type='checkbox' id='selectAll' title='Seleccionar todos'></th>" : "";
+
     echo "<tr>
+            $checkboxHeader
             <th>N°</th>
             <th>Factura (caja)</th>
             <th>Estado</th>
@@ -151,7 +159,31 @@ if ($result && $result->num_rows > 0) {
         $choferAsignado = $row["CHOFER_ASIGNADO"] ?? '';
         $colorChofer = ($choferAsignado === '' ? "#FFCCCC" : "#FFFFFF");
 
+        // Coordenadas (Igual que en filtrar.php para compatibilidad con mapa)
+        $finalLat = !empty($row["lat"]) ? $row["lat"] : null;
+        $finalLng = !empty($row["lng"]) ? $row["lng"] : null;
+        $coordenadasStr = '';
+        if ($finalLat && $finalLng) {
+            $coordenadasStr = $finalLat . "," . $finalLng;
+        } else {
+            $coordenadasStr = isset($row["Coord_Destino"]) ? $row["Coord_Destino"] : '';
+        }
+        $coordenadas = htmlspecialchars($coordenadasStr);
+        
+        $checkboxCell = $mostrarCheckbox ? "<td style='text-align:center;'><input type='checkbox' class='pedido-checkbox' 
+            data-id='".htmlspecialchars($row["ID"])."' 
+            data-estado='".htmlspecialchars($estado)."' 
+            data-tipo-envio='".htmlspecialchars($tipoEnvio)."' 
+            data-sucursal='".htmlspecialchars($row["SUCURSAL"] ?? '')."' 
+            data-factura='".htmlspecialchars($row["FACTURA"] ?? '')."' 
+            data-cliente='".htmlspecialchars($row["NOMBRE_CLIENTE"] ?? '')."' 
+            data-direccion='".htmlspecialchars($row["DIRECCION"] ?? '')."' 
+            data-coordenadas='$coordenadas'
+            data-chofer='".htmlspecialchars($row["CHOFER_ASIGNADO"] ?? '')."'
+            data-grupo-id='".htmlspecialchars($row["grupo_id"] ?? '')."'></td>" : "";
+
         echo "<tr>";
+        echo $checkboxCell;
         echo "<td>" . htmlspecialchars($row["ID"]) . "</td>";
         echo "<td>{$badge}<div style='margin-top:6px'>{$accionHtml}</div></td>";
         echo "<td style='background-color: $colorEstado;'>" . htmlspecialchars($estado) . "</td>";

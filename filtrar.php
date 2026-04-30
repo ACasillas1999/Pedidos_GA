@@ -116,10 +116,13 @@ if ($sucursalSesion === "TODAS") {
                        gr.nombre_grupo,
                        gr.chofer_asignado as grupo_chofer,
                        (SELECT COUNT(*) FROM pedidos_grupos WHERE grupo_id = pg.grupo_id) as total_en_grupo,
-                       p.tipo_zona
+                       p.tipo_zona,
+                       pd.lat,
+                       pd.lng
                 FROM pedidos p
                 LEFT JOIN pedidos_grupos pg ON p.ID = pg.pedido_id
                 LEFT JOIN grupos_rutas gr ON pg.grupo_id = gr.id AND gr.estado = 'ACTIVO'
+                LEFT JOIN pedidos_destinatario pd ON p.ID = pd.pedido_id
                 WHERE $estadoFilter $sucursalCondition $grupoConditionGlobal $fechaCondition $zonaCondition
                 ORDER BY p.FECHA_RECEPCION_FACTURA DESC
                 LIMIT $offset, 100";
@@ -258,8 +261,32 @@ if ($sucursalSesion === "TODAS") {
                     // Determinar si el checkbox debe estar habilitado
                     $checkboxEnabled = ($estado === 'ACTIVO' || in_array(strtolower($tipo_envio), ['programado', 'paquetería', 'paqueteria', 'domicilio']));
                     $checkboxDisabled = $checkboxEnabled ? "" : "disabled";
-                    $coordenadas = isset($row["Coord_Destino"]) ? htmlspecialchars($row["Coord_Destino"]) : '';
-                    $checkboxCell = $mostrarCheckbox ? "<td style='text-align:center;'><input type='checkbox' class='pedido-checkbox' data-id='{$row["ID"]}' data-estado='$estado' data-tipo-envio='$tipo_envio' data-sucursal='{$row["SUCURSAL"]}' data-factura='{$row["FACTURA"]}' data-cliente='{$row["NOMBRE_CLIENTE"]}' data-direccion='{$row["DIRECCION"]}' data-precio-vendedor='$precio_vendedor' data-precio-real='$precio_real' data-validado='$precio_validado' data-coordenadas='$coordenadas' $checkboxDisabled></td>" : "";
+                    // Priorizar coordenadas de pedidos_destinatario
+                    $finalLat = !empty($row["lat"]) ? $row["lat"] : null;
+                    $finalLng = !empty($row["lng"]) ? $row["lng"] : null;
+                    $coordenadasStr = '';
+                    if ($finalLat && $finalLng) {
+                        $coordenadasStr = $finalLat . "," . $finalLng;
+                    } else {
+                        $coordenadasStr = isset($row["Coord_Destino"]) ? $row["Coord_Destino"] : '';
+                    }
+                    $coordenadas = htmlspecialchars($coordenadasStr);
+
+                    $checkboxCell = $mostrarCheckbox ? "<td style='text-align:center;'><input type='checkbox' class='pedido-checkbox' 
+                        data-id='{$row["ID"]}' 
+                        data-estado='$estado' 
+                        data-tipo-envio='$tipo_envio' 
+                        data-sucursal='{$row["SUCURSAL"]}' 
+                        data-factura='{$row["FACTURA"]}' 
+                        data-cliente='{$row["NOMBRE_CLIENTE"]}' 
+                        data-direccion='{$row["DIRECCION"]}' 
+                        data-precio-vendedor='$precio_vendedor' 
+                        data-precio-real='$precio_real' 
+                        data-validado='$precio_validado' 
+                        data-coordenadas='$coordenadas' 
+                        data-chofer='".htmlspecialchars($choferAsignado)."' 
+                        data-grupo-id='".htmlspecialchars($grupoId ?? '')."' 
+                        $checkboxDisabled></td>" : "";
 
                     echo "<tr>";
                     echo $checkboxCell;
@@ -383,10 +410,13 @@ if ($sucursalSesion === "TODAS") {
                        gr.nombre_grupo,
                        gr.chofer_asignado as grupo_chofer,
                        (SELECT COUNT(*) FROM pedidos_grupos WHERE grupo_id = pg.grupo_id) as total_en_grupo,
-                       p.tipo_zona
+                       p.tipo_zona,
+                       pd.lat,
+                       pd.lng
                 FROM pedidos p
                 LEFT JOIN pedidos_grupos pg ON p.ID = pg.pedido_id
                 LEFT JOIN grupos_rutas gr ON pg.grupo_id = gr.id AND gr.estado = 'ACTIVO'
+                LEFT JOIN pedidos_destinatario pd ON p.ID = pd.pedido_id
                 WHERE $estadoFilter $sucursalCondition $grupoConditionGlobal $fechaCondition $zonaCondition
                 ORDER BY p.FECHA_RECEPCION_FACTURA DESC
                 LIMIT $offset, 100";
@@ -524,8 +554,32 @@ if ($sucursalSesion === "TODAS") {
                     // Determinar si el checkbox debe estar habilitado
                     $checkboxEnabled = ($estado === 'ACTIVO' || in_array(strtolower($tipo_envio), ['programado', 'paquetería', 'paqueteria', 'domicilio']));
                     $checkboxDisabled = $checkboxEnabled ? "" : "disabled";
-                    $coordenadas = isset($row["Coord_Destino"]) ? htmlspecialchars($row["Coord_Destino"]) : '';
-                    $checkboxCell = $mostrarCheckbox ? "<td style='text-align:center;'><input type='checkbox' class='pedido-checkbox' data-id='{$row["ID"]}' data-estado='$estado' data-tipo-envio='$tipo_envio' data-sucursal='{$row["SUCURSAL"]}' data-factura='{$row["FACTURA"]}' data-cliente='{$row["NOMBRE_CLIENTE"]}' data-direccion='{$row["DIRECCION"]}' data-precio-vendedor='$precio_vendedor' data-precio-real='$precio_real' data-validado='$precio_validado' data-coordenadas='$coordenadas' $checkboxDisabled></td>" : "";
+                    // Priorizar coordenadas de pedidos_destinatario
+                    $finalLat2 = !empty($row["lat"]) ? $row["lat"] : null;
+                    $finalLng2 = !empty($row["lng"]) ? $row["lng"] : null;
+                    $coordenadasStr2 = '';
+                    if ($finalLat2 && $finalLng2) {
+                        $coordenadasStr2 = $finalLat2 . "," . $finalLng2;
+                    } else {
+                        $coordenadasStr2 = isset($row["Coord_Destino"]) ? $row["Coord_Destino"] : '';
+                    }
+                    $coordenadas2 = htmlspecialchars($coordenadasStr2);
+
+                    $checkboxCell = $mostrarCheckbox ? "<td style='text-align:center;'><input type='checkbox' class='pedido-checkbox' 
+                        data-id='{$row["ID"]}' 
+                        data-estado='$estado' 
+                        data-tipo-envio='$tipo_envio' 
+                        data-sucursal='{$row["SUCURSAL"]}' 
+                        data-factura='{$row["FACTURA"]}' 
+                        data-cliente='{$row["NOMBRE_CLIENTE"]}' 
+                        data-direccion='{$row["DIRECCION"]}' 
+                        data-precio-vendedor='$precio_vendedor' 
+                        data-precio-real='$precio_real' 
+                        data-validado='$precio_validado' 
+                        data-coordenadas='$coordenadas2' 
+                        data-chofer='".htmlspecialchars($choferAsignado)."' 
+                        data-grupo-id='".htmlspecialchars($grupoId ?? '')."' 
+                        $checkboxDisabled></td>" : "";
 
                     echo "<tr>";
                     echo $checkboxCell;
