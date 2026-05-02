@@ -45,8 +45,8 @@ if ($rolSesion === 'Admin' && $sucSesion === 'TODAS') {
 
 // ---------- WHERE de búsqueda ----------
 $cols = [
-  'ID','VENDEDOR','ESTADO','FECHA_RECEPCION_FACTURA','CHOFER_ASIGNADO',
-  'FACTURA','DIRECCION','NOMBRE_CLIENTE','CONTACTO','SUCURSAL','tipo_envio'
+  'p.ID','p.VENDEDOR','p.ESTADO','p.FECHA_RECEPCION_FACTURA','p.CHOFER_ASIGNADO',
+  'p.FACTURA','p.DIRECCION','p.NOMBRE_CLIENTE','p.CONTACTO','p.SUCURSAL','p.tipo_envio'
 ];
 
 $likeParts = [];
@@ -64,7 +64,7 @@ $where[] = '(' . implode(' OR ', $likeParts) . ')';
 
 if (!empty($sucursales_permitidas)) {
     $place_suc = implode(',', array_fill(0, count($sucursales_permitidas), '?'));
-    $where[] = "SUCURSAL IN ($place_suc)";
+    $where[] = "p.SUCURSAL IN ($place_suc)";
     $types  .= str_repeat('s', count($sucursales_permitidas));
     foreach ($sucursales_permitidas as $s) { $params[] = $s; }
 }
