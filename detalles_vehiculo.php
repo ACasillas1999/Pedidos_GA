@@ -644,7 +644,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['accion'] ?? '') === 'edita
     $nuevaSucursal = suc_norm($_POST['sucursal'] ?? '');
     $nuevaRazon = trim($_POST['razon_social'] ?? '');
     $nuevoKmActual   = max(0, (int)($_POST['km_actual'] ?? ($vehiculo['Km_Actual'] ?? 0)));
-    $nuevoKmTotal    = max($nuevoKmActual, (int)($_POST['km_total'] ?? ($vehiculo['Km_Total'] ?? 0)));
+    $nuevoKmTotal    = max(0, (int)($_POST['km_total'] ?? ($vehiculo['Km_Total'] ?? 0)));  // permite corregir a cualquier valor >= 0
     $nuevoKmServicio = max(0, (int)($_POST['km_de_servicio'] ?? ($vehiculo['Km_de_Servicio'] ?? 0)));
 
     if ($nuevaPlaca !== '' && $nuevoTipo !== '' && $nuevaSerie !== '' && $id_vehiculo > 0) {
