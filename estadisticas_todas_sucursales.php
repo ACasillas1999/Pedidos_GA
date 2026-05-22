@@ -355,21 +355,36 @@ $sql_detalle = "SELECT
         p.MIN_VENTANA_HORARIA_1,
         p.FECHA_MAX_ENTREGA,
         p.MAX_VENTANA_HORARIA_1,
-        ep.Fecha AS Fecha_Real_Entrega,
+        COALESCE(ep.Fecha, p.FECHA_ENTREGA_CLIENTE) AS Fecha_Real_Entrega,
         ep.Hora AS Hora_Real_Entrega,
         CASE 
-            WHEN ep.Fecha < p.FECHA_MIN_ENTREGA THEN 'Antes de Tiempo'
-            WHEN ep.Fecha = p.FECHA_MIN_ENTREGA AND ep.Hora < p.MIN_VENTANA_HORARIA_1 THEN 'Antes de Tiempo'
-            WHEN ep.Fecha > p.FECHA_MAX_ENTREGA THEN 'Atrasado'
-            WHEN ep.Fecha = p.FECHA_MAX_ENTREGA AND ep.Hora > p.MAX_VENTANA_HORARIA_1 THEN 'Atrasado'
-            ELSE 'A Tiempo'
+            WHEN ep.Fecha IS NOT NULL THEN
+                CASE 
+                    WHEN ep.Fecha < p.FECHA_MIN_ENTREGA THEN 'Antes de Tiempo'
+                    WHEN ep.Fecha = p.FECHA_MIN_ENTREGA AND ep.Hora < p.MIN_VENTANA_HORARIA_1 THEN 'Antes de Tiempo'
+                    WHEN ep.Fecha > p.FECHA_MAX_ENTREGA THEN 'Atrasado'
+                    WHEN ep.Fecha = p.FECHA_MAX_ENTREGA AND ep.Hora > p.MAX_VENTANA_HORARIA_1 THEN 'Atrasado'
+                    ELSE 'A Tiempo'
+                END
+            ELSE
+                CASE 
+                    WHEN p.FECHA_ENTREGA_CLIENTE < p.FECHA_MIN_ENTREGA THEN 'Antes de Tiempo'
+                    WHEN p.FECHA_ENTREGA_CLIENTE > p.FECHA_MAX_ENTREGA THEN 'Atrasado'
+                    WHEN p.FECHA_ENTREGA_CLIENTE IS NOT NULL THEN 'A Tiempo'
+                    ELSE 'Sin Datos'
+                END
         END AS Evaluacion_Entrega
     FROM pedidos p
-    INNER JOIN EstadoPedido ep ON p.ID = ep.ID_Pedido
-    WHERE ep.Estado = 'ENTREGADO'";
+    LEFT JOIN (
+        SELECT ID_Pedido, MAX(Fecha) AS Fecha, MAX(Hora) AS Hora 
+        FROM EstadoPedido 
+        WHERE Estado = 'ENTREGADO' 
+        GROUP BY ID_Pedido
+    ) ep ON p.ID = ep.ID_Pedido
+    WHERE p.ESTADO = 'Entregado'";
 
 if ($usar_filtro_fechas) {
-    $sql_detalle .= " AND p.FECHA_RECEPCION_FACTURA BETWEEN ? AND ? ORDER BY ep.Fecha DESC, ep.Hora DESC";
+    $sql_detalle .= " AND p.FECHA_RECEPCION_FACTURA BETWEEN ? AND ? ORDER BY p.ID DESC";
     $stmt = $conn->prepare($sql_detalle);
     if ($stmt) {
         $stmt->bind_param("ss", $start_date, $end_date);
@@ -382,7 +397,7 @@ if ($usar_filtro_fechas) {
         $stmt->close();
     }
 } else {
-    $sql_detalle .= " ORDER BY ep.Fecha DESC, ep.Hora DESC";
+    $sql_detalle .= " ORDER BY p.ID DESC";
     $stmt = $conn->prepare($sql_detalle);
     if ($stmt) {
         $stmt->execute();
