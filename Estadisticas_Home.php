@@ -289,25 +289,34 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
             // STATS CALCULATION
             let globalTotal = 0;
             let globalExito = 0;
+            let globalConHora = 0;
+            let globalSinHora = 0;
             const sucursalStats = {};
 
             data.forEach(r => {
                 const suc = r.SUCURSAL || 'Desconocida';
                 if (!sucursalStats[suc]) {
-                    sucursalStats[suc] = { total: 0, exito: 0, atrasado: 0 };
+                    sucursalStats[suc] = { total: 0, exito: 0, atrasado: 0, conHora: 0, sinHora: 0 };
                 }
                 
                 const isExito = (r.Evaluacion_Entrega === 'A Tiempo' || r.Evaluacion_Entrega === 'Antes de Tiempo');
+                const hasTime = r.Hora_Real_Entrega ? true : false;
                 
                 globalTotal++;
                 if (isExito) globalExito++;
+                if (hasTime) globalConHora++;
+                else globalSinHora++;
                 
                 sucursalStats[suc].total++;
                 if (isExito) sucursalStats[suc].exito++;
                 else sucursalStats[suc].atrasado++;
 
+                if (hasTime) sucursalStats[suc].conHora++;
+                else sucursalStats[suc].sinHora++;
+
                 const ventana = `${r.FECHA_MIN_ENTREGA} - ${r.FECHA_MAX_ENTREGA} (${r.MIN_VENTANA_HORARIA_1} a ${r.MAX_VENTANA_HORARIA_1})`;
-                const entrega = `${r.Fecha_Real_Entrega} ${r.Hora_Real_Entrega}`;
+                const horaStr = r.Hora_Real_Entrega ? r.Hora_Real_Entrega : '(Sin Hora)';
+                const entrega = `${r.Fecha_Real_Entrega} ${horaStr}`;
                 
                 dt.addRow([
                     parseInt(r.ID_Pedido),
@@ -330,10 +339,21 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
             else if(globalPorc < 90) color = '#f59e0b'; // naranja
             $('#efectividad_global').css('color', color);
 
+            const medicionPorc = globalTotal > 0 ? ((globalConHora / globalTotal) * 100).toFixed(1) : 0;
+            $('#medicion_global').text(medicionPorc + '%');
+            $('#medicion_global_detalle').text(`${globalConHora} de ${globalTotal} con hora exacta`);
+
+            let colorMed = '#3b82f6'; // azul
+            if(medicionPorc < 50) colorMed = '#ef4444'; // rojo
+            else if(medicionPorc < 80) colorMed = '#f59e0b'; // naranja
+            $('#medicion_global').css('color', colorMed);
+
             // DRAW SUCURSAL STATS TABLE
             const dtStats = new google.visualization.DataTable();
             dtStats.addColumn('string', 'Sucursal');
             dtStats.addColumn('number', 'Total Entregas');
+            dtStats.addColumn('number', 'Con Hora Exacta');
+            dtStats.addColumn('number', 'Sin Hora');
             dtStats.addColumn('number', 'A Tiempo / Antes');
             dtStats.addColumn('number', 'Atrasadas');
             dtStats.addColumn('number', '% Efectividad');
@@ -344,6 +364,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
                 dtStats.addRow([
                     suc,
                     stat.total,
+                    stat.conHora,
+                    stat.sinHora,
                     stat.exito,
                     stat.atrasado,
                     {v: porc, f: porc.toFixed(1) + '%'}
@@ -355,7 +377,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
                 showRowNumber: false,
                 width: '100%',
                 height: '100%',
-                sortColumn: 4,
+                sortColumn: 6,
                 sortAscending: false
             });
 
@@ -736,14 +758,19 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
             </h3>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             <div class="bg-white rounded-3xl shadow-gaCard p-4 col-span-1 flex flex-col justify-center items-center">
                 <h4 class="text-sm font-semibold text-slate-500 mb-2">Efectividad General</h4>
-                <div id="efectividad_global" class="text-5xl font-extrabold text-gaBlue">0%</div>
+                <div id="efectividad_global" class="text-4xl font-extrabold text-gaBlue">0%</div>
                 <div id="efectividad_global_detalle" class="text-xs font-semibold text-slate-400 mt-2">0 de 0 entregas</div>
             </div>
+            <div class="bg-white rounded-3xl shadow-gaCard p-4 col-span-1 flex flex-col justify-center items-center">
+                <h4 class="text-sm font-semibold text-slate-500 mb-2 text-center">Medibles con Hora Exacta</h4>
+                <div id="medicion_global" class="text-4xl font-extrabold text-gaBlue">0%</div>
+                <div id="medicion_global_detalle" class="text-xs font-semibold text-slate-400 mt-2 text-center">0 de 0 con hora</div>
+            </div>
             <div class="bg-white rounded-3xl shadow-gaCard p-4 col-span-2 overflow-x-auto">
-                <h4 class="text-sm font-semibold text-slate-500 mb-2">Efectividad por Sucursal</h4>
+                <h4 class="text-sm font-semibold text-slate-500 mb-2">Efectividad y Mediciones por Sucursal</h4>
                 <div id="table_div_efectividad_sucursales" class="w-full h-[180px]"></div>
             </div>
         </div>
