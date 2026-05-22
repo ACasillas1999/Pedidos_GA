@@ -342,6 +342,59 @@ if ($usar_filtro_fechas) {
     }
 }
 
+// ============================================================
+// DETALLE DE TIEMPOS DE ENTREGA (Para el nuevo reporte)
+// ============================================================
+
+$sql_detalle = "SELECT 
+        p.ID AS ID_Pedido,
+        p.SUCURSAL,
+        p.NOMBRE_CLIENTE,
+        p.CHOFER_ASIGNADO,
+        p.FECHA_MIN_ENTREGA,
+        p.MIN_VENTANA_HORARIA_1,
+        p.FECHA_MAX_ENTREGA,
+        p.MAX_VENTANA_HORARIA_1,
+        ep.Fecha AS Fecha_Real_Entrega,
+        ep.Hora AS Hora_Real_Entrega,
+        CASE 
+            WHEN ep.Fecha < p.FECHA_MIN_ENTREGA THEN 'Antes de Tiempo'
+            WHEN ep.Fecha = p.FECHA_MIN_ENTREGA AND ep.Hora < p.MIN_VENTANA_HORARIA_1 THEN 'Antes de Tiempo'
+            WHEN ep.Fecha > p.FECHA_MAX_ENTREGA THEN 'Atrasado'
+            WHEN ep.Fecha = p.FECHA_MAX_ENTREGA AND ep.Hora > p.MAX_VENTANA_HORARIA_1 THEN 'Atrasado'
+            ELSE 'A Tiempo'
+        END AS Evaluacion_Entrega
+    FROM pedidos p
+    INNER JOIN EstadoPedido ep ON p.ID = ep.ID_Pedido
+    WHERE ep.Estado = 'ENTREGADO'";
+
+if ($usar_filtro_fechas) {
+    $sql_detalle .= " AND p.FECHA_RECEPCION_FACTURA BETWEEN ? AND ? ORDER BY ep.Fecha DESC, ep.Hora DESC";
+    $stmt = $conn->prepare($sql_detalle);
+    if ($stmt) {
+        $stmt->bind_param("ss", $start_date, $end_date);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $response['detalle_entregas'] = [];
+        while ($row = $result->fetch_assoc()) {
+            $response['detalle_entregas'][] = $row;
+        }
+        $stmt->close();
+    }
+} else {
+    $sql_detalle .= " ORDER BY ep.Fecha DESC, ep.Hora DESC";
+    $stmt = $conn->prepare($sql_detalle);
+    if ($stmt) {
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $response['detalle_entregas'] = [];
+        while ($row = $result->fetch_assoc()) {
+            $response['detalle_entregas'][] = $row;
+        }
+        $stmt->close();
+    }
+}
+
 // Cerrar conexión
 $conn->close();
 

@@ -62,7 +62,17 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         ];
 
         google.charts.load('current', {'packages':['table', 'bar', 'corechart']});
-        google.charts.setOnLoadCallback(() => console.log('Google Charts cargado'));
+        
+        let chartsReady = false;
+        let domReady = false;
+
+        google.charts.setOnLoadCallback(() => {
+            console.log('Google Charts cargado');
+            chartsReady = true;
+            if (chartsReady && domReady) {
+                actualizarTodo();
+            }
+        });
 
         let allData = null;
 
@@ -95,6 +105,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
                     drawTotalColumnChartFromCache();
                     drawChartsFromCache();
                     drawTablesFromCache();
+                    drawTiemposEntregaTable();
                 },
                 error: function() {
                     alert('Error al cargar datos. Intenta recargar la página.');
@@ -253,6 +264,111 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
             });
         }
 
+        // ================= TABLA DE TIEMPOS DE ENTREGA =================
+
+        function drawTiemposEntregaTable() {
+            if (!allData || !allData.detalle_entregas || allData.detalle_entregas.length === 0) {
+                $('#table_div_tiempos').html('<div class="text-center text-sm text-sky-600 py-4">No hay datos de entregas disponibles.</div>');
+                $('#table_div_efectividad_sucursales').empty();
+                $('#efectividad_global').text('0%').css('color', '#94a3b8');
+                $('#efectividad_global_detalle').text('0 de 0 entregas');
+                return;
+            }
+
+            const data = allData.detalle_entregas;
+            
+            const dt = new google.visualization.DataTable();
+            dt.addColumn('number', 'ID Pedido');
+            dt.addColumn('string', 'Sucursal');
+            dt.addColumn('string', 'Cliente');
+            dt.addColumn('string', 'Chofer');
+            dt.addColumn('string', 'Ventana Prometida');
+            dt.addColumn('string', 'Fecha/Hora Entrega');
+            dt.addColumn('string', 'Evaluación');
+
+            // STATS CALCULATION
+            let globalTotal = 0;
+            let globalExito = 0;
+            const sucursalStats = {};
+
+            data.forEach(r => {
+                const suc = r.SUCURSAL || 'Desconocida';
+                if (!sucursalStats[suc]) {
+                    sucursalStats[suc] = { total: 0, exito: 0, atrasado: 0 };
+                }
+                
+                const isExito = (r.Evaluacion_Entrega === 'A Tiempo' || r.Evaluacion_Entrega === 'Antes de Tiempo');
+                
+                globalTotal++;
+                if (isExito) globalExito++;
+                
+                sucursalStats[suc].total++;
+                if (isExito) sucursalStats[suc].exito++;
+                else sucursalStats[suc].atrasado++;
+
+                const ventana = `${r.FECHA_MIN_ENTREGA} - ${r.FECHA_MAX_ENTREGA} (${r.MIN_VENTANA_HORARIA_1} a ${r.MAX_VENTANA_HORARIA_1})`;
+                const entrega = `${r.Fecha_Real_Entrega} ${r.Hora_Real_Entrega}`;
+                
+                dt.addRow([
+                    parseInt(r.ID_Pedido),
+                    suc,
+                    r.NOMBRE_CLIENTE || '',
+                    r.CHOFER_ASIGNADO || '',
+                    ventana,
+                    entrega,
+                    r.Evaluacion_Entrega || ''
+                ]);
+            });
+
+            // UPDATE GLOBAL DOM
+            const globalPorc = globalTotal > 0 ? ((globalExito / globalTotal) * 100).toFixed(1) : 0;
+            $('#efectividad_global').text(globalPorc + '%');
+            $('#efectividad_global_detalle').text(`${globalExito} a tiempo de ${globalTotal} entregas`);
+            
+            let color = '#22c55e'; // verde
+            if(globalPorc < 80) color = '#ef4444'; // rojo
+            else if(globalPorc < 90) color = '#f59e0b'; // naranja
+            $('#efectividad_global').css('color', color);
+
+            // DRAW SUCURSAL STATS TABLE
+            const dtStats = new google.visualization.DataTable();
+            dtStats.addColumn('string', 'Sucursal');
+            dtStats.addColumn('number', 'Total Entregas');
+            dtStats.addColumn('number', 'A Tiempo / Antes');
+            dtStats.addColumn('number', 'Atrasadas');
+            dtStats.addColumn('number', '% Efectividad');
+
+            Object.keys(sucursalStats).forEach(suc => {
+                const stat = sucursalStats[suc];
+                const porc = stat.total > 0 ? (stat.exito / stat.total) * 100 : 0;
+                dtStats.addRow([
+                    suc,
+                    stat.total,
+                    stat.exito,
+                    stat.atrasado,
+                    {v: porc, f: porc.toFixed(1) + '%'}
+                ]);
+            });
+
+            const tableStats = new google.visualization.Table(document.getElementById('table_div_efectividad_sucursales'));
+            tableStats.draw(dtStats, {
+                showRowNumber: false,
+                width: '100%',
+                height: '100%',
+                sortColumn: 4,
+                sortAscending: false
+            });
+
+            const table = new google.visualization.Table(document.getElementById('table_div_tiempos'));
+            table.draw(dt, {
+                showRowNumber: false,
+                width: '100%',
+                height: '100%',
+                page: 'enable',
+                pageSize: 15
+            });
+        }
+
         // ================= UTIL & INIT =================
 
         function formatDate(dateString) {
@@ -281,7 +397,10 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
             $('#start_date').val(start.toISOString().slice(0,10));
             $('#end_date').val(end.toISOString().slice(0,10));
 
-            actualizarTodo();
+            domReady = true;
+            if (chartsReady && domReady) {
+                actualizarTodo();
+            }
 
             $('#start_date, #end_date').on('change', function () {
                 const s = $('#start_date').val();
@@ -310,6 +429,17 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
                 $('#start_date').val('');
                 $('#end_date').val('');
                 actualizarTodo();
+            });
+
+            // Botón para exportar estadísticas a Excel con los filtros de fechas activos
+            $('#btn_export_excel').on('click', function() {
+                const s = $('#start_date').val();
+                const e = $('#end_date').val();
+                let url = 'export_estadisticas.php';
+                if (s && e) {
+                    url += `?start_date=${encodeURIComponent(s)}&end_date=${encodeURIComponent(e)}`;
+                }
+                window.location.href = url;
             });
         });
 
@@ -405,7 +535,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
                 Filtrar por Rango de Fechas
             </h2>
 
-            <div class="flex flex-wrap justify-center gap-6">
+            <div class="flex flex-wrap justify-center items-end gap-6">
                 <div class="flex flex-col text-sm text-slate-700">
                     <label for="start_date" class="mb-1 font-medium">Fecha inicial</label>
                     <input type="date" id="start_date"
@@ -416,6 +546,13 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
                     <input type="date" id="end_date"
                            class="border border-slate-200 rounded-xl px-3 py-2 text-sm bg-gaBg focus:outline-none focus:ring-2 focus:ring-gaBlue/40 min-w-[170px]">
                 </div>
+                <button id="btn_export_excel" 
+                        class="px-4 py-2 rounded-xl bg-emerald-600 text-white text-sm font-bold shadow hover:bg-emerald-700 transition flex items-center gap-2 h-[38px] mb-[2px]">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                    Exportar a Excel
+                </button>
             </div>
 
             <div class="flex flex-wrap justify-center items-center gap-2 mt-4">
@@ -587,6 +724,33 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
                 </div>
                 <div id="table_div_queretaro" class="chofer-table table-container mt-2"></div>
             </div>
+        </div>
+    </section>
+
+    <!-- REPORTE DE TIEMPOS DE ENTREGA -->
+    <section class="max-w-6xl mx-auto px-4 mt-8 pb-4">
+        <div class="flex items-center gap-3 mb-3">
+            <div class="h-[2px] w-10 bg-gaBlue rounded-full"></div>
+            <h3 class="text-lg font-bold text-gaBlue tracking-wide uppercase">
+                Reporte de Tiempos de Entrega e Indicadores de Efectividad
+            </h3>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div class="bg-white rounded-3xl shadow-gaCard p-4 col-span-1 flex flex-col justify-center items-center">
+                <h4 class="text-sm font-semibold text-slate-500 mb-2">Efectividad General</h4>
+                <div id="efectividad_global" class="text-5xl font-extrabold text-gaBlue">0%</div>
+                <div id="efectividad_global_detalle" class="text-xs font-semibold text-slate-400 mt-2">0 de 0 entregas</div>
+            </div>
+            <div class="bg-white rounded-3xl shadow-gaCard p-4 col-span-2 overflow-x-auto">
+                <h4 class="text-sm font-semibold text-slate-500 mb-2">Efectividad por Sucursal</h4>
+                <div id="table_div_efectividad_sucursales" class="w-full h-[180px]"></div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-3xl shadow-gaCard p-4 overflow-x-auto">
+            <h4 class="text-sm font-semibold text-slate-500 mb-2">Detalle de Entregas</h4>
+            <div id="table_div_tiempos" class="w-full h-[350px]"></div>
         </div>
     </section>
 
