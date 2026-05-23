@@ -1,7 +1,7 @@
 // Configuración global de la aplicación
 const CONFIG = {
-    // La API (el backend actual en PHP) se encuentra en un nivel superior en la carpeta 'app'
-    API_URL: '../app/'
+    // La API (el backend actual en PHP) se encuentra en un nivel superior en la carpeta 'App'
+    API_URL: '../App/'
 };
 
 // Registro del Service Worker para funcionalidades PWA (offline, instalación)
