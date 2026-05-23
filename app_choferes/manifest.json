@@ -8,7 +8,7 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "../Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png",
+      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Truck_icon.svg/512px-Truck_icon.svg.png",
       "sizes": "144x144 192x192 512x512",
       "type": "image/png",
       "purpose": "any"
