@@ -9,9 +9,9 @@
   "icons": [
     {
       "src": "../Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png",
-      "sizes": "any",
+      "sizes": "144x144 192x192 512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ]
 }
