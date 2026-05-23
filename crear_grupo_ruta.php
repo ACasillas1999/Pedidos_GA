@@ -60,7 +60,7 @@ if (empty($chofer)) {
 // VALIDACIÓN: Verificar que el chofer tenga un vehículo asignado
 $sqlVerificarVehiculo = "SELECT COUNT(v.id_vehiculo) AS tiene_vehiculo
                          FROM choferes c
-                         LEFT JOIN vehiculos v ON v.id_chofer_asignado = c.ID AND v.Sucursal = c.Sucursal
+                         LEFT JOIN vehiculos v ON v.id_chofer_asignado = c.ID
                          WHERE c.username = ? AND c.Estado = 'ACTIVO'
                          GROUP BY c.ID";
 $stmtVerificar = $conn->prepare($sqlVerificarVehiculo);

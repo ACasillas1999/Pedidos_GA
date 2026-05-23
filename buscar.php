@@ -95,7 +95,7 @@ if ($result && $result->num_rows > 0) {
     echo "<tr>
             $checkboxHeader
             <th>N°</th>
-            <th>Factura (caja)</th>
+            <th style='min-width: 145px; text-align: center;'>Factura (caja)</th>
             <th>Estado</th>
             <th>Tipo de Envío</th>
             <th>Sucursal</th>
@@ -146,12 +146,30 @@ if ($result && $result->num_rows > 0) {
             case 1:
                 $badge = "<span class='badge badge-amarillo'>Con Jefe de choferes</span>";
                 if (in_array($_SESSION["Rol"], ["Admin","JC"])) {
-                    $accionHtml = "<button type='button' class='btn btn-sm btn-success accion-factura' data-id='".htmlspecialchars($row["ID"])."' data-accion='devolver_caja'>Devolver a Caja</button>";
+                    $accionHtml = "<button type='button' class='btn btn-sm btn-warning accion-factura' data-id='".htmlspecialchars($row["ID"])."' data-accion='pendiente_surtido'>Pendiente de Surtido</button>";
                 }
                 break;
             case 2:
+                $badge = "<span class='badge badge-naranja'>Pendiente de Surtido</span>";
+                if (in_array($_SESSION["Rol"], ["Admin","JC"])) {
+                    $accionHtml = "<button type='button' class='btn btn-sm btn-info accion-factura' data-id='".htmlspecialchars($row["ID"])."' data-accion='surtido'>&#10004; Surtido</button>";
+                }
+                break;
+            case 3:
+                $badge = "<span class='badge badge-cyan'>Surtido</span>";
+                if (in_array($_SESSION["Rol"], ["Admin","JC"])) {
+                    $accionHtml = "<button type='button' class='btn btn-sm btn-success accion-factura' data-id='".htmlspecialchars($row["ID"])."' data-accion='cargado_camioneta'>&#128666; Cargado en Camioneta</button>";
+                }
+                break;
+            case 4:
+                $badge = "<span class='badge badge-morado'>Cargado en Camioneta</span>";
+                break;
+            case 5:
+                $badge = "<span class='badge badge-ruta'>En Ruta</span>";
+                break;
+            case 6:
             default:
-                $badge = "<span class='badge badge-verde'>Devuelta a Caja</span>";
+                $badge = "<span class='badge badge-verde'>Entregado</span>";
                 break;
         }
 
@@ -208,40 +226,41 @@ $conn->close();
 ?>
 <style>
 /* --- La celda toma el color del estado --- */
-.mi-tabla td:has(.badge-azul){
-  background:#e6f0ff; color:#1247d6;
-}
-.mi-tabla td:has(.badge-amarillo){
-  background:#fff6d6; color:#8a6d00;
-}
-.mi-tabla td:has(.badge-verde){
-  background:#e7f9e7; color:#217a21;
-}
+.mi-tabla td:has(.badge-azul)    { background:#e6f0ff; color:#1247d6; }
+.mi-tabla td:has(.badge-amarillo){ background:#fff6d6; color:#8a6d00; }
+.mi-tabla td:has(.badge-naranja) { background:#fff0e0; color:#b85c00; }
+.mi-tabla td:has(.badge-cyan)    { background:#e0f7fa; color:#006064; }
+.mi-tabla td:has(.badge-morado)  { background:#f3e5f5; color:#6a1b9a; }
+.mi-tabla td:has(.badge-ruta)    { background:#fff8e1; color:#e65100; }
+.mi-tabla td:has(.badge-verde)   { background:#e7f9e7; color:#217a21; }
 
-/* Respira y alinea mejor contenido dentro de la celda coloreada */
 .mi-tabla td:has(.badge-azul),
 .mi-tabla td:has(.badge-amarillo),
-.mi-tabla td:has(.badge-verde){
-  padding:10px 12px;
-}
+.mi-tabla td:has(.badge-naranja),
+.mi-tabla td:has(.badge-cyan),
+.mi-tabla td:has(.badge-morado),
+.mi-tabla td:has(.badge-ruta),
+.mi-tabla td:has(.badge-verde){ padding:10px 12px; }
 
-/* El badge ya no pinta fondo: solo texto (para que se vea el color de la celda) */
 .badge{ padding:0; border-radius:8px; font-size:12px; font-weight:700; }
-.badge-azul, .badge-amarillo, .badge-verde{
+.badge-azul,.badge-amarillo,.badge-naranja,.badge-cyan,.badge-morado,.badge-ruta,.badge-verde{
   background:transparent; color:inherit;
 }
 
-/* Separación entre etiqueta y botón */
 .mi-tabla td .badge + div{ margin-top:8px; }
 
-/* Botones legibles sobre fondos claros */
-.btn{ border:0; padding:6px 10px; border-radius:8px; cursor:pointer; font-weight:600; }
-.btn-primary{ background:#2d6cdf; color:#fff; }
-.btn-success{ background:#22a06b; color:#fff; }
+.btn{ border:0; padding:4px 8px; border-radius:8px; cursor:pointer; font-weight:600; font-size:11px; white-space:normal; line-height:1.2; text-align:center; display:inline-block; }
+.btn-primary { background:#2d6cdf; color:#fff; }
+.btn-warning { background:#f59e0b; color:#fff; }
+.btn-info    { background:#0891b2; color:#fff; }
+.btn-success { background:#22a06b; color:#fff; }
 .btn:disabled{ opacity:.6; cursor:not-allowed; }
 
-/* (opcional) que los links dentro de la celda sigan siendo visibles */
 .mi-tabla td:has(.badge-azul) a,
 .mi-tabla td:has(.badge-amarillo) a,
+.mi-tabla td:has(.badge-naranja) a,
+.mi-tabla td:has(.badge-cyan) a,
+.mi-tabla td:has(.badge-morado) a,
+.mi-tabla td:has(.badge-ruta) a,
 .mi-tabla td:has(.badge-verde) a{ color:inherit; }
 </style>

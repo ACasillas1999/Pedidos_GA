@@ -344,6 +344,33 @@ $porcentajeForaneo = $stats['total_pedidos'] > 0 ? ($stats['total_foraneo'] / $s
         .btn-volver:hover {
             background: #5a6268;
         }
+
+        .btn-excel {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 22px;
+            background: linear-gradient(135deg, #1d6f42, #217346);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.15s, box-shadow 0.15s;
+            box-shadow: 0 2px 6px rgba(33,115,70,0.35);
+        }
+
+        .btn-excel:hover {
+            background: linear-gradient(135deg, #155232, #1a5c38);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(33,115,70,0.45);
+        }
+
+        .btn-excel:active {
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body>
@@ -373,6 +400,20 @@ $porcentajeForaneo = $stats['total_pedidos'] > 0 ? ($stats['total_foraneo'] / $s
                     <a href="reporte_zonas.php" style="display: inline-block; padding: 10px 25px; background: #6c757d; color: white; text-decoration: none; border-radius: 6px; margin-left: 10px;">Limpiar</a>
                 </div>
             </form>
+            <!-- Botón exportar Excel (preserva los filtros de fecha activos) -->
+            <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e0e0e0;">
+                <a id="btn-exportar-excel"
+                   href="reporte_zonas_excel.php<?php
+                       $params = [];
+                       if (!empty($fechaInicio)) $params[] = 'fecha_inicio=' . urlencode($fechaInicio);
+                       if (!empty($fechaFin))    $params[] = 'fecha_fin='    . urlencode($fechaFin);
+                       echo count($params) ? '?' . implode('&', $params) : '';
+                   ?>"
+                   class="btn-excel">
+                    📊 Exportar a Excel
+                </a>
+                <span style="font-size: 12px; color: #888; margin-left: 10px;">⬇️ Descarga el reporte con los filtros aplicados</span>
+            </div>
         </div>
 
         <!-- Estadísticas principales -->

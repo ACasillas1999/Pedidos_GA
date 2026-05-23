@@ -71,6 +71,33 @@ try {
         throw new Exception("Error al insertar el registro en estadopedido");
     }
 
+    // Sincronizar estado_factura_caja según el nuevo estado
+    $facturaCajaMap = ['EN RUTA' => 5, 'ENTREGADO' => 6];
+    $estadoUpper = strtoupper($estado);
+    if (isset($facturaCajaMap[$estadoUpper])) {
+        $nuevoFactura = $facturaCajaMap[$estadoUpper];
+        // Solo avanza, nunca retrocede
+        $stmtF = $conn->prepare("UPDATE pedidos SET estado_factura_caja = ? WHERE id = ? AND estado_factura_caja < ?");
+        $stmtF->bind_param("iii", $nuevoFactura, $id, $nuevoFactura);
+        $stmtF->execute();
+        $affected = $stmtF->affected_rows;
+        $stmtF->close();
+
+        if ($affected > 0) {
+            $usrLog = isset($_POST['username']) ? trim($_POST['username']) : 'Chofer';
+            if (empty($usrLog)) $usrLog = 'Chofer';
+            
+            $msgLog = ($nuevoFactura === 5) 
+                ? 'Factura: Cargado en Camioneta → En Ruta [Chofer]' 
+                : 'Factura: En Ruta → Entregado [Chofer]';
+
+            $stmtH = $conn->prepare("INSERT INTO historial_cambios (Usuario_ID, Pedido_ID, Cambio, Fecha_Hora) VALUES (?, ?, ?, NOW())");
+            $stmtH->bind_param("sis", $usrLog, $id, $msgLog);
+            $stmtH->execute();
+            $stmtH->close();
+        }
+    }
+
     // Si ambas consultas se ejecutan correctamente, se confirma la transacción
     $conn->commit();
     echo json_encode("Estado actualizado y registro añadido correctamente");

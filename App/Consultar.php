@@ -1,22 +1,9 @@
 <?php
 
-// Definir los datos de conexión como constantes
-define('DB_SERVER', '18.211.75.118');
-define('DB_USERNAME', 'root');
-define('DB_PASSWORD', '04nm2fdLefCxM');
-define('DB_NAME', 'gpoascen_pedidos_app');
-
-// Conectar a la base de datos
-$conn = new mysqli(DB_SERVER, DB_USERNAME, DB_PASSWORD, DB_NAME);
-$conn->set_charset("utf8mb4");
-
-
-// Verificar la conexión
-if ($conn->connect_error) {
-    die("Error de conexión: " . $conn->connect_error);
+require_once __DIR__ . "/Conexiones/Conexion.php";
+if (isset($conn) && $conn instanceof mysqli) {
+    $conn->set_charset('utf8mb4');
 }
-
-//require_once __DIR__ . "/Conexiones/Conexion.php";
 
 // ---------------------
 // Consulta por GRUPO (nuevo)
@@ -367,6 +354,28 @@ if ($stVeh) {
         }
     }
     $stVeh->close();
+}
+
+if ($vehiculo) {
+    $vehiculo['ultima_observacion'] = null;
+    $vehiculo['fecha_observacion'] = null;
+    $sqlObs = "SELECT observaciones_rotulado, fecha_inspeccion 
+               FROM checklist_vehicular 
+               WHERE id_vehiculo = ? AND observaciones_rotulado IS NOT NULL AND TRIM(observaciones_rotulado) != '' 
+               ORDER BY id DESC LIMIT 1";
+    $stObs = $conn->prepare($sqlObs);
+    if ($stObs) {
+        $stObs->bind_param('i', $vehiculo['id_vehiculo']);
+        if ($stObs->execute()) {
+            $resObs = $stObs->get_result();
+            if ($resObs && $resObs->num_rows > 0) {
+                $rowObs = $resObs->fetch_assoc();
+                $vehiculo['ultima_observacion'] = $rowObs['observaciones_rotulado'];
+                $vehiculo['fecha_observacion'] = $rowObs['fecha_inspeccion'];
+            }
+        }
+        $stObs->close();
+    }
 }
 
 if ($result->num_rows > 0) {

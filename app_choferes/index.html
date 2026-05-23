@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <!-- Viewport optimizado para móvil: deshabilita el zoom y asegura que se vea bien -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pedidos Choferes</title>
+
+    <!-- PWA Meta tags -->
+    <link rel="manifest" href="manifest.json" crossorigin="use-credentials">
+    <link rel="icon" type="image/png" href="../Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png">
+    <meta name="theme-color" content="#0f4c81">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Pedidos">
+
+    <!-- Tailwind CSS (Compilado local) -->
+    <link rel="stylesheet" href="css/output.css">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+            background: linear-gradient(180deg, #0f4c81 0%, #1565c0 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 32px 20px;
+            box-sizing: border-box;
+        }
+
+        input:focus {
+            outline: none;
+        }
+
+        /* Paleta de marca */
+        .brand-bg {
+            background-color: #0f4c81;
+        }
+
+        .brand-text {
+            color: #0f4c81;
+        }
+
+        .brand-border {
+            border-color: #0f4c81;
+        }
+
+        .brand-ring:focus {
+            --tw-ring-color: #0f4c81;
+        }
+
+        .brand-btn {
+            background-color: #0f4c81;
+        }
+
+        .brand-btn:hover {
+            background-color: #0d3f6e;
+        }
+
+        .brand-btn:focus {
+            box-shadow: 0 0 0 2px #fff, 0 0 0 4px #0f4c81;
+        }
+
+        .brand-focus:focus {
+            border-color: #0f4c81;
+            box-shadow: 0 0 0 2px rgba(15, 76, 129, 0.25);
+        }
+
+        .brand-shadow {
+            box-shadow: 0 10px 25px rgba(15, 76, 129, 0.3);
+        }
+    </style>
+</head>
+
+<body class="font-sans">
+
+    <!-- Login Container -->
+    <div class="w-full bg-white rounded-2xl transform transition-all"
+        style="max-width: 380px; padding: 32px 28px 28px; box-shadow: 0 20px 60px rgba(0,0,0,0.4);">
+
+        <!-- Header -->
+        <div class="text-center mb-6">
+            <div class="flex items-center justify-center mx-auto mb-3">
+                <img src="../Img/Botones entregas/Pedidos_GA/PEDPRNAZ.png" alt="Pedidos GA"
+                    class="w-auto object-contain" style="max-height:56px; max-width:70%;">
+            </div>
+            <h1 class="text-xl font-bold text-gray-800">Bienvenido Chofer</h1>
+            <p class="text-gray-500 text-sm mt-0.5">Ingresa tus credenciales</p>
+        </div>
+
+        <!-- Formulario -->
+        <form id="loginForm" class="space-y-6">
+
+            <!-- Mensaje de Error (Oculto por defecto) -->
+            <div id="errorMessage" class="hidden bg-red-50 border-l-4 border-red-500 p-4 rounded-lg flex items-start">
+                <i data-lucide="alert-circle" class="w-5 h-5 text-red-500 mr-2 flex-shrink-0 mt-0.5"></i>
+                <p id="errorText" class="text-sm text-red-700 font-medium">Error al iniciar sesión.</p>
+            </div>
+
+            <div class="space-y-5">
+                <!-- Input Usuario -->
+                <div>
+                    <label for="username" class="block text-sm font-semibold text-gray-700 mb-1">Usuario</label>
+                    <div class="relative rounded-xl shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="user" class="h-5 w-5 text-gray-400"></i>
+                        </div>
+                        <input type="text" id="username" name="username" required
+                            class="block w-full pl-10 pr-3 py-3.5 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white text-gray-900 transition-colors brand-focus"
+                            placeholder="Ej. juan.perez">
+                    </div>
+                </div>
+
+                <!-- Input Contraseña -->
+                <div>
+                    <label for="password" class="block text-sm font-semibold text-gray-700 mb-1">Contraseña</label>
+                    <div class="relative rounded-xl shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="lock" class="h-5 w-5 text-gray-400"></i>
+                        </div>
+                        <input type="password" id="password" name="password" required
+                            class="block w-full pl-10 pr-3 py-3.5 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white text-gray-900 transition-colors brand-focus"
+                            placeholder="••••••••">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botón Submit -->
+            <div class="pt-2">
+                <button type="submit" id="submitBtn"
+                    class="w-full flex justify-center items-center py-3.5 px-4 border border-transparent rounded-xl text-sm font-bold text-white transition-all active:scale-95 brand-btn brand-shadow">
+                    <span id="btnText">Entrar</span>
+                    <i data-lucide="loader-2" class="w-5 h-5 animate-spin hidden ml-2" id="btnLoading"></i>
+                </button>
+            </div>
+
+            <!-- Botón Instalar PWA (Oculto por defecto) -->
+            <div id="installContainer" class="hidden pt-2 border-t border-gray-100 mt-4">
+                <button type="button" id="installBtn"
+                    class="w-full flex justify-center items-center py-3.5 px-4 rounded-xl text-sm font-bold transition-all active:scale-95 brand-text"
+                    style="border: 1.5px solid #0f4c81; background: rgba(15,76,129,0.06);">
+                    <i data-lucide="download" class="w-5 h-5 mr-2"></i>
+                    <span>Instalar App en el Teléfono</span>
+                </button>
+            </div>
+
+            <div class="text-center mt-4">
+                <p class="text-xs text-gray-400">Grupo Ascencio 2026</p>
+            </div>
+        </form>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Inicializar iconos
+        lucide.createIcons();
+    </script>
+    <script src="js/app.js"></script>
+    <script src="js/auth.js"></script>
+</body>
+
+</html>

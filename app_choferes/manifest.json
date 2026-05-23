@@ -1,0 +1,23 @@
+{
+  "name": "App Pedidos Choferes",
+  "short_name": "Pedidos",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f9fafb",
+  "theme_color": "#2563eb",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "../Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "../Img/Botones%20entregas/ICONOSPAG/ICONOPEDIDOS.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

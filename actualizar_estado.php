@@ -55,10 +55,31 @@ require_once __DIR__ . "/Conexiones/Conexion.php";
 
     // Ejecutar la consulta y verificar el resultado
     if ($stmt->execute()) {
-        // La actualización fue exitosa
+        // Sincronizar estado_factura_caja si el estado es EN RUTA o ENTREGADO
+        $facturaCajaMap = ['EN RUTA' => 5, 'ENTREGADO' => 6];
+        $estadoUpper = strtoupper($nuevoEstado);
+        if (isset($facturaCajaMap[$estadoUpper])) {
+            $nuevoFactura = $facturaCajaMap[$estadoUpper];
+            // Solo avanza, nunca retrocede
+            $stmtF = $conn->prepare("UPDATE pedidos SET estado_factura_caja = ? WHERE ID = ? AND estado_factura_caja < ?");
+            $stmtF->bind_param("iii", $nuevoFactura, $pedidoId, $nuevoFactura);
+            $stmtF->execute();
+            $affected = $stmtF->affected_rows;
+            $stmtF->close();
+
+            if ($affected > 0) {
+                $usrLog = isset($_SESSION["username"]) ? trim($_SESSION["username"]) : 'Web';
+                $msgLog = ($nuevoFactura === 5) 
+                    ? 'Factura: Cargado en Camioneta → En Ruta [Oficina]' 
+                    : 'Factura: En Ruta → Entregado [Oficina]';
+                $stmtH = $conn->prepare("INSERT INTO historial_cambios (Usuario_ID, Pedido_ID, Cambio, Fecha_Hora) VALUES (?, ?, ?, NOW())");
+                $stmtH->bind_param("sis", $usrLog, $pedidoId, $msgLog);
+                $stmtH->execute();
+                $stmtH->close();
+            }
+        }
         echo "Estado actualizado correctamente a: " . $nuevoEstado;
     } else {
-        // Error al actualizar el estado
         echo "Error al actualizar el estado en la base de datos.";
     }
 

@@ -317,6 +317,17 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         </a>
       </li>
           <?php endif; ?>
+          <?php if ($_SESSION["Rol"] === "Admin" || $_SESSION["Rol"] === "JC"): ?>
+          <li>
+            <a href="reporte_tiempos_estados.php" title="Reporte de Tiempos por Estado" style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-decoration:none; color:#ed6b1f; transition: color 0.2s;" onmouseover="this.style.color='#ffffff'; this.querySelector('svg').style.transform='scale(1.15)'" onmouseout="this.style.color='#ed6b1f'; this.querySelector('svg').style.transform='scale(1)'">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="icono-tiempos" style="max-width: 60%; height: auto; transition: transform 0.2s;">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              <span style="font-size: 11px; font-weight: bold; margin-top: 4px;">Tiempos</span>
+            </a>
+          </li>
+          <?php endif; ?>
           <?php if ($_SESSION["Rol"] === "Admin" || $_SESSION["Rol"] === "JC" || $_SESSION["Rol"] === "MEC"): ?>
           <li>
             <a href="vehiculos.php" title="Vehículos" style="display:flex; align-items:center; justify-content:center;">
@@ -1299,9 +1310,13 @@ document.addEventListener('click', async (e) => {
   const id = btn.dataset.id;
   const accion = btn.dataset.accion;
 
-  let mensajeConfirmacion = (accion === 'entregar_jefe')
-    ? '¿Seguro que quieres marcar esta factura como "Entregada a Jefe de choferes"?'
-    : '¿Seguro que quieres marcar esta factura como "Devuelta a Caja"?';
+  const mensajes = {
+    'entregar_jefe':     '¿Marcar factura como "Entregada a Jefe de choferes"?',
+    'pendiente_surtido': '¿Marcar como "Pendiente de Surtido"?',
+    'surtido':           '¿Marcar como "Surtido"?',
+    'cargado_camioneta': '¿Marcar como "Cargado en Camioneta"?',
+  };
+  const mensajeConfirmacion = mensajes[accion] || `¿Ejecutar acción "${accion}"?`;
 
   if (!confirm(mensajeConfirmacion)) return;
 

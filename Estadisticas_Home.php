@@ -48,17 +48,17 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 
     <script type="text/javascript">
         const SUCURSALES = [
-            { nombre: 'AIESA',        chartId: 'piechart1',  tableId: 'table_div_aiesa' },
-            { nombre: 'DEASA',        chartId: 'piechart2',  tableId: 'table_div_deasa' },
-            { nombre: 'GABSA',        chartId: 'piechart4',  tableId: 'table_div_gabsa' },
-            { nombre: 'ILUMINACION',  chartId: 'piechart5',  tableId: 'table_div_ilu' },
-            { nombre: 'DIMEGSA',      chartId: 'piechart3',  tableId: 'table_div_dimegsa' },
-            { nombre: 'SEGSA',        chartId: 'piechart6',  tableId: 'table_div_segsa' },
-            { nombre: 'FESA',         chartId: 'piechart7',  tableId: 'table_div_fesa' },
-            { nombre: 'TAPATIA',      chartId: 'piechart8',  tableId: 'table_div_tapatia' },
-            { nombre: 'VALLARTA',     chartId: 'piechart9',  tableId: 'table_div_vallarta' },
-            { nombre: 'CODI',         chartId: 'piechart10', tableId: 'table_div_codi' },
-            { nombre: 'QUERETARO',    chartId: 'piechart11', tableId: 'table_div_queretaro' }
+            { nombre: 'AIESA',        logo: 'aiesa.png', chartId: 'piechart1', tableId: 'table_div_aiesa' },
+            { nombre: 'DEASA',        logo: 'deasa.png', chartId: 'piechart2', tableId: 'table_div_deasa' },
+            { nombre: 'GABSA',        logo: 'gabajio.png', chartId: 'piechart4', tableId: 'table_div_gabsa' },
+            { nombre: 'ILUMINACION',  logo: 'iluminacion_1.png', chartId: 'piechart5', tableId: 'table_div_ilu' },
+            { nombre: 'DIMEGSA',      logo: 'dimegsa.png', chartId: 'piechart3', tableId: 'table_div_dimegsa' },
+            { nombre: 'SEGSA',        logo: 'segsa.png', chartId: 'piechart6', tableId: 'table_div_segsa' },
+            { nombre: 'FESA',         logo: 'fesa.png', chartId: 'piechart7', tableId: 'table_div_fesa' },
+            { nombre: 'TAPATIA',      logo: 'eitsa.png', chartId: 'piechart8', tableId: 'table_div_tapatia' },
+            { nombre: 'VALLARTA',     logo: 'gavallarta.png', chartId: 'piechart9', tableId: 'table_div_vallarta' },
+            { nombre: 'CODI',         logo: 'codi.png', chartId: 'piechart10', tableId: 'table_div_codi' },
+            { nombre: 'QUERETARO',    logo: 'QRO.png', chartId: 'piechart11', tableId: 'table_div_queretaro' }
         ];
 
         google.charts.load('current', {'packages':['table', 'bar', 'corechart']});
@@ -102,10 +102,19 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
                         $('#time_range').text('Mostrando todos los registros');
                     }
 
+                    const globalWasHidden = $('#content-global').hasClass('hidden');
+                    const sucursalesWasHidden = $('#content-sucursales').hasClass('hidden');
+                    const tiemposWasHidden = $('#content-tiempos').hasClass('hidden');
+
+                    $('#content-global, #content-sucursales, #content-tiempos').removeClass('hidden');
+
                     drawTotalColumnChartFromCache();
-                    drawChartsFromCache();
-                    drawTablesFromCache();
+                    drawChartsAndTables();
                     drawTiemposEntregaTable();
+
+                    if (globalWasHidden) $('#content-global').addClass('hidden');
+                    if (sucursalesWasHidden) $('#content-sucursales').addClass('hidden');
+                    if (tiemposWasHidden) $('#content-tiempos').addClass('hidden');
                 },
                 error: function() {
                     alert('Error al cargar datos. Intenta recargar la página.');
@@ -188,79 +197,88 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
             );
         }
 
-        // ================= PIE CHARTS =================
+        // ================= DETALLE SUCURSAL =================
+        let currentActiveSucursal = 'AIESA';
 
-        function drawChartsFromCache() {
+        function drawChartsAndTables() {
             if (!allData || !allData.sucursales) return;
 
-            SUCURSALES.forEach(s => {
-                const cont = document.getElementById(s.chartId);
-                if (!cont) return;
+            // Mostrar todas temporalmente para que Google Charts dibuje con ancho/alto correcto
+            $('.sucursal-card-container').removeClass('hidden');
 
+            SUCURSALES.forEach(s => {
+                // 1. DIBUJAR PIE CHART
+                const contChart = document.getElementById(s.chartId);
                 const sucursalData = allData.sucursales[s.nombre];
-                const chartData    = sucursalData && sucursalData.estadisticas_por_estado;
+                const chartData = sucursalData && sucursalData.estadisticas_por_estado;
 
                 if (!chartData || chartData.length <= 1) {
-                    cont.innerHTML = '<div class="text-center text-xs text-sky-500">Sin datos</div>';
-                    return;
+                    if(contChart) contChart.innerHTML = '<div class="text-center text-sm text-sky-500 pt-20">Sin datos de estados</div>';
+                } else {
+                    const dataChart = google.visualization.arrayToDataTable(chartData);
+                    const options = {
+                        chartArea: { width: '90%', height: '85%' },
+                        legend: { position: 'right', textStyle: { fontSize: 11 } },
+                        pieSliceText: 'value',
+                        colors: ['#22c55e', '#ef4444', '#3b82f6', '#f97316', '#eab308', '#8b5cf6']
+                    };
+                    if(contChart) new google.visualization.PieChart(contChart).draw(dataChart, options);
                 }
 
-                const dataChart = google.visualization.arrayToDataTable(chartData);
-                const options = {
-                    chartArea: { width: '88%', height: '80%' },
-                    legend: { position: 'right', textStyle: { fontSize: 9 } },
-                    pieSliceText: 'value',
-                    colors: ['#22c55e', '#ef4444', '#3b82f6', '#f97316', '#eab308', '#8b5cf6']
-                };
-
-                new google.visualization.PieChart(cont).draw(dataChart, options);
-            });
-        }
-
-        // ================= TABLAS CHOFERES =================
-
-        function drawTablesFromCache() {
-            if (!allData || !allData.sucursales) return;
-
-            SUCURSALES.forEach(s => {
-                const cont = document.getElementById(s.tableId);
-                if (!cont) return;
-
-                const sucursalData = allData.sucursales[s.nombre];
+                // 2. DIBUJAR TABLA
+                const contTable = document.getElementById(s.tableId);
                 const rows = (sucursalData && sucursalData.facturas_por_chofer) || [];
 
-                const dt = new google.visualization.DataTable();
-                dt.addColumn('string', 'Chofer');
-                dt.addColumn('number', 'Total');
-                dt.addColumn('number', 'Km');
-                dt.addColumn('number', 'Entregadas');
-                dt.addColumn('number', 'Canceladas');
-                dt.addColumn('number', 'En Ruta');
-                dt.addColumn('number', 'En Tienda');
-                dt.addColumn('number', 'Reprog.');
-                dt.addColumn('number', 'Activas');
+                if (rows.length === 0) {
+                    if(contTable) contTable.innerHTML = '<div class="text-center text-sm text-sky-500 pt-20">Sin datos de choferes</div>';
+                } else {
+                    const dt = new google.visualization.DataTable();
+                    dt.addColumn('string', 'Chofer');
+                    dt.addColumn('number', 'Total');
+                    dt.addColumn('number', 'Km');
+                    dt.addColumn('number', 'Entregadas');
+                    dt.addColumn('number', 'Canceladas');
+                    dt.addColumn('number', 'En Ruta');
+                    dt.addColumn('number', 'En Tienda');
+                    dt.addColumn('number', 'Reprog.');
+                    dt.addColumn('number', 'Activas');
 
-                rows.forEach(r => {
-                    dt.addRow([
-                        r.chofer,
-                        r.total_facturas,
-                        r.Total_Kilometros,
-                        r.entregadas,
-                        r.canceladas,
-                        r.en_ruta,
-                        r.En_Tienda,
-                        r.REPROGRAMADO,
-                        r.activas
-                    ]);
-                });
+                    rows.forEach(r => {
+                        let choferNombre = r.chofer ? String(r.chofer) : '';
+                        if (choferNombre === '[object Object]' || choferNombre === 'null' || choferNombre.trim() === '') {
+                            choferNombre = 'Sin Asignar';
+                        }
 
-                const table = new google.visualization.Table(cont);
-                table.draw(dt, {
-                    showRowNumber: false,
-                    width: '100%',
-                    height: '100%',
-                    allowHtml: true
-                });
+                        dt.addRow([
+                            choferNombre,
+                            r.total_facturas,
+                            r.Total_Kilometros,
+                            r.entregadas,
+                            r.canceladas,
+                            r.en_ruta,
+                            r.En_Tienda,
+                            r.REPROGRAMADO,
+                            r.activas
+                        ]);
+                    });
+
+                    if(contTable) {
+                        const table = new google.visualization.Table(contTable);
+                        table.draw(dt, {
+                            showRowNumber: false,
+                            width: '100%',
+                            height: '100%',
+                            allowHtml: true
+                        });
+                    }
+                }
+            });
+
+            // Ocultar de nuevo las que no están activas (excepto en impresión)
+            $('.sucursal-card-container').each(function() {
+                if ($(this).attr('id') !== `card-${currentActiveSucursal}`) {
+                    $(this).addClass('hidden');
+                }
             });
         }
 
@@ -270,12 +288,17 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
             if (!allData || !allData.detalle_entregas || allData.detalle_entregas.length === 0) {
                 $('#table_div_tiempos').html('<div class="text-center text-sm text-sky-600 py-4">No hay datos de entregas disponibles.</div>');
                 $('#table_div_efectividad_sucursales').empty();
+                $('#chart_efectividad_pie').empty();
+                $('#chart_medibles_pie').empty();
                 $('#efectividad_global').text('0%').css('color', '#94a3b8');
                 $('#efectividad_global_detalle').text('0 de 0 entregas');
+                $('#medicion_global').text('0%').css('color', '#94a3b8');
+                $('#medicion_global_detalle').text('0 de 0 con hora');
                 return;
             }
 
             const data = allData.detalle_entregas;
+            const filterSuc = $('#filtro_sucursal_tiempos').val() || 'Global';
             
             const dt = new google.visualization.DataTable();
             dt.addColumn('number', 'ID Pedido');
@@ -302,17 +325,20 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
                 const isExito = (r.Evaluacion_Entrega === 'A Tiempo' || r.Evaluacion_Entrega === 'Antes de Tiempo');
                 const hasTime = r.Hora_Real_Entrega ? true : false;
                 
-                globalTotal++;
-                if (isExito) globalExito++;
-                if (hasTime) globalConHora++;
-                else globalSinHora++;
-                
                 sucursalStats[suc].total++;
                 if (isExito) sucursalStats[suc].exito++;
                 else sucursalStats[suc].atrasado++;
 
                 if (hasTime) sucursalStats[suc].conHora++;
                 else sucursalStats[suc].sinHora++;
+
+                // APLICAR FILTRO PARA LAS MÉTRICAS Y LA TABLA
+                if (filterSuc !== 'Global' && suc !== filterSuc) return;
+
+                globalTotal++;
+                if (isExito) globalExito++;
+                if (hasTime) globalConHora++;
+                else globalSinHora++;
 
                 const ventana = `${r.FECHA_MIN_ENTREGA} - ${r.FECHA_MAX_ENTREGA} (${r.MIN_VENTANA_HORARIA_1} a ${r.MAX_VENTANA_HORARIA_1})`;
                 const horaStr = r.Hora_Real_Entrega ? r.Hora_Real_Entrega : '(Sin Hora)';
@@ -348,6 +374,46 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
             else if(medicionPorc < 80) colorMed = '#f59e0b'; // naranja
             $('#medicion_global').css('color', colorMed);
 
+            // DRAW PIE CHARTS
+            if (globalTotal === 0) {
+                $('#chart_efectividad_pie').html('<div class="text-center text-xs text-sky-500 pt-10">Sin datos</div>');
+                $('#chart_medibles_pie').html('<div class="text-center text-xs text-sky-500 pt-10">Sin datos</div>');
+            } else {
+                const atrasadasTotal = globalTotal - globalExito;
+                const dataPieEf = google.visualization.arrayToDataTable([
+                    ['Estado', 'Cantidad'],
+                    ['A Tiempo', globalExito],
+                    ['Atrasadas', atrasadasTotal]
+                ]);
+
+                const optionsPieEf = {
+                    pieHole: 0.55,
+                    chartArea: { width: '90%', height: '80%' },
+                    legend: { position: 'bottom', textStyle: { fontSize: 10 } },
+                    colors: ['#22c55e', '#ef4444'],
+                    pieSliceText: 'none'
+                };
+
+                new google.visualization.PieChart(document.getElementById('chart_efectividad_pie')).draw(dataPieEf, optionsPieEf);
+
+                const sinHoraTotal = globalTotal - globalConHora;
+                const dataPieMed = google.visualization.arrayToDataTable([
+                    ['Estado', 'Cantidad'],
+                    ['Con Hora', globalConHora],
+                    ['Sin Hora', sinHoraTotal]
+                ]);
+
+                const optionsPieMed = {
+                    pieHole: 0.55,
+                    chartArea: { width: '90%', height: '80%' },
+                    legend: { position: 'bottom', textStyle: { fontSize: 10 } },
+                    colors: ['#3b82f6', '#f59e0b'],
+                    pieSliceText: 'none'
+                };
+
+                new google.visualization.PieChart(document.getElementById('chart_medibles_pie')).draw(dataPieMed, optionsPieMed);
+            }
+
             // DRAW SUCURSAL STATS TABLE
             const dtStats = new google.visualization.DataTable();
             dtStats.addColumn('string', 'Sucursal');
@@ -359,6 +425,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
             dtStats.addColumn('number', '% Efectividad');
 
             Object.keys(sucursalStats).forEach(suc => {
+                if (filterSuc !== 'Global' && suc !== filterSuc) return; // Filtrar aquí también
+
                 const stat = sucursalStats[suc];
                 const porc = stat.total > 0 ? (stat.exito / stat.total) * 100 : 0;
                 dtStats.addRow([
@@ -424,6 +492,47 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
                 actualizarTodo();
             }
 
+            // Generar Cards HTML dinámicamente para soportar impresión de todas
+            const container = $('#sucursales_container');
+            SUCURSALES.forEach((s, index) => {
+                const hiddenClass = index === 0 ? '' : 'hidden';
+                const cardHTML = `
+                    <div id="card-${s.nombre}" class="sucursal-card-container bg-white rounded-3xl shadow-gaCard p-6 border border-slate-100 mb-8 print:block ${hiddenClass}">
+                        <div class="flex items-center justify-center border-b border-slate-100 pb-4 mb-6">
+                            <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/${s.logo}" alt="Logo ${s.nombre}" class="h-12 object-contain">
+                        </div>
+                        <div class="grid grid-cols-1 xl:grid-cols-4 gap-8">
+                            <div class="xl:col-span-1 flex flex-col items-center xl:border-r xl:border-slate-100 xl:pr-4">
+                                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 text-center">Estado de Facturas</h4>
+                                <div id="${s.chartId}" class="w-full h-[300px]"></div>
+                            </div>
+                            <div class="xl:col-span-3 flex flex-col">
+                                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 text-center xl:text-left">Desempeño de Choferes</h4>
+                                <div class="overflow-x-auto h-[300px] chofer-table">
+                                    <div id="${s.tableId}" class="w-full h-full"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.append(cardHTML);
+            });
+
+            $('.sucursal-pill').on('click', function() {
+                $('.sucursal-pill').removeClass('active bg-gaBlue text-white').addClass('bg-white text-slate-600 hover:bg-slate-50 border border-slate-200');
+                $(this).removeClass('bg-white text-slate-600 hover:bg-slate-50 border border-slate-200').addClass('active bg-gaBlue text-white');
+                
+                currentActiveSucursal = $(this).data('nombre');
+                
+                // Mostrar solo la seleccionada
+                $('.sucursal-card-container').addClass('hidden');
+                $(`#card-${currentActiveSucursal}`).removeClass('hidden');
+            });
+
+            $('#filtro_sucursal_tiempos').on('change', function() {
+                if (allData) drawTiemposEntregaTable();
+            });
+
             $('#start_date, #end_date').on('change', function () {
                 const s = $('#start_date').val();
                 const e = $('#end_date').val();
@@ -466,6 +575,54 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         });
 
         document.addEventListener("DOMContentLoaded", function () {
+            // Lógica de Pestañas
+            const tabGlobal = document.getElementById('tab-global');
+            const tabSucursales = document.getElementById('tab-sucursales');
+            const tabTiempos = document.getElementById('tab-tiempos');
+            
+            const contentGlobal = document.getElementById('content-global');
+            const contentSucursales = document.getElementById('content-sucursales');
+            const contentTiempos = document.getElementById('content-tiempos');
+
+            function resetTabs() {
+                const tabs = [tabGlobal, tabSucursales, tabTiempos];
+                tabs.forEach(t => {
+                    if(t) {
+                        t.classList.remove('border-gaBlue', 'text-gaBlue');
+                        t.classList.add('border-transparent', 'text-slate-500', 'hover:text-slate-700', 'hover:border-slate-300');
+                    }
+                });
+                if(contentGlobal) contentGlobal.classList.add('hidden');
+                if(contentSucursales) contentSucursales.classList.add('hidden');
+                if(contentTiempos) contentTiempos.classList.add('hidden');
+            }
+
+            if (tabGlobal && tabSucursales && tabTiempos) {
+                tabGlobal.addEventListener('click', () => {
+                    resetTabs();
+                    tabGlobal.classList.remove('border-transparent', 'text-slate-500', 'hover:text-slate-700', 'hover:border-slate-300');
+                    tabGlobal.classList.add('border-gaBlue', 'text-gaBlue');
+                    if(contentGlobal) contentGlobal.classList.remove('hidden');
+                    if (allData) drawTotalColumnChartFromCache();
+                });
+
+                tabSucursales.addEventListener('click', () => {
+                    resetTabs();
+                    tabSucursales.classList.remove('border-transparent', 'text-slate-500', 'hover:text-slate-700', 'hover:border-slate-300');
+                    tabSucursales.classList.add('border-gaBlue', 'text-gaBlue');
+                    if(contentSucursales) contentSucursales.classList.remove('hidden');
+                    if (allData) drawChartsAndTables();
+                });
+
+                tabTiempos.addEventListener('click', () => {
+                    resetTabs();
+                    tabTiempos.classList.remove('border-transparent', 'text-slate-500', 'hover:text-slate-700', 'hover:border-slate-300');
+                    tabTiempos.classList.add('border-gaBlue', 'text-gaBlue');
+                    if(contentTiempos) contentTiempos.classList.remove('hidden');
+                    if (allData) drawTiemposEntregaTable();
+                });
+            }
+
             const iconoVolver = document.querySelector(".icono-Volver");
             const iconoImprimir = document.querySelector(".icono-Imprimir");
 
@@ -486,17 +643,62 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     </script>
 
     <style>
-        /* Sticky header dentro de la tabla generada por Google (cuando hay scroll) */
-        .chofer-table table thead tr th {
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            background-color: #f97316; /* naranja GA para header tabla */
-            color: #ffffff;
-            font-size: 9px;
+        /* ================= ESTILOS MODERNOS TABLAS GOOGLE CHARTS ================= */
+        .google-visualization-table-table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            border: none !important;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
         }
-        .chofer-table table tbody tr td {
-            font-size: 9px;
+        
+        .google-visualization-table-th {
+            background-color: #f8fafc !important; /* bg-slate-50 */
+            background-image: none !important;
+            color: #64748b !important; /* text-slate-500 */
+            font-weight: 700 !important;
+            font-size: 11px !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.05em !important;
+            padding: 12px 16px !important;
+            border: none !important;
+            border-bottom: 2px solid #e2e8f0 !important; /* border-slate-200 */
+            text-align: center !important;
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 10 !important;
+        }
+        
+        .google-visualization-table-th:first-child {
+            text-align: left !important;
+        }
+
+        .google-visualization-table-td {
+            font-size: 13px !important;
+            color: #334155 !important; /* text-slate-700 */
+            padding: 14px 16px !important;
+            border: none !important;
+            border-bottom: 1px solid #f1f5f9 !important; /* border-slate-100 */
+            background-color: #ffffff !important;
+            transition: background-color 0.15s ease !important;
+            text-align: center !important;
+        }
+
+        .google-visualization-table-td:first-child {
+            text-align: left !important;
+            font-weight: 500 !important;
+        }
+
+        /* Hover y Selección */
+        .google-visualization-table-tr-head { box-shadow: none !important; }
+        .google-visualization-table-tr-sel { background-color: #f0f9ff !important; }
+        .google-visualization-table-tr-over .google-visualization-table-td {
+            background-color: #f8fafc !important; /* hover:bg-slate-50 */
+        }
+        
+        /* Limpiar contenedores extras */
+        .google-visualization-table-div-page {
+            background: transparent !important;
+            border: none !important;
         }
 
         /* Evitar solapamiento de componentes */
@@ -551,7 +753,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     </header>
 
     <!-- FILTRO DE FECHAS -->
-    <section class="max-w-6xl mx-auto px-4 mt-4">
+    <section class="max-w-[1500px] w-[96%] mx-auto px-4 mt-4">
         <div class="bg-white rounded-3xl shadow-gaSoft px-6 py-5">
             <h2 class="text-2xl font-extrabold text-gaBlue text-center mb-4">
                 Filtrar por Rango de Fechas
@@ -607,172 +809,131 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
         </div>
     </section>
 
-    <!-- GRÁFICO GENERAL + RESUMEN -->
-    <section class="max-w-6xl mx-auto px-4 mt-4">
-        <div class="bg-white rounded-3xl shadow-gaSoft px-4 py-4">
-            <div id="total_column_chart" class="w-full h-[320px]"></div>
-            <div id="summary_container" class="mt-1"></div>
+    <!-- TABS NAVEGACIÓN -->
+    <section class="max-w-[1500px] w-[96%] mx-auto px-4 mt-6 print:hidden">
+        <div class="border-b border-slate-200">
+            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                <button id="tab-global" class="border-gaBlue text-gaBlue whitespace-nowrap py-4 px-1 border-b-2 font-bold text-base transition-colors">
+                    Comparativa Global
+                </button>
+                <button id="tab-sucursales" class="border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 whitespace-nowrap py-4 px-1 border-b-2 font-bold text-base transition-colors">
+                    Gráficas por Sucursal
+                </button>
+                <button id="tab-tiempos" class="border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 whitespace-nowrap py-4 px-1 border-b-2 font-bold text-base transition-colors">
+                    Tiempos de Entrega e Indicadores
+                </button>
+            </nav>
         </div>
     </section>
 
-    <!-- GRID SUCURSALES -->
-    <section class="max-w-6xl mx-auto px-4 mt-8 pb-10">
-        <div class="flex items-center gap-3 mb-3">
+    <!-- COMPARATIVA GLOBAL (AHORA ES UNA PESTAÑA) -->
+    <section id="content-global" class="max-w-[1500px] w-[96%] mx-auto px-4 mt-8 pb-10 print:block">
+        <div class="flex items-center gap-3 mb-6">
             <div class="h-[2px] w-10 bg-gaBlue rounded-full"></div>
-            <h3 class="text-lg font-bold text-gaBlue tracking-wide">
-                GRÁFICAS POR SUCURSAL
+            <h3 class="text-lg font-bold text-gaBlue tracking-wide uppercase">
+                Comparativa General de Rendimiento
+            </h3>
+        </div>
+        <div class="bg-white rounded-3xl shadow-gaSoft px-6 py-6">
+            <div id="total_column_chart" class="w-full h-[320px]"></div>
+            <div id="summary_container" class="mt-4"></div>
+        </div>
+    </section>
+
+    <!-- VISTA DETALLE SUCURSAL -->
+    <section id="content-sucursales" class="max-w-[1500px] w-[96%] mx-auto px-4 mt-8 pb-10 hidden print:block">
+        <div class="flex items-center gap-3 mb-6">
+            <div class="h-[2px] w-10 bg-gaBlue rounded-full"></div>
+            <h3 class="text-lg font-bold text-gaBlue tracking-wide uppercase">
+                Rendimiento por Sucursal
             </h3>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- AIESA -->
-            <div class="bg-white rounded-3xl shadow-gaCard p-3 card-sucursal hover:shadow-2xl hover:-translate-y-1 transition">
-                <div class="flex justify-center items-center pb-2 border-b border-slate-100 flex-shrink-0">
-                    <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/aiesa.png" alt="AIESA"
-                         class="h-9 object-contain">
-                </div>
-                <div class="chart-container pt-2">
-                    <div id="piechart1" class="w-full h-full"></div>
-                </div>
-                <div id="table_div_aiesa" class="chofer-table table-container mt-2"></div>
-            </div>
-
-            <!-- DEASA -->
-            <div class="bg-white rounded-3xl shadow-gaCard p-3 card-sucursal hover:shadow-2xl hover:-translate-y-1 transition">
-                <div class="flex justify-center items-center pb-2 border-b border-slate-100 flex-shrink-0">
-                    <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/deasa.png" alt="DEASA" class="h-9 object-contain">
-                </div>
-                <div class="chart-container pt-2">
-                    <div id="piechart2" class="w-full h-full"></div>
-                </div>
-                <div id="table_div_deasa" class="chofer-table table-container mt-2"></div>
-            </div>
-
-            <!-- DIMEGSA -->
-            <div class="bg-white rounded-3xl shadow-gaCard p-3 card-sucursal hover:shadow-2xl hover:-translate-y-1 transition">
-                <div class="flex justify-center items-center pb-2 border-b border-slate-100 flex-shrink-0">
-                    <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/dimegsa.png" alt="DIMEGSA" class="h-9 object-contain">
-                </div>
-                <div class="chart-container pt-2">
-                    <div id="piechart3" class="w-full h-full"></div>
-                </div>
-                <div id="table_div_dimegsa" class="chofer-table table-container mt-2"></div>
-            </div>
-
-            <!-- GABSA -->
-            <div class="bg-white rounded-3xl shadow-gaCard p-3 card-sucursal hover:shadow-2xl hover:-translate-y-1 transition">
-                <div class="flex justify-center items-center pb-2 border-b border-slate-100 flex-shrink-0">
-                    <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/gabajio.png" alt="GABSA" class="h-9 object-contain">
-                </div>
-                <div class="chart-container pt-2">
-                    <div id="piechart4" class="w-full h-full"></div>
-                </div>
-                <div id="table_div_gabsa" class="chofer-table table-container mt-2"></div>
-            </div>
-
-            <!-- ILUMINACION -->
-            <div class="bg-white rounded-3xl shadow-gaCard p-3 card-sucursal hover:shadow-2xl hover:-translate-y-1 transition">
-                <div class="flex justify-center items-center pb-2 border-b border-slate-100 flex-shrink-0">
-                    <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/iluminacion_1.png" alt="ILUMINACION" class="h-9 object-contain">
-                </div>
-                <div class="chart-container pt-2">
-                    <div id="piechart5" class="w-full h-full"></div>
-                </div>
-                <div id="table_div_ilu" class="chofer-table table-container mt-2"></div>
-            </div>
-
-            <!-- SEGSA -->
-            <div class="bg-white rounded-3xl shadow-gaCard p-3 card-sucursal hover:shadow-2xl hover:-translate-y-1 transition">
-                <div class="flex justify-center items-center pb-2 border-b border-slate-100 flex-shrink-0">
-                    <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/segsa.png" alt="SEGSA" class="h-9 object-contain">
-                </div>
-                <div class="chart-container pt-2">
-                    <div id="piechart6" class="w-full h-full"></div>
-                </div>
-                <div id="table_div_segsa" class="chofer-table table-container mt-2"></div>
-            </div>
-
-            <!-- FESA -->
-            <div class="bg-white rounded-3xl shadow-gaCard p-3 card-sucursal hover:shadow-2xl hover:-translate-y-1 transition">
-                <div class="flex justify-center items-center pb-2 border-b border-slate-100 flex-shrink-0">
-                    <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/fesa.png" alt="FESA" class="h-9 object-contain">
-                </div>
-                <div class="chart-container pt-2">
-                    <div id="piechart7" class="w-full h-full"></div>
-                </div>
-                <div id="table_div_fesa" class="chofer-table table-container mt-2"></div>
-            </div>
-
-            <!-- TAPATIA -->
-            <div class="bg-white rounded-3xl shadow-gaCard p-3 card-sucursal hover:shadow-2xl hover:-translate-y-1 transition">
-                <div class="flex justify-center items-center pb-2 border-b border-slate-100 flex-shrink-0">
-                    <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/eitsa.png" alt="TAPATIA" class="h-9 object-contain">
-                </div>
-                <div class="chart-container pt-2">
-                    <div id="piechart8" class="w-full h-full"></div>
-                </div>
-                <div id="table_div_tapatia" class="chofer-table table-container mt-2"></div>
-            </div>
-
-            <!-- VALLARTA -->
-            <div class="bg-white rounded-3xl shadow-gaCard p-3 card-sucursal hover:shadow-2xl hover:-translate-y-1 transition">
-                <div class="flex justify-center items-center pb-2 border-b border-slate-100 flex-shrink-0">
-                    <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/gavallarta.png" alt="VALLARTA" class="h-9 object-contain">
-                </div>
-                <div class="chart-container pt-2">
-                    <div id="piechart9" class="w-full h-full"></div>
-                </div>
-                <div id="table_div_vallarta" class="chofer-table table-container mt-2"></div>
-            </div>
-
-            <!-- CODI -->
-            <div class="bg-white rounded-3xl shadow-gaCard p-3 card-sucursal hover:shadow-2xl hover:-translate-y-1 transition">
-                <div class="flex justify-center items-center pb-2 border-b border-slate-100 flex-shrink-0">
-                    <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/codi.png" alt="CODI" class="h-9 object-contain">
-                </div>
-                <div class="chart-container pt-2">
-                    <div id="piechart10" class="w-full h-full"></div>
-                </div>
-                <div id="table_div_codi" class="chofer-table table-container mt-2"></div>
-            </div>
-
-            <!-- QUERETARO -->
-            <div class="bg-white rounded-3xl shadow-gaCard p-3 card-sucursal hover:shadow-2xl hover:-translate-y-1 transition">
-                <div class="flex justify-center items-center pb-2 border-b border-slate-100 flex-shrink-0">
-                    <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/QRO.png" alt="QUERÉTARO" class="h-9 object-contain">
-                </div>
-                <div class="chart-container pt-2">
-                    <div id="piechart11" class="w-full h-full"></div>
-                </div>
-                <div id="table_div_queretaro" class="chofer-table table-container mt-2"></div>
-            </div>
+        <!-- Píldoras de Sucursales -->
+        <div class="flex overflow-x-auto gap-2 mb-6 pb-2 print:hidden scrollbar-hide" id="sucursal_pills_container" style="scrollbar-width: none; -ms-overflow-style: none;">
+            <button class="sucursal-pill active bg-gaBlue text-white px-4 py-2 rounded-lg text-xs font-semibold transition flex-shrink-0" data-nombre="AIESA">AIESA</button>
+            <button class="sucursal-pill bg-white text-slate-600 hover:bg-slate-50 px-4 py-2 rounded-lg text-xs font-semibold border border-slate-200 transition flex-shrink-0" data-nombre="DEASA">DEASA</button>
+            <button class="sucursal-pill bg-white text-slate-600 hover:bg-slate-50 px-4 py-2 rounded-lg text-xs font-semibold border border-slate-200 transition flex-shrink-0" data-nombre="GABSA">GABSA</button>
+            <button class="sucursal-pill bg-white text-slate-600 hover:bg-slate-50 px-4 py-2 rounded-lg text-xs font-semibold border border-slate-200 transition flex-shrink-0" data-nombre="ILUMINACION">ILUMINACION</button>
+            <button class="sucursal-pill bg-white text-slate-600 hover:bg-slate-50 px-4 py-2 rounded-lg text-xs font-semibold border border-slate-200 transition flex-shrink-0" data-nombre="DIMEGSA">DIMEGSA</button>
+            <button class="sucursal-pill bg-white text-slate-600 hover:bg-slate-50 px-4 py-2 rounded-lg text-xs font-semibold border border-slate-200 transition flex-shrink-0" data-nombre="SEGSA">SEGSA</button>
+            <button class="sucursal-pill bg-white text-slate-600 hover:bg-slate-50 px-4 py-2 rounded-lg text-xs font-semibold border border-slate-200 transition flex-shrink-0" data-nombre="FESA">FESA</button>
+            <button class="sucursal-pill bg-white text-slate-600 hover:bg-slate-50 px-4 py-2 rounded-lg text-xs font-semibold border border-slate-200 transition flex-shrink-0" data-nombre="TAPATIA">TAPATIA</button>
+            <button class="sucursal-pill bg-white text-slate-600 hover:bg-slate-50 px-4 py-2 rounded-lg text-xs font-semibold border border-slate-200 transition flex-shrink-0" data-nombre="VALLARTA">VALLARTA</button>
+            <button class="sucursal-pill bg-white text-slate-600 hover:bg-slate-50 px-4 py-2 rounded-lg text-xs font-semibold border border-slate-200 transition flex-shrink-0" data-nombre="CODI">CODI</button>
+            <button class="sucursal-pill bg-white text-slate-600 hover:bg-slate-50 px-4 py-2 rounded-lg text-xs font-semibold border border-slate-200 transition flex-shrink-0" data-nombre="QUERETARO">QUERÉTARO</button>
         </div>
+        <style>
+            .scrollbar-hide::-webkit-scrollbar { display: none; }
+        </style>
+
+        <!-- Contenedor de las Sucursales generadas por JS -->
+        <div id="sucursales_container"></div>
     </section>
 
     <!-- REPORTE DE TIEMPOS DE ENTREGA -->
-    <section class="max-w-6xl mx-auto px-4 mt-8 pb-4">
-        <div class="flex items-center gap-3 mb-3">
-            <div class="h-[2px] w-10 bg-gaBlue rounded-full"></div>
-            <h3 class="text-lg font-bold text-gaBlue tracking-wide uppercase">
-                Reporte de Tiempos de Entrega e Indicadores de Efectividad
-            </h3>
+    <section id="content-tiempos" class="max-w-[1500px] w-[96%] mx-auto px-4 mt-8 pb-4 hidden print:block">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+            <div class="flex items-center gap-3">
+                <div class="h-[2px] w-10 bg-gaBlue rounded-full"></div>
+                <h3 class="text-lg font-bold text-gaBlue tracking-wide uppercase">
+                    Reporte de Tiempos de Entrega e Indicadores de Efectividad
+                </h3>
+            </div>
+            
+            <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-2xl shadow-sm border border-slate-100">
+                <label for="filtro_sucursal_tiempos" class="text-xs font-bold text-slate-500 uppercase tracking-wider">Ver por Sucursal:</label>
+                <select id="filtro_sucursal_tiempos" class="border border-slate-200 rounded-lg px-2 py-1 text-sm bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-gaBlue/40 min-w-[140px] font-semibold">
+                    <option value="Global">GLOBAL (Todas)</option>
+                    <option value="AIESA">AIESA</option>
+                    <option value="DEASA">DEASA</option>
+                    <option value="DIMEGSA">DIMEGSA</option>
+                    <option value="GABSA">GABSA</option>
+                    <option value="ILUMINACION">ILUMINACION</option>
+                    <option value="SEGSA">SEGSA</option>
+                    <option value="FESA">FESA</option>
+                    <option value="TAPATIA">TAPATIA</option>
+                    <option value="VALLARTA">VALLARTA</option>
+                    <option value="CODI">CODI</option>
+                    <option value="QUERETARO">QUERÉTARO</option>
+                </select>
+            </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-            <div class="bg-white rounded-3xl shadow-gaCard p-4 col-span-1 flex flex-col justify-center items-center">
-                <h4 class="text-sm font-semibold text-slate-500 mb-2">Efectividad General</h4>
-                <div id="efectividad_global" class="text-4xl font-extrabold text-gaBlue">0%</div>
-                <div id="efectividad_global_detalle" class="text-xs font-semibold text-slate-400 mt-2">0 de 0 entregas</div>
+        <!-- Fila Superior: KPIs y Gráficas -->
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
+            <!-- KPIs -->
+            <div class="bg-white rounded-3xl shadow-gaCard p-6 flex flex-row items-center justify-evenly">
+                <div class="flex flex-col items-center text-center">
+                    <h4 class="text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">Efectividad</h4>
+                    <div id="efectividad_global" class="text-5xl font-extrabold text-gaBlue">0%</div>
+                    <div id="efectividad_global_detalle" class="text-[11px] font-semibold text-slate-400 mt-2">0 de 0 entregas</div>
+                </div>
+                <div class="w-px h-24 bg-slate-100"></div>
+                <div class="flex flex-col items-center text-center">
+                    <h4 class="text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">Medibles</h4>
+                    <div id="medicion_global" class="text-5xl font-extrabold text-gaBlue">0%</div>
+                    <div id="medicion_global_detalle" class="text-[11px] font-semibold text-slate-400 mt-2">0 de 0 con hora</div>
+                </div>
             </div>
-            <div class="bg-white rounded-3xl shadow-gaCard p-4 col-span-1 flex flex-col justify-center items-center">
-                <h4 class="text-sm font-semibold text-slate-500 mb-2 text-center">Medibles con Hora Exacta</h4>
-                <div id="medicion_global" class="text-4xl font-extrabold text-gaBlue">0%</div>
-                <div id="medicion_global_detalle" class="text-xs font-semibold text-slate-400 mt-2 text-center">0 de 0 con hora</div>
+
+            <!-- Gráfico 1 (A tiempo vs Atrasadas) -->
+            <div class="bg-white rounded-3xl shadow-gaCard p-4 flex flex-col justify-center items-center">
+                <h4 class="text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">Desempeño</h4>
+                <div id="chart_efectividad_pie" class="w-full h-[220px]"></div>
             </div>
-            <div class="bg-white rounded-3xl shadow-gaCard p-4 col-span-2 overflow-x-auto">
-                <h4 class="text-sm font-semibold text-slate-500 mb-2">Efectividad y Mediciones por Sucursal</h4>
-                <div id="table_div_efectividad_sucursales" class="w-full h-[180px]"></div>
+
+            <!-- Gráfico 2 (Con hora vs Sin hora) -->
+            <div class="bg-white rounded-3xl shadow-gaCard p-4 flex flex-col justify-center items-center">
+                <h4 class="text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">Registro</h4>
+                <div id="chart_medibles_pie" class="w-full h-[220px]"></div>
             </div>
+        </div>
+
+        <!-- Fila Inferior: Tabla de Sucursales -->
+        <div class="bg-white rounded-3xl shadow-gaCard p-6 overflow-x-auto mb-6">
+            <h4 class="text-xs font-bold text-slate-500 mb-4 uppercase tracking-wide">Desempeño por Sucursal</h4>
+            <div id="table_div_efectividad_sucursales" class="w-full h-[220px]"></div>
         </div>
 
         <div class="bg-white rounded-3xl shadow-gaCard p-4 overflow-x-auto">
@@ -782,7 +943,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     </section>
 
     <!-- BOTÓN IMPRIMIR -->
-    <div class="max-w-6xl mx-auto px-4 pb-10 text-center">
+    <div class="max-w-[1500px] w-[96%] mx-auto px-4 pb-10 text-center">
         <button onclick="window.print()" title="Imprimir estadísticas"
                 class="inline-flex items-center justify-center mt-2">
             <img src="/Pedidos_GA/Img/Botones%20entregas/Estadisticas/IMPAZ.png"
