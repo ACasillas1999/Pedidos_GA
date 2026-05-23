@@ -1,10 +1,14 @@
-const CACHE_NAME = 'pedidos-app-v2';
+const CACHE_NAME = 'pedidos-app-v3';
 const urlsToCache = [
   './',
   './index.html',
+  './main.html',
+  './css/output.css',
   './js/app.js',
   './js/auth.js',
-  './manifest.json'
+  './js/main.js',
+  './manifest.json',
+  './img/icon.svg'
 ];
 
 self.addEventListener('install', event => {
