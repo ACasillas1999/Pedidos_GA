@@ -838,23 +838,22 @@ function verDetallePedido(index) {
                 <div class="space-y-3" id="accionesPedidoContenedor">
                     ${pedido.ESTADO.toUpperCase() === 'ACTIVO' || pedido.ESTADO.toUpperCase() === 'REPROGRAMADO' ? `
                         <button onclick="cambiarEstadoPedido(${pedido.ID}, 'En Ruta')" class="w-full py-4 bg-orange-500 text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 hover:bg-orange-600 flex items-center justify-center active:scale-95 transition-all text-lg">
-                            <i data-lucide="truck" class="w-6 h-6 mr-2"></i> Iniciar Ruta
+                            <i data-lucide="truck" class="w-6 h-6 mr-2"></i> En Ruta
                         </button>
                     ` : ''}
                     
                     ${pedido.ESTADO.toUpperCase() === 'EN RUTA' ? `
-                        <button onclick="cambiarEstadoPedido(${pedido.ID}, 'En Tienda')" class="w-full py-4 bg-yellow-400 text-yellow-900 font-bold rounded-xl shadow-lg shadow-yellow-400/30 hover:bg-yellow-500 flex items-center justify-center active:scale-95 transition-all text-lg">
-                            <i data-lucide="store" class="w-6 h-6 mr-2"></i> Llegué a la Tienda
-                        </button>
-                    ` : ''}
-                    
-                    ${pedido.ESTADO.toUpperCase() === 'EN TIENDA' ? `
                         <button onclick="cambiarEstadoPedido(${pedido.ID}, 'Entregado')" class="w-full py-4 bg-green-600 text-white font-bold rounded-xl shadow-lg shadow-green-600/30 hover:bg-green-700 flex items-center justify-center active:scale-95 transition-all text-lg mb-3">
-                            <i data-lucide="check-circle" class="w-6 h-6 mr-2"></i> Entregado Exitosamente
+                            <i data-lucide="check-circle" class="w-6 h-6 mr-2"></i> Entregado
                         </button>
-                        <button onclick="cambiarEstadoPedido(${pedido.ID}, 'Reprogramado')" class="w-full py-3.5 bg-purple-100 text-purple-700 font-bold rounded-xl hover:bg-purple-200 flex items-center justify-center active:scale-95 transition-all">
-                            <i data-lucide="clock" class="w-5 h-5 mr-2"></i> Reprogramar (Incidencia)
-                        </button>
+                        <div class="flex space-x-3">
+                            <button onclick="cambiarEstadoPedido(${pedido.ID}, 'Reprogramado')" class="flex-1 py-3.5 bg-purple-100 text-purple-700 font-bold rounded-xl hover:bg-purple-200 flex items-center justify-center active:scale-95 transition-all">
+                                <i data-lucide="clock" class="w-5 h-5 mr-1"></i> Reprogramado
+                            </button>
+                            <button onclick="cambiarEstadoPedido(${pedido.ID}, 'Cancelado')" class="flex-1 py-3.5 bg-red-100 text-red-700 font-bold rounded-xl hover:bg-red-200 flex items-center justify-center active:scale-95 transition-all">
+                                <i data-lucide="x-circle" class="w-5 h-5 mr-1"></i> Cancelado
+                            </button>
+                        </div>
                     ` : ''}
                     
                     ${pedido.ESTADO.toUpperCase() === 'ENTREGADO' || pedido.ESTADO.toUpperCase() === 'CANCELADO' ? `
