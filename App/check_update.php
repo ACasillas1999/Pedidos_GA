@@ -7,7 +7,7 @@ header('Content-Type: application/json; charset=UTF-8');
 
 // Ajusta estos valores cada vez que publiques una nueva APK.
 $latestVersionCode = 2;        // Debe ser mayor que BuildConfig.VERSION_CODE actual
-$latestVersionName = '2.0';    // Texto que verá el usuario
+$latestVersionName = 'WEB';    // Texto que verá el usuario
 
 // URL pública donde subes el APK de la nueva versión.
 // EJEMPLO: https://pedidos.grupoascencio.com.mx/apk/app_pedidos_v1.apk
