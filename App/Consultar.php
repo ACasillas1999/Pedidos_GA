@@ -279,6 +279,7 @@ $sql = "SELECT
             p.Ruta,
             p.Coord_Origen,
             p.Coord_Destino,
+            p.Ruta_fotos AS Ruta_Fotos,
             lg.orden_entrega AS _g_orden_entrega,
             lg.fecha_asignacion AS _g_fecha_asignacion,
             gr.id AS _g_id,
@@ -462,6 +463,7 @@ if ($result->num_rows > 0) {
             'Ruta' => $row['Ruta'],
             'Coord_Origen' => $row['Coord_Origen'],
             'Coord_Destino' => $row['Coord_Destino'],
+            'Ruta_Fotos' => isset($row['Ruta_Fotos']) ? $row['Ruta_Fotos'] : null,
             'VEHICULO_ASIGNADO' => $vehiculo !== null,
             'VEHICULO_DETALLE' => $vehiculo,
             'grupo' => $grupoInfo
