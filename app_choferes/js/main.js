@@ -778,10 +778,12 @@ function verDetallePedido(index) {
                     </h3>
                     <div class="bg-pink-50 rounded-2xl p-4 border border-pink-100 flex flex-col items-center justify-center text-center shadow-sm relative overflow-hidden">
                         ${pedido.Ruta_Fotos ? `
-                            <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-2 shadow-inner">
-                                <i data-lucide="check" class="w-8 h-8 text-green-600"></i>
+                            <div class="w-full h-40 mb-3 rounded-xl overflow-hidden shadow-inner border-2 border-green-200 relative">
+                                <img src="../App/${pedido.Ruta_Fotos.replace('../', '')}" alt="Evidencia" class="w-full h-full object-cover">
+                                <div class="absolute bottom-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-lg shadow font-bold flex items-center">
+                                    <i data-lucide="check" class="w-3 h-3 mr-1"></i> OK
+                                </div>
                             </div>
-                            <p class="text-green-800 font-bold mb-1">Evidencia Subida</p>
                         ` : `
                             <div class="w-16 h-16 rounded-full bg-white flex items-center justify-center mb-2 shadow-sm border border-pink-200">
                                 <i data-lucide="camera-off" class="w-8 h-8 text-pink-300"></i>
@@ -793,6 +795,10 @@ function verDetallePedido(index) {
                         <input type="file" id="fotoInput_${pedido.ID}" accept="image/*" capture="environment" class="hidden" onchange="subirFoto(${pedido.ID})">
                         <button onclick="document.getElementById('fotoInput_${pedido.ID}').click()" class="w-full mt-3 py-2.5 bg-white border border-pink-200 text-pink-700 rounded-xl font-bold hover:bg-pink-100 active:scale-95 transition-all flex items-center justify-center shadow-sm">
                             <i data-lucide="upload" class="w-4 h-4 mr-2"></i> ${pedido.Ruta_Fotos ? 'Reemplazar Foto' : 'Tomar / Subir Foto'}
+                        </button>
+                        
+                        <button id="btnSubirFoto_${pedido.ID}" class="w-full mt-2 py-3 bg-pink-500 text-white font-bold rounded-xl shadow-lg shadow-pink-500/30 hover:bg-pink-600 active:scale-95 transition-all flex items-center justify-center hidden" disabled>
+                            <i data-lucide="loader-2" class="w-5 h-5 mr-2 animate-spin"></i> Subiendo...
                         </button>
                     </div>
                 </div>
@@ -996,11 +1002,11 @@ async function subirFoto(pedidoId) {
     if (!file) return;
 
     // Cambiar la UI a modo cargando
-    const btn = fileInput.nextElementSibling;
-    const originalHtml = btn.innerHTML;
-    btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 mr-2 animate-spin"></i> Subiendo...`;
-    btn.disabled = true;
-    lucide.createIcons();
+    const btnUpload = fileInput.nextElementSibling;
+    const btnLoader = document.getElementById(`btnSubirFoto_${pedidoId}`);
+    
+    btnUpload.classList.add('hidden');
+    btnLoader.classList.remove('hidden');
 
     const formData = new FormData();
     formData.append('id', pedidoId);
@@ -1013,20 +1019,20 @@ async function subirFoto(pedidoId) {
         });
 
         const text = await response.text();
-        if (text.includes("correctamente")) {
-            // Recargar para que aparezca la palomita verde
+        if (text.includes("correctamente") || response.ok) {
+            // Recargar para que aparezca la vista previa
             await cargarPedidos(); 
             const idx = pedidosData.findIndex(p => String(p.ID) === String(pedidoId));
             if (idx !== -1) verDetallePedido(idx);
         } else {
             alert("Error al subir foto: " + text);
-            btn.innerHTML = originalHtml;
-            btn.disabled = false;
+            btnUpload.classList.remove('hidden');
+            btnLoader.classList.add('hidden');
         }
     } catch(err) {
         alert("Error de red al subir foto.");
-        btn.innerHTML = originalHtml;
-        btn.disabled = false;
+        btnUpload.classList.remove('hidden');
+        btnLoader.classList.add('hidden');
     }
 }
 
