@@ -882,7 +882,19 @@ function abrirMapa(coords, direccion) {
 
 // Lógica de Geocoding y Actualización de Estado
 async function cambiarEstadoPedido(pedidoId, nuevoEstado) {
-    if (!confirm(`¿Seguro que deseas actualizar el pedido a "${nuevoEstado}"?`)) {
+    const confirmacion = await Swal.fire({
+        title: 'Confirmar Actualización',
+        text: `¿Seguro que deseas marcar este pedido como "${nuevoEstado}"?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#0f4c81',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sí, actualizar',
+        cancelButtonText: 'Cancelar',
+        reverseButtons: true
+    });
+
+    if (!confirmacion.isConfirmed) {
         return;
     }
 
