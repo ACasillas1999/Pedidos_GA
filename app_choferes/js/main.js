@@ -953,7 +953,10 @@ async function cambiarEstadoPedido(pedidoId, nuevoEstado) {
         }
 
         // Si se actualizó, recargamos toda la lista
-        cargarPedidos();
+        await cargarPedidos();
+        // Regresar a la lista principal para limpiar la vista de carga
+        showView('pedidosList');
+        renderListaPedidos(pedidosData || []);
         
     } catch (error) {
         console.warn("Fallo en la red o servidor. Guardando actualización offline:", error);
