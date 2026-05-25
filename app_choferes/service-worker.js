@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pedidos-app-v3';
+const CACHE_NAME = 'pedidos-app-v4';
 const urlsToCache = [
   './',
   './index.html',
