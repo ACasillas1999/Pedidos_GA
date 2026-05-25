@@ -880,38 +880,9 @@ function abrirMapa(coords, direccion) {
     window.open(url, '_blank');
 }
 
-// Función Promesa para el Modal de Confirmación
-function pedirConfirmacion(nuevoEstado) {
-    return new Promise((resolve) => {
-        const modal = document.getElementById('confirmStatusModal');
-        const text = document.getElementById('confirmStatusText');
-        const btnCancel = document.getElementById('cancelStatusBtn');
-        const btnConfirm = document.getElementById('confirmStatusBtn');
-        
-        text.innerHTML = `¿Seguro que deseas marcar este pedido como <br><span class="text-lg font-bold text-gray-900">"${nuevoEstado}"</span>?`;
-        modal.classList.remove('hidden');
-        document.body.classList.add('modal-open');
-        lucide.createIcons();
-        
-        btnCancel.onclick = () => {
-            modal.classList.add('hidden');
-            document.body.classList.remove('modal-open');
-            resolve(false);
-        };
-        
-        btnConfirm.onclick = () => {
-            modal.classList.add('hidden');
-            document.body.classList.remove('modal-open');
-            resolve(true);
-        };
-    });
-}
-
 // Lógica de Geocoding y Actualización de Estado
 async function cambiarEstadoPedido(pedidoId, nuevoEstado) {
-    const isConfirmed = await pedirConfirmacion(nuevoEstado);
-
-    if (!isConfirmed) {
+    if (!confirm(`¿Seguro que deseas actualizar el pedido a "${nuevoEstado}"?`)) {
         return;
     }
 
