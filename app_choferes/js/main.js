@@ -833,22 +833,22 @@ function verDetallePedido(index) {
             
             <!-- Acciones Fijas Inferiores -->
             <div class="bg-white p-5 border-t border-gray-100 shadow-[0_-10px_20px_rgba(0,0,0,0.05)] sticky bottom-0 z-20">
-                <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3 text-center">Actualizar Estado (Requiere GPS)</h3>
+                <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3 text-center">Actualizar Estado</h3>
                 
                 <div class="space-y-3" id="accionesPedidoContenedor">
-                    ${pedido.ESTADO === 'Activo' || pedido.ESTADO === 'Reprogramado' ? `
+                    ${pedido.ESTADO.toUpperCase() === 'ACTIVO' || pedido.ESTADO.toUpperCase() === 'REPROGRAMADO' ? `
                         <button onclick="cambiarEstadoPedido(${pedido.ID}, 'En Ruta')" class="w-full py-4 bg-orange-500 text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 hover:bg-orange-600 flex items-center justify-center active:scale-95 transition-all text-lg">
                             <i data-lucide="truck" class="w-6 h-6 mr-2"></i> Iniciar Ruta
                         </button>
                     ` : ''}
                     
-                    ${pedido.ESTADO === 'En Ruta' ? `
+                    ${pedido.ESTADO.toUpperCase() === 'EN RUTA' ? `
                         <button onclick="cambiarEstadoPedido(${pedido.ID}, 'En Tienda')" class="w-full py-4 bg-yellow-400 text-yellow-900 font-bold rounded-xl shadow-lg shadow-yellow-400/30 hover:bg-yellow-500 flex items-center justify-center active:scale-95 transition-all text-lg">
                             <i data-lucide="store" class="w-6 h-6 mr-2"></i> Llegué a la Tienda
                         </button>
                     ` : ''}
                     
-                    ${pedido.ESTADO === 'En Tienda' ? `
+                    ${pedido.ESTADO.toUpperCase() === 'EN TIENDA' ? `
                         <button onclick="cambiarEstadoPedido(${pedido.ID}, 'Entregado')" class="w-full py-4 bg-green-600 text-white font-bold rounded-xl shadow-lg shadow-green-600/30 hover:bg-green-700 flex items-center justify-center active:scale-95 transition-all text-lg mb-3">
                             <i data-lucide="check-circle" class="w-6 h-6 mr-2"></i> Entregado Exitosamente
                         </button>
@@ -857,7 +857,7 @@ function verDetallePedido(index) {
                         </button>
                     ` : ''}
                     
-                    ${pedido.ESTADO === 'Entregado' || pedido.ESTADO === 'Cancelado' ? `
+                    ${pedido.ESTADO.toUpperCase() === 'ENTREGADO' || pedido.ESTADO.toUpperCase() === 'CANCELADO' ? `
                         <div class="text-center text-sm font-bold text-gray-400 bg-gray-50 py-3 rounded-xl border border-gray-100">
                             Pedido cerrado y procesado.
                         </div>
