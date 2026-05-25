@@ -1015,7 +1015,9 @@ async function subirFoto(pedidoId) {
         const text = await response.text();
         if (text.includes("correctamente")) {
             // Recargar para que aparezca la palomita verde
-            cargarPedidos(); 
+            await cargarPedidos(); 
+            const idx = pedidosData.findIndex(p => String(p.ID) === String(pedidoId));
+            if (idx !== -1) verDetallePedido(idx);
         } else {
             alert("Error al subir foto: " + text);
             btn.innerHTML = originalHtml;
