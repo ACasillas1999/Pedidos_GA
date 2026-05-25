@@ -809,7 +809,7 @@ function verDetallePedido(index) {
                     <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center mb-2">
                         <i data-lucide="file-text" class="w-4 h-4 mr-1.5 text-blue-900"></i> Documento / Factura
                     </h3>
-                    <a href="${CONFIG.API_URL.replace('/app/', '/')}${pedido.Ruta}" target="_blank" class="bg-blue-50 border border-blue-100 rounded-2xl p-4 flex items-center justify-between shadow-sm active:scale-95 transition-all" style="background:rgba(15,76,129,0.04); border-color:rgba(15,76,129,0.15);">
+                    <a href="../${pedido.Ruta.replace('../', '').replace('App/', '')}" target="_blank" class="bg-blue-50 border border-blue-100 rounded-2xl p-4 flex items-center justify-between shadow-sm active:scale-95 transition-all" style="background:rgba(15,76,129,0.04); border-color:rgba(15,76,129,0.15);">
                         <div class="flex items-center">
                             <div class="w-10 h-10 rounded-full flex items-center justify-center mr-3" style="background-color:#0f4c81;">
                                 <i data-lucide="download" class="w-5 h-5 text-white"></i>
