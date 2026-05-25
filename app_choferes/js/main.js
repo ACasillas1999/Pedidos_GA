@@ -779,7 +779,7 @@ function verDetallePedido(index) {
                     <div class="bg-pink-50 rounded-2xl p-4 border border-pink-100 flex flex-col items-center justify-center text-center shadow-sm relative overflow-hidden">
                         ${pedido.Ruta_Fotos ? `
                             <div class="w-full h-40 mb-3 rounded-xl overflow-hidden shadow-inner border-2 border-green-200 relative">
-                                <img src="../App/${pedido.Ruta_Fotos.replace('../', '')}" alt="Evidencia" class="w-full h-full object-cover">
+                                <img src="${pedido.Ruta_Fotos}" alt="Evidencia" class="w-full h-full object-cover">
                                 <div class="absolute bottom-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-lg shadow font-bold flex items-center">
                                     <i data-lucide="check" class="w-3 h-3 mr-1"></i> OK
                                 </div>
@@ -1019,7 +1019,7 @@ async function subirFoto(pedidoId) {
         });
 
         const text = await response.text();
-        if (text.includes("correctamente") || response.ok) {
+        if (text.includes("correctamente")) {
             // Recargar para que aparezca la vista previa
             await cargarPedidos(); 
             const idx = pedidosData.findIndex(p => String(p.ID) === String(pedidoId));
