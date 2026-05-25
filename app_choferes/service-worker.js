@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pedidos-app-v4';
+const CACHE_NAME = 'pedidos-app-v5';
 const urlsToCache = [
   './',
   './index.html',
@@ -7,6 +7,8 @@ const urlsToCache = [
   './js/app.js',
   './js/auth.js',
   './js/main.js',
+  './js/lucide.js',
+  './js/sweetalert2.js',
   './manifest.json',
   './img/icon.svg'
 ];
