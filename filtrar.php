@@ -10,9 +10,17 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 
 // Establecer la conexión a la base de datos
 require_once __DIR__ . "/Conexiones/Conexion.php";
+require_once __DIR__ . "/helpers/filtro_pedidos_rol.php";
 
 $sucursalSesion = strtoupper($_SESSION["Sucursal"] ?? "");
 $rolSesion      = $_SESSION["Rol"] ?? "";
+
+// ---------- Filtro por vendedor (Rol VR ve solo lo suyo) ----------
+$vendedorCondition = '';
+$vendedorFiltro = nombreVendedorFiltro($rolSesion);
+if ($vendedorFiltro !== null) {
+    $vendedorCondition = " AND TRIM(p.VENDEDOR) = '" . $conn->real_escape_string($vendedorFiltro) . "' ";
+}
 
 // Filtros opcionales por grupo
 $grupoIdFilter = 0;
@@ -123,7 +131,7 @@ if ($sucursalSesion === "TODAS") {
                 LEFT JOIN pedidos_grupos pg ON p.ID = pg.pedido_id
                 LEFT JOIN grupos_rutas gr ON pg.grupo_id = gr.id AND gr.estado = 'ACTIVO'
                 LEFT JOIN pedidos_destinatario pd ON p.ID = pd.pedido_id
-                WHERE $estadoFilter $sucursalCondition $grupoConditionGlobal $fechaCondition $zonaCondition
+                WHERE $estadoFilter $sucursalCondition $grupoConditionGlobal $fechaCondition $zonaCondition $vendedorCondition
                 ORDER BY p.FECHA_RECEPCION_FACTURA DESC
                 LIMIT $offset, 100";
         $result = $conn->query($sql);
@@ -378,7 +386,7 @@ if ($sucursalSesion === "TODAS") {
                 $sql_count = "SELECT COUNT(*) as total FROM pedidos p
                                LEFT JOIN pedidos_grupos pg ON p.ID = pg.pedido_id
                                LEFT JOIN grupos_rutas gr ON pg.grupo_id = gr.id AND gr.estado = 'ACTIVO'
-                               WHERE ($estadoFilter) $sucursalCondition $grupoConditionGlobal $fechaCondition $zonaCondition";
+                               WHERE ($estadoFilter) $sucursalCondition $grupoConditionGlobal $fechaCondition $zonaCondition $vendedorCondition";
                 $result_count = $conn->query($sql_count);
                 $total_rows = 0;
                 if ($result_count && $row_count = $result_count->fetch_assoc()) {
@@ -435,7 +443,7 @@ if ($sucursalSesion === "TODAS") {
                 LEFT JOIN pedidos_grupos pg ON p.ID = pg.pedido_id
                 LEFT JOIN grupos_rutas gr ON pg.grupo_id = gr.id AND gr.estado = 'ACTIVO'
                 LEFT JOIN pedidos_destinatario pd ON p.ID = pd.pedido_id
-                WHERE $estadoFilter $sucursalCondition $grupoConditionGlobal $fechaCondition $zonaCondition
+                WHERE $estadoFilter $sucursalCondition $grupoConditionGlobal $fechaCondition $zonaCondition $vendedorCondition
                 ORDER BY p.FECHA_RECEPCION_FACTURA DESC
                 LIMIT $offset, 100";
         $result = $conn->query($sql);
@@ -687,7 +695,7 @@ if ($sucursalSesion === "TODAS") {
                 $sql_count = "SELECT COUNT(*) as total FROM pedidos p
                                LEFT JOIN pedidos_grupos pg ON p.ID = pg.pedido_id
                                LEFT JOIN grupos_rutas gr ON pg.grupo_id = gr.id AND gr.estado = 'ACTIVO'
-                               WHERE ($estadoFilter) $sucursalCondition $grupoConditionGlobal $fechaCondition $zonaCondition";
+                               WHERE ($estadoFilter) $sucursalCondition $grupoConditionGlobal $fechaCondition $zonaCondition $vendedorCondition";
                 $result_count = $conn->query($sql_count);
                 $total_rows = 0;
                 if ($result_count && $row_count = $result_count->fetch_assoc()) {

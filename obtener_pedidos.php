@@ -10,14 +10,48 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
 
 // Conexión centralizada
 require_once __DIR__ . '/Conexiones/Conexion.php';
+require_once __DIR__ . '/helpers/filtro_pedidos_rol.php';
+
+$rolSesion = $_SESSION['Rol'] ?? '';
+$sucSesion = strtoupper($_SESSION['Sucursal'] ?? '');
+
+$sucursales_permitidas = sucursalesPermitidasPorRol($rolSesion, $sucSesion);
+$vendedorFiltro        = nombreVendedorFiltro($rolSesion);
+
+$where = [];
+$types = '';
+$params = [];
+
+if (!empty($sucursales_permitidas)) {
+    $place = implode(',', array_fill(0, count($sucursales_permitidas), '?'));
+    $where[] = "SUCURSAL IN ($place)";
+    $types  .= str_repeat('s', count($sucursales_permitidas));
+    foreach ($sucursales_permitidas as $s) { $params[] = $s; }
+}
+if ($vendedorFiltro !== null) {
+    $where[] = "TRIM(VENDEDOR) = ?";
+    $types  .= 's';
+    $params[] = $vendedorFiltro;
+}
+
+$whereSql = !empty($where) ? ('WHERE ' . implode(' AND ', $where)) : '';
 
 // Traer los campos necesarios para las vistas nuevas
 $sql = "SELECT ID, SUCURSAL, ESTADO, FECHA_RECEPCION_FACTURA, FECHA_ENTREGA_CLIENTE,
                 CHOFER_ASIGNADO, VENDEDOR, FACTURA, DIRECCION, NOMBRE_CLIENTE,
                 TELEFONO, CONTACTO, COMENTARIOS, Ruta, Coord_Origen, Coord_Destino,
                 precio_factura_real
-        FROM pedidos";
-$result = $conn->query($sql);
+        FROM pedidos
+        $whereSql";
+
+if (!empty($params)) {
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param($types, ...$params);
+    $stmt->execute();
+    $result = $stmt->get_result();
+} else {
+    $result = $conn->query($sql);
+}
 
 $pedidos = [];
 if ($result && $result->num_rows > 0) {

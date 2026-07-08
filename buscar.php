@@ -9,6 +9,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 }
 
 require_once __DIR__ . "/Conexiones/Conexion.php";
+require_once __DIR__ . "/helpers/filtro_pedidos_rol.php";
 header('Content-Type: text/html; charset=UTF-8');
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST" || !isset($_POST['busqueda'])) {
@@ -26,22 +27,7 @@ $rolSesion = $_SESSION["Rol"] ?? '';
 $sucSesion = strtoupper($_SESSION["Sucursal"] ?? '');
 
 // ---------- Sucursales visibles ----------
-$sucursales_permitidas = [];
-if ($rolSesion === 'Admin' && $sucSesion === 'TODAS') {
-    // Admin con TODAS: sin filtro por sucursal
-    $sucursales_permitidas = [];
-} elseif ($rolSesion === 'JC' && $sucSesion === 'TAPATIA') {
-    // JC Tapatía: Tapatía + Iluminación
-    $sucursales_permitidas = ['TAPATIA', 'ILUMINACION'];
-} else {
-    // Resto: su sucursal de sesión (si no es TODAS)
-    if ($sucSesion && $sucSesion !== 'TODAS') {
-        $sucursales_permitidas = [$sucSesion];
-    } else {
-        // fallback prudente: no abrir todo si no es admin
-        $sucursales_permitidas = [$sucSesion ?: '___NULO___'];
-    }
-}
+$sucursales_permitidas = sucursalesPermitidasPorRol($rolSesion, $sucSesion);
 
 // ---------- WHERE de búsqueda ----------
 $cols = [
@@ -67,6 +53,14 @@ if (!empty($sucursales_permitidas)) {
     $where[] = "p.SUCURSAL IN ($place_suc)";
     $types  .= str_repeat('s', count($sucursales_permitidas));
     foreach ($sucursales_permitidas as $s) { $params[] = $s; }
+}
+
+// ---------- Filtro por vendedor (Rol VR ve solo lo suyo) ----------
+$vendedorFiltro = nombreVendedorFiltro($rolSesion);
+if ($vendedorFiltro !== null) {
+    $where[] = "TRIM(p.VENDEDOR) = ?";
+    $types  .= 's';
+    $params[] = $vendedorFiltro;
 }
 
 $whereSql = implode(' AND ', $where);
