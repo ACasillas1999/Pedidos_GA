@@ -17,3 +17,5 @@ Conexiones/Conexion.php
 Thumbs.db
 desktop.ini
 .claude/
+node_modules/
+tailwindcss.exe

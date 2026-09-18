@@ -2,7 +2,7 @@
 <?php
 // Conexion MySQLi centralizada para los endpoints
 // Intenta obtener credenciales de variables de entorno y luego usa defaults
-
+/*
 if (!isset($conn) || !($conn instanceof mysqli)) {
     $dbHost = getenv('DB_HOST') !== false ? getenv('DB_HOST') : '18.211.75.118';
     $dbUser = getenv('DB_USER') !== false ? getenv('DB_USER') : 'root';
@@ -21,10 +21,10 @@ if (!isset($conn) || !($conn instanceof mysqli)) {
     }
 }
 ?>
+*/
 
 
-<?php
-/*define('DB_SERVER', 'localhost'); // Aseg��rate de que esto es correcto
+define('DB_SERVER', 'localhost'); // Aseg��rate de que esto es correcto
 define('DB_USERNAME', 'root');
 define('DB_PASSWORD', '');
 define('DB_NAME', 'gpoascen_pedidos_app');
@@ -34,5 +34,5 @@ $conn = new mysqli(DB_SERVER, DB_USERNAME, DB_PASSWORD, DB_NAME);
 // Verificar la conexión
 if ($conn->connect_error) {
     die("Error de conexión: " . $conn->connect_error);
-}*/
+}
 ?>
