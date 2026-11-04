@@ -264,11 +264,165 @@
 
 
 
+    
+    <!-- Modal: Registrar Incidencia -->
+    <div id="modalRegistrarIncidencia" style="display: none; position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.85); z-index: 9999; align-items: center; justify-content: center; padding: 1rem; overflow-y: auto;" class="backdrop-blur-sm">
+        <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden transform transition-all my-auto flex flex-col max-h-[92vh]">
+            <!-- Cabecera -->
+            <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-10">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center text-white shadow-sm" style="background-color: #0f4c81 !important;">
+                        <i data-lucide="alert-triangle" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-black text-gray-800 leading-tight">Registrar Incidencia</h3>
+                        <p class="text-[11px] text-gray-400 font-medium" id="modalRegIncidenciaSubtitulo">Pedido #--</p>
+                    </div>
+                </div>
+                <button type="button" onclick="cerrarModalRegistrarIncidencia()" class="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Formulario -->
+            <form id="formRegistrarIncidenciaModal" onsubmit="event.preventDefault(); guardarIncidenciaDesdeModal();" class="p-5 space-y-4 overflow-y-auto flex-1">
+                <input type="hidden" id="modalIncidenciaPedidoId" value="">
+
+                <!-- 1. Lista desplegable con los 7 motivos operativos -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                        Motivo Operativo <span class="text-red-500">*</span>
+                    </label>
+                    <select id="modalIncidenciaMotivo" required class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-3.5 py-3 text-xs font-semibold text-gray-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0f4c81]/20 focus:border-[#0f4c81] transition-all">
+                        <option value="">-- Seleccionar motivo --</option>
+                        <option value="Faltante">Faltante</option>
+                        <option value="Sobrante">Sobrante</option>
+                        <option value="Producto erróneo">Producto erróneo</option>
+                        <option value="Cliente no recibe pedido">Cliente no recibe pedido</option>
+                        <option value="Cliente reprograma pedido">Cliente reprograma pedido</option>
+                        <option value="Cliente no cuenta con maniobra para descarga">Cliente no cuenta con maniobra para descarga</option>
+                        <option value="Cuestiones climáticas">Cuestiones climáticas</option>
+                    </select>
+                </div>
+
+                <!-- 2. Campo de comentarios adicionales para observaciones -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                        Observaciones / Comentarios Adicionales
+                    </label>
+                    <textarea id="modalIncidenciaComentarios" rows="3" placeholder="Describe aquí los detalles u observaciones de la incidencia..." class="w-full bg-gray-50 border border-gray-200 rounded-2xl p-3 text-xs font-medium text-gray-800 placeholder-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0f4c81]/20 focus:border-[#0f4c81] transition-all resize-none"></textarea>
+                </div>
+
+                <!-- 3. Evidencia opcional -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">
+                        Evidencia Opcional <span class="text-[10px] text-gray-400 font-normal lowercase">(foto, video, doc, pdf, etc.)</span>
+                    </label>
+                    <input type="file" id="modalIncidenciaArchivo" accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.txt" class="hidden" onchange="manejarArchivoModalIncidencia()">
+                    
+                    <button type="button" onclick="document.getElementById('modalIncidenciaArchivo').click()" class="w-full py-3 px-4 bg-gray-50 border-2 border-dashed border-gray-200 hover:border-[#0f4c81] rounded-2xl text-xs font-bold text-gray-600 hover:text-[#0f4c81] flex items-center justify-center transition-all group">
+                        <i data-lucide="paperclip" class="w-4 h-4 mr-2 text-gray-400 group-hover:text-[#0f4c81]"></i>
+                        <span id="modalIncidenciaLabelArchivo">Adjuntar archivo de evidencia</span>
+                    </button>
+
+                    <div id="modalIncidenciaPreviewCont" class="hidden mt-2.5 flex items-center justify-between bg-blue-50/70 px-3.5 py-2.5 rounded-2xl border border-blue-100 text-xs shadow-xs">
+                        <div class="flex items-center space-x-2 truncate">
+                            <i data-lucide="file-check" class="w-4 h-4 text-[#0f4c81] flex-shrink-0"></i>
+                            <span id="modalIncidenciaPreviewNombre" class="truncate text-gray-800 font-bold max-w-[210px]"></span>
+                        </div>
+                        <button type="button" onclick="quitarArchivoModalIncidencia()" class="text-red-500 hover:text-red-700 p-1 flex-shrink-0 ml-2" title="Eliminar archivo">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Botones con estilos sólidos garantizados -->
+                <div class="pt-2 flex items-center space-x-3">
+                    <button type="button" onclick="cerrarModalRegistrarIncidencia()" class="flex-1 py-3.5 rounded-2xl font-bold text-xs text-gray-700 bg-gray-100 hover:bg-gray-200 transition-all active:scale-95 text-center">
+                        Cancelar
+                    </button>
+                    <button type="submit" id="btnGuardarIncidenciaModal" style="background-color: #0f4c81 !important; color: #ffffff !important;" class="flex-[1.6] py-3.5 rounded-2xl font-bold text-xs shadow-lg shadow-[#0f4c81]/30 hover:opacity-95 active:scale-95 flex items-center justify-center transition-all text-center">
+                        <i data-lucide="check-circle-2" class="w-4 h-4 mr-1.5 text-white"></i>
+                        <span class="text-white font-bold" style="color: #ffffff !important;">Guardar Incidencia</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Ver Detalle de Incidencia -->
+    <div id="modalDetalleIncidencia" style="display: none; position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.85); z-index: 9999; align-items: center; justify-content: center; padding: 1rem; overflow-y: auto;" class="backdrop-blur-sm">
+        <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden transform transition-all my-auto flex flex-col max-h-[92vh]">
+            <!-- Cabecera -->
+            <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-10">
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center text-amber-600 bg-amber-100 shadow-sm">
+                        <i data-lucide="file-text" class="w-5 h-5 text-amber-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-black text-gray-800 leading-tight">Detalle de Incidencia</h3>
+                        <p class="text-[11px] text-gray-400 font-medium" id="modalDetalleIncidenciaSubtitulo">Información completa</p>
+                    </div>
+                </div>
+                <button type="button" onclick="cerrarModalDetalleIncidencia()" class="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Contenido -->
+            <div class="p-5 space-y-4 overflow-y-auto flex-1 text-left">
+                <!-- Motivo y Fecha -->
+                <div class="bg-gray-50 rounded-2xl p-4 border border-gray-100 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Motivo Operativo</span>
+                        <span id="modalDetalleIncidenciaFecha" class="text-[11px] font-bold text-gray-500">--/--/----</span>
+                    </div>
+                    <div>
+                        <span id="modalDetalleIncidenciaBadge" class="inline-block px-3 py-1.5 rounded-xl text-xs font-black shadow-xs">
+                            --
+                        </span>
+                    </div>
+                    <div id="modalDetalleIncidenciaChoferCont" class="pt-1 text-[11px] text-gray-500">
+                        <span>Reportado por: </span><span id="modalDetalleIncidenciaChofer" class="font-bold text-gray-800">--</span>
+                    </div>
+                </div>
+
+                <!-- Observaciones -->
+                <div>
+                    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center mb-1.5">
+                        <i data-lucide="message-square" class="w-3.5 h-3.5 mr-1.5 text-gray-500"></i> Observaciones
+                    </h4>
+                    <div class="bg-amber-50/50 rounded-2xl p-4 border border-amber-100/80">
+                        <p id="modalDetalleIncidenciaComentarios" class="text-xs text-gray-800 leading-relaxed font-normal whitespace-pre-wrap">Sin observaciones adicionales.</p>
+                    </div>
+                </div>
+
+                <!-- Evidencia adjunta -->
+                <div>
+                    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center mb-1.5">
+                        <i data-lucide="paperclip" class="w-3.5 h-3.5 mr-1.5 text-gray-500"></i> Evidencia Adjunta
+                    </h4>
+                    <div id="modalDetalleIncidenciaEvidenciaCont" class="bg-gray-50 rounded-2xl p-4 border border-gray-100 text-center">
+                        <!-- Inyectado dinámicamente -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Cerrar -->
+            <div class="p-4 bg-gray-50 border-t border-gray-100 flex justify-end">
+                <button type="button" onclick="cerrarModalDetalleIncidencia()" class="w-full py-3 rounded-2xl font-bold text-xs text-gray-700 bg-white border border-gray-200 hover:bg-gray-100 transition-all active:scale-95 shadow-sm text-center">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Inicializar iconos -->
     <script>
         lucide.createIcons();
     </script>
-    <script src="js/app.js?v=3"></script>
-    <script src="js/main.js?v=3"></script>
+    <script src="js/sweetalert2.js"></script>
+    <script src="js/app.js?v=10"></script>
+    <script src="js/main.js?v=10"></script>
 </body>
 </html>

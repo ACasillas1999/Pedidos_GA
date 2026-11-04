@@ -124,6 +124,7 @@ if ($sucursalSesion === "TODAS") {
                        gr.nombre_grupo,
                        gr.chofer_asignado as grupo_chofer,
                        (SELECT COUNT(*) FROM pedidos_grupos WHERE grupo_id = pg.grupo_id) as total_en_grupo,
+                       (SELECT COUNT(*) FROM pedidos_incidencias WHERE pedido_id = p.ID) as total_incidencias,
                        p.tipo_zona,
                        pd.lat,
                        pd.lng
@@ -144,11 +145,11 @@ if ($sucursalSesion === "TODAS") {
 
                 // Mostrar columna de checkbox solo para Admin y JC
                 $mostrarCheckbox = in_array($rolSesion, ["Admin", "JC"]);
-                $checkboxHeader = $mostrarCheckbox ? "<th><input type='checkbox' id='selectAll' title='Seleccionar todos'></th>" : "";
+                $checkboxHeader = $mostrarCheckbox ? "<th style='width: 34px;'><input type='checkbox' id='selectAll' title='Seleccionar todos'></th>" : "";
 
                 echo "<tr>
                         $checkboxHeader
-                        <th>N°</th>
+                        <th style='width: 56px;'>N°</th>
                         <th style='min-width: 145px; text-align: center;'>Factura (caja)</th>
                         <th>Estado</th>
                         <th>Tipo Envío</th>
@@ -161,7 +162,7 @@ if ($sucursalSesion === "TODAS") {
                         <th>Dirección</th>
                         <th>Nombre Cliente</th>
                         <th>Contacto</th>
-                        <th>Acción</th>
+                        <th style='width: 112px; text-align: center;'>Acción</th>
                       </tr>";
                 while ($row = $result->fetch_assoc()) {
                     $estado = $row["ESTADO"];
@@ -377,7 +378,18 @@ if ($sucursalSesion === "TODAS") {
                     
                     echo "<td>" . $row["NOMBRE_CLIENTE"] . " " . $badgeZona . "</td>";
                     echo "<td>" . $row["CONTACTO"] . "</td>";
-                    echo "<td><a href='Inicio.php?id=" . $row["ID"] . "'>Ver Detalles</a></td>";
+                    $totalIncidencias = intval($row["total_incidencias"] ?? 0);
+                    $facturaEsc = htmlspecialchars($row["FACTURA"] ?? '', ENT_QUOTES);
+                    $svgSearch = "<svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' style='flex-shrink:0;'><circle cx='11' cy='11' r='8'/><line x1='21' y1='21' x2='16.65' y2='16.65'/></svg>";
+                    $svgAlert = "<svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' style='flex-shrink:0;'><path d='m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z'/><line x1='12' y1='9' x2='12' y2='13'/><line x1='12' y1='17' x2='12.01' y2='17'/></svg>";
+                    $svgPlus = "<svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' style='flex-shrink:0;'><line x1='12' y1='5' x2='12' y2='19'/><line x1='5' y1='12' x2='19' y2='12'/></svg>";
+                    if ($totalIncidencias > 0) {
+                        $txtInc = ($totalIncidencias === 1) ? "1 Incidencia" : "$totalIncidencias Incidencias";
+                        $btnIncidencia = "<button type='button' class='btn-accion-modern btn-accion-inc-activa' onclick='abrirModalIncidenciasDesktop(" . $row["ID"] . ", \"" . $facturaEsc . "\")' title='Ver incidencias de este pedido'>$svgAlert<span>$txtInc</span></button>";
+                    } else {
+                        $btnIncidencia = "<button type='button' class='btn-accion-modern btn-accion-inc-nueva' onclick='abrirFormularioNuevaIncidenciaQuick(" . $row["ID"] . ", \"" . $facturaEsc . "\")' title='Registrar incidencia en este pedido'>$svgPlus<span>Incidencia</span></button>";
+                    }
+                    echo "<td><div class='acciones-pedido-wrap'><a href='Inicio.php?id=" . $row["ID"] . "' class='btn-accion-modern btn-accion-detalles' title='Ver detalles del pedido'>$svgSearch<span>Ver Detalles</span></a>$btnIncidencia</div></td>";
                     echo "</tr>";
                 }
                 echo "</table>";
@@ -436,6 +448,7 @@ if ($sucursalSesion === "TODAS") {
                        gr.nombre_grupo,
                        gr.chofer_asignado as grupo_chofer,
                        (SELECT COUNT(*) FROM pedidos_grupos WHERE grupo_id = pg.grupo_id) as total_en_grupo,
+                       (SELECT COUNT(*) FROM pedidos_incidencias WHERE pedido_id = p.ID) as total_incidencias,
                        p.tipo_zona,
                        pd.lat,
                        pd.lng
@@ -456,11 +469,11 @@ if ($sucursalSesion === "TODAS") {
 
                 // Mostrar columna de checkbox solo para Admin y JC
                 $mostrarCheckbox = in_array($rolSesion, ["Admin", "JC"]);
-                $checkboxHeader = $mostrarCheckbox ? "<th><input type='checkbox' id='selectAll' title='Seleccionar todos'></th>" : "";
+                $checkboxHeader = $mostrarCheckbox ? "<th style='width: 34px;'><input type='checkbox' id='selectAll' title='Seleccionar todos'></th>" : "";
 
                 echo "<tr>
                         $checkboxHeader
-                        <th>N°</th>
+                        <th style='width: 56px;'>N°</th>
                         <th style='min-width: 145px; text-align: center;'>Factura (caja)</th>
                         <th>Estado</th>
                         <th>Tipo Envío</th>
@@ -473,7 +486,7 @@ if ($sucursalSesion === "TODAS") {
                         <th>Dirección</th>
                         <th>Nombre Cliente</th>
                         <th>Contacto</th>
-                        <th>Acción</th>
+                        <th style='width: 112px; text-align: center;'>Acción</th>
                       </tr>";
                 while ($row = $result->fetch_assoc()) {
                     $estado = $row["ESTADO"];
@@ -686,7 +699,18 @@ if ($sucursalSesion === "TODAS") {
                     
                     echo "<td>" . $row["NOMBRE_CLIENTE"] . " " . $badgeZona . "</td>";
                     echo "<td>" . $row["CONTACTO"] . "</td>";
-                    echo "<td><a href='Inicio.php?id=" . $row["ID"] . "'>Ver Detalles</a></td>";
+                    $totalIncidencias = intval($row["total_incidencias"] ?? 0);
+                    $facturaEsc = htmlspecialchars($row["FACTURA"] ?? '', ENT_QUOTES);
+                    $svgSearch = "<svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' style='flex-shrink:0;'><circle cx='11' cy='11' r='8'/><line x1='21' y1='21' x2='16.65' y2='16.65'/></svg>";
+                    $svgAlert = "<svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' style='flex-shrink:0;'><path d='m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z'/><line x1='12' y1='9' x2='12' y2='13'/><line x1='12' y1='17' x2='12.01' y2='17'/></svg>";
+                    $svgPlus = "<svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' style='flex-shrink:0;'><line x1='12' y1='5' x2='12' y2='19'/><line x1='5' y1='12' x2='19' y2='12'/></svg>";
+                    if ($totalIncidencias > 0) {
+                        $txtInc = ($totalIncidencias === 1) ? "1 Incidencia" : "$totalIncidencias Incidencias";
+                        $btnIncidencia = "<button type='button' class='btn-accion-modern btn-accion-inc-activa' onclick='abrirModalIncidenciasDesktop(" . $row["ID"] . ", \"" . $facturaEsc . "\")' title='Ver incidencias de este pedido'>$svgAlert<span>$txtInc</span></button>";
+                    } else {
+                        $btnIncidencia = "<button type='button' class='btn-accion-modern btn-accion-inc-nueva' onclick='abrirFormularioNuevaIncidenciaQuick(" . $row["ID"] . ", \"" . $facturaEsc . "\")' title='Registrar incidencia en este pedido'>$svgPlus<span>Incidencia</span></button>";
+                    }
+                    echo "<td><div class='acciones-pedido-wrap'><a href='Inicio.php?id=" . $row["ID"] . "' class='btn-accion-modern btn-accion-detalles' title='Ver detalles del pedido'>$svgSearch<span>Ver Detalles</span></a>$btnIncidencia</div></td>";
                     echo "</tr>";
                 }
                 echo "</table>";
@@ -879,6 +903,91 @@ $conn->close();
   margin-left: 5px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   white-space: nowrap;
+}
+
+/* Evitar desbordamiento de textos largos (correos, direcciones) y botones entre columnas */
+.mi-tabla td,
+.mi-tabla th {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+/* Línea gráfica moderna para columna Acción (Ver Detalles + Incidencias) */
+.acciones-pedido-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: stretch;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  padding: 2px 0;
+}
+
+.btn-accion-modern {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 4px 5px;
+  border-radius: 6px;
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1.15;
+  text-align: center;
+  text-decoration: none !important;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: normal;
+  font-family: inherit;
+}
+
+.btn-accion-detalles {
+  background: linear-gradient(135deg, #0f4c81 0%, #005aa3 100%);
+  color: #ffffff !important;
+  border: 1px solid #0b3c66;
+  box-shadow: 0 1px 3px rgba(15, 76, 129, 0.22);
+}
+
+.btn-accion-detalles:hover {
+  background: linear-gradient(135deg, #0b3c66 0%, #00447c 100%);
+  color: #ffffff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(15, 76, 129, 0.3);
+}
+
+.btn-accion-inc-activa {
+  background: linear-gradient(135deg, #ea580c 0%, #d97706 100%);
+  color: #ffffff !important;
+  border: 1px solid #c2410c;
+  box-shadow: 0 1px 3px rgba(234, 88, 12, 0.25);
+}
+
+.btn-accion-inc-activa:hover {
+  background: linear-gradient(135deg, #c2410c 0%, #b45309 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(234, 88, 12, 0.35);
+}
+
+.btn-accion-inc-nueva {
+  background: #fff7ed;
+  color: #c2410c !important;
+  border: 1px solid #fdba74;
+  box-shadow: 0 1px 2px rgba(234, 88, 12, 0.08);
+}
+
+.btn-accion-inc-nueva:hover {
+  background: #ffedd5;
+  color: #9a3412 !important;
+  border-color: #fb923c;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(234, 88, 12, 0.16);
 }
 
 </style>

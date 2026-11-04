@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pedidos-app-v5';
+const CACHE_NAME = 'pedidos-app-v9';
 const urlsToCache = [
   './',
   './index.html',
@@ -40,14 +40,28 @@ self.addEventListener('activate', event => {
   );
 });
 
+// Network-first strategy for app files and bypass for API calls
 self.addEventListener('fetch', event => {
+  // Las llamadas a la API en App/ nunca se guardan en caché
+  if (event.request.url.includes('/App/') || event.request.method !== 'GET') {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
+  // Network First para archivos de la app con fallback a caché
   event.respondWith(
-    caches.match(event.request)
+    fetch(event.request)
       .then(response => {
-        if (response) {
-          return response;
+        if (response && response.status === 200 && response.type === 'basic') {
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseToCache);
+          });
         }
-        return fetch(event.request);
+        return response;
+      })
+      .catch(() => {
+        return caches.match(event.request);
       })
   );
 });

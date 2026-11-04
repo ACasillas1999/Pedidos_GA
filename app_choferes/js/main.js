@@ -565,7 +565,7 @@ function renderListaPedidos(pedidos) {
 
         const card = document.createElement('div');
         card.className = "bg-white rounded-2xl shadow-sm border border-gray-100 p-4 relative overflow-hidden transition-all hover:shadow-md cursor-pointer";
-        card.onclick = () => verDetallePedido(index);
+        card.onclick = () => verDetallePedido(pedido.ID);
         
         card.innerHTML = `
             <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-white ${borderColor} border-l-4"></div>
@@ -668,8 +668,24 @@ function formatHora(hora) {
     return hora.substring(0,5); // Corta HH:mm:ss a HH:mm
 }
 
-function verDetallePedido(index) {
-    const pedido = pedidosData[index];
+function verDetallePedido(identificador) {
+    let pedido = null;
+    if (typeof identificador === 'object' && identificador !== null) {
+        pedido = identificador;
+    } else {
+        // Buscar por ID del pedido en pedidosData
+        pedido = pedidosData.find(p => String(p.ID) === String(identificador));
+        // Fallback si se pasa un índice de pedidosData
+        if (!pedido && typeof identificador === 'number' && pedidosData[identificador]) {
+            pedido = pedidosData[identificador];
+        }
+    }
+
+    if (!pedido) {
+        console.error("Pedido no encontrado con identificador:", identificador);
+        return;
+    }
+
     const detailContainer = document.getElementById('pedidoDetail');
     
     let bgEstado = 'bg-gray-200 text-gray-700';
@@ -770,6 +786,28 @@ function verDetallePedido(index) {
                     </div>
                     ${grupoHtml}
                 </div>
+
+                <!-- Sección Incidencias -->
+                <div class="space-y-2 mb-2">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center">
+                            <i data-lucide="alert-triangle" class="w-4 h-4 mr-1.5 text-amber-500"></i> Incidencias
+                            <span id="badgeIncidencias_${pedido.ID}" class="ml-2 px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-100 text-amber-800 hidden">0</span>
+                        </h3>
+                        <button type="button" onclick="abrirModalRegistrarIncidencia(${pedido.ID}, '${pedido.FACTURA || ''}')" style="background-color: #0f4c81 !important; color: #ffffff !important;" class="inline-flex items-center text-xs font-bold px-3 py-1.5 rounded-xl transition-all active:scale-95 shadow-sm hover:opacity-90">
+                            <i data-lucide="plus" class="w-3.5 h-3.5 mr-1 text-white"></i>
+                            <span class="text-white font-bold" style="color: #ffffff !important;">Nueva Incidencia</span>
+                        </button>
+                    </div>
+
+                    <!-- Lista compacta de Incidencias registradas (Solo motivo y botón Ver más) -->
+                    <div id="listaIncidencias_${pedido.ID}" class="space-y-2 mb-3">
+                        <div class="p-3.5 bg-gray-50 border border-dashed border-gray-200 rounded-2xl text-center text-xs text-gray-400 flex items-center justify-center">
+                            <i data-lucide="loader-2" class="w-3.5 h-3.5 mr-1.5 animate-spin"></i> Cargando incidencias...
+                        </div>
+                    </div>
+                </div>
+
                 
                 <!-- Evidencia Fotográfica -->
                 <div>
@@ -835,6 +873,7 @@ function verDetallePedido(index) {
                     </div>
                 </div>
                 ` : ''}
+                
             </div>
             
             <!-- Acciones Fijas Inferiores -->
@@ -874,6 +913,7 @@ function verDetallePedido(index) {
     
     lucide.createIcons();
     showView('pedidoDetail');
+    cargarIncidencias(pedido.ID);
 }
 
 function abrirMapa(coords, direccion) {
@@ -1291,4 +1331,447 @@ async function syncOfflineQueue() {
         // Quedaron algunos pendientes
         updateConnectionBanner();
     }
+}
+
+
+// ==========================================
+// GESTIÓN DE INCIDENCIAS CON MODALES
+// ==========================================
+
+let incidenciasCache = [];
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.toString().replace(/[&<>"']/g, m => map[m]);
+}
+
+function getMotivoEstilo(motivo) {
+    const m = (motivo || '').toLowerCase();
+    if (m.includes('faltante')) {
+        return {
+            bg: '#ffe4e6',
+            color: '#be123c',
+            border: '#fecdd3'
+        };
+    } else if (m.includes('sobrante')) {
+        return {
+            bg: '#dbeafe',
+            color: '#1d4ed8',
+            border: '#bfdbfe'
+        };
+    } else if (m.includes('erróneo') || m.includes('erroneo') || m.includes('error de entrega')) {
+        return {
+            bg: '#f3e8ff',
+            color: '#7e22ce',
+            border: '#e9d5ff'
+        };
+    } else if (m.includes('no recibe')) {
+        return {
+            bg: '#fee2e2',
+            color: '#b91c1c',
+            border: '#fca5a5'
+        };
+    } else if (m.includes('reprograma')) {
+        return {
+            bg: '#e0e7ff',
+            color: '#4338ca',
+            border: '#c7d2fe'
+        };
+    } else if (m.includes('maniobra')) {
+        return {
+            bg: '#ffedd5',
+            color: '#c2410c',
+            border: '#fed7aa'
+        };
+    } else if (m.includes('climát') || m.includes('climat')) {
+        return {
+            bg: '#e0f2fe',
+            color: '#0369a1',
+            border: '#bae6fd'
+        };
+    }
+    return {
+        bg: '#fef3c7',
+        color: '#92400e',
+        border: '#fde68a'
+    };
+}
+
+// ---- Modal 1: Registrar Incidencia ----
+function abrirModalRegistrarIncidencia(pedidoId, factura) {
+    const modal = document.getElementById('modalRegistrarIncidencia');
+    if (!modal) return;
+
+    document.getElementById('modalIncidenciaPedidoId').value = pedidoId;
+    const sub = document.getElementById('modalRegIncidenciaSubtitulo');
+    if (sub) {
+        sub.textContent = `Pedido #${pedidoId}${factura ? ' • Factura: ' + factura : ''}`;
+    }
+
+    // Resetear formulario
+    const sel = document.getElementById('modalIncidenciaMotivo');
+    if (sel) sel.value = '';
+    const obs = document.getElementById('modalIncidenciaComentarios');
+    if (obs) obs.value = '';
+    quitarArchivoModalIncidencia();
+
+    modal.style.display = 'flex';
+    lucide.createIcons();
+    if (sel) sel.focus();
+}
+
+function cerrarModalRegistrarIncidencia() {
+    const modal = document.getElementById('modalRegistrarIncidencia');
+    if (modal) modal.style.display = 'none';
+}
+
+function manejarArchivoModalIncidencia() {
+    const input = document.getElementById('modalIncidenciaArchivo');
+    const previewCont = document.getElementById('modalIncidenciaPreviewCont');
+    const previewNombre = document.getElementById('modalIncidenciaPreviewNombre');
+    const label = document.getElementById('modalIncidenciaLabelArchivo');
+
+    if (input && input.files && input.files[0]) {
+        const file = input.files[0];
+        if (previewNombre) previewNombre.textContent = file.name;
+        if (previewCont) previewCont.classList.remove('hidden');
+        if (label) label.textContent = 'Cambiar archivo adjunto';
+    } else {
+        quitarArchivoModalIncidencia();
+    }
+    lucide.createIcons();
+}
+
+function quitarArchivoModalIncidencia() {
+    const input = document.getElementById('modalIncidenciaArchivo');
+    const previewCont = document.getElementById('modalIncidenciaPreviewCont');
+    const previewNombre = document.getElementById('modalIncidenciaPreviewNombre');
+    const label = document.getElementById('modalIncidenciaLabelArchivo');
+
+    if (input) input.value = '';
+    if (previewNombre) previewNombre.textContent = '';
+    if (previewCont) previewCont.classList.add('hidden');
+    if (label) label.textContent = 'Adjuntar archivo de evidencia';
+}
+
+async function guardarIncidenciaDesdeModal() {
+    const pedidoId = document.getElementById('modalIncidenciaPedidoId').value;
+    const motivoSelect = document.getElementById('modalIncidenciaMotivo');
+    const comentariosInput = document.getElementById('modalIncidenciaComentarios');
+    const archivoInput = document.getElementById('modalIncidenciaArchivo');
+    const btnSubmit = document.getElementById('btnGuardarIncidenciaModal');
+
+    if (!motivoSelect || !motivoSelect.value) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Motivo requerido',
+                text: 'Por favor selecciona un motivo operativo para la incidencia.',
+                confirmButtonColor: '#0f4c81'
+            });
+        } else {
+            alert('Por favor selecciona un motivo operativo para la incidencia.');
+        }
+        if (motivoSelect) motivoSelect.focus();
+        return;
+    }
+
+    const motivo = motivoSelect.value;
+    const comentarios = comentariosInput ? comentariosInput.value.trim() : '';
+    const chofer = localStorage.getItem('username') || '';
+
+    const formData = new FormData();
+    formData.append('pedido_id', pedidoId);
+    formData.append('motivo', motivo);
+    formData.append('comentarios', comentarios);
+    formData.append('chofer', chofer);
+
+    if (archivoInput && archivoInput.files && archivoInput.files[0]) {
+        formData.append('archivo', archivoInput.files[0]);
+    }
+
+    const originalBtnHtml = btnSubmit ? btnSubmit.innerHTML : '';
+    if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 mr-1.5 animate-spin text-white"></i> <span class="text-white font-bold" style="color: #ffffff !important;">Guardando...</span>`;
+        lucide.createIcons();
+    }
+
+    try {
+        const response = await fetch(`${CONFIG.API_URL}guardar_incidencia.php`, {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.ok) {
+            cerrarModalRegistrarIncidencia();
+
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Incidencia Registrada!',
+                    text: 'Se registró correctamente. Puedes consultar los detalles con el botón "Ver más" o agregar otra incidencia.',
+                    timer: 2200,
+                    showConfirmButton: false
+                });
+            } else {
+                alert('Incidencia guardada con éxito.');
+            }
+
+            // Recargar lista de incidencias
+            await cargarIncidencias(pedidoId);
+        } else {
+            throw new Error(data.error || 'No se pudo guardar la incidencia');
+        }
+    } catch (err) {
+        console.error("Error al guardar incidencia:", err);
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: err.message || 'Ocurrió un error al intentar guardar la incidencia.',
+                confirmButtonColor: '#ef4444'
+            });
+        } else {
+            alert('Error: ' + (err.message || 'No se pudo guardar la incidencia'));
+        }
+    } finally {
+        if (btnSubmit) {
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = originalBtnHtml;
+            lucide.createIcons();
+        }
+    }
+}
+
+// ---- Modal 2: Ver Detalles de Incidencia ----
+function abrirModalDetalleIncidencia(index) {
+    const inc = incidenciasCache[index];
+    if (!inc) return;
+
+    const st = getMotivoEstilo(inc.motivo);
+    const fileUrl = inc.archivo_ruta ? `../${inc.archivo_ruta.replace('../', '')}` : null;
+    const tipo = inc.archivo_tipo || 'documento';
+
+    let evidenciaHtml = '';
+    if (fileUrl) {
+        if (tipo === 'imagen') {
+            evidenciaHtml = `
+                <div style="margin-top: 14px; text-align: left;">
+                    <p style="font-size: 11px; font-weight: 800; color: #4b5563; text-transform: uppercase; margin-bottom: 6px;">📷 Evidencia Fotográfica</p>
+                    <a href="${fileUrl}" target="_blank" style="display: block; border-radius: 16px; overflow: hidden; border: 1px solid #e5e7eb; position: relative; background: #111;">
+                        <img src="${fileUrl}" alt="Evidencia" style="width: 100%; max-height: 220px; object-fit: contain;">
+                        <div style="background: rgba(0,0,0,0.65); color: #fff; padding: 4px 10px; font-size: 11px; font-weight: bold; position: absolute; bottom: 8px; right: 8px; border-radius: 8px; backdrop-filter: blur(4px);">
+                            🔍 Toca para ampliar
+                        </div>
+                    </a>
+                </div>
+            `;
+        } else if (tipo === 'video') {
+            evidenciaHtml = `
+                <div style="margin-top: 14px; text-align: left;">
+                    <p style="font-size: 11px; font-weight: 800; color: #4b5563; text-transform: uppercase; margin-bottom: 6px;">🎥 Video Adjunto</p>
+                    <video controls src="${fileUrl}" style="width: 100%; max-height: 200px; border-radius: 14px; background: #000;"></video>
+                    <a href="${fileUrl}" target="_blank" style="display: inline-block; margin-top: 6px; font-size: 12px; font-weight: bold; color: #7c3aed; text-decoration: underline;">
+                        Abrir video en nueva pestaña
+                    </a>
+                </div>
+            `;
+        } else {
+            evidenciaHtml = `
+                <div style="margin-top: 14px; text-align: left;">
+                    <p style="font-size: 11px; font-weight: 800; color: #4b5563; text-transform: uppercase; margin-bottom: 6px;">📄 Documento Adjunto</p>
+                    <a href="${fileUrl}" target="_blank" style="display: flex; align-items: center; justify-content: space-between; background: #f0f7ff; border: 1px solid #bae6fd; padding: 12px 14px; border-radius: 14px; text-decoration: none; color: #0f4c81;">
+                        <div style="display: flex; align-items: center; gap: 8px; overflow: hidden;">
+                            <span style="font-size: 18px;">📎</span>
+                            <span style="font-weight: 700; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;">${escapeHtml(inc.archivo_nombre || 'Archivo adjunto')}</span>
+                        </div>
+                        <span style="background-color: #0f4c81; color: #fff; padding: 5px 12px; border-radius: 8px; font-size: 11px; font-weight: 800;">Abrir</span>
+                    </a>
+                </div>
+            `;
+        }
+    } else {
+        evidenciaHtml = `
+            <div style="margin-top: 14px; padding: 10px; background: #f9fafb; border-radius: 12px; border: 1px dashed #e5e7eb; color: #9ca3af; font-size: 12px; text-align: center;">
+                Sin archivo de evidencia adjunto
+            </div>
+        `;
+    }
+
+    const comentariosHtml = inc.comentarios && inc.comentarios.trim() !== ''
+        ? `<div style="background: #fffbeb; border: 1px solid #fef3c7; border-radius: 14px; padding: 12px; font-size: 13px; color: #374151; line-height: 1.5; text-align: left; margin-top: 6px; white-space: pre-wrap;">
+            ${escapeHtml(inc.comentarios)}
+           </div>`
+        : `<div style="background: #f9fafb; border-radius: 14px; padding: 10px; font-size: 12px; color: #9ca3af; text-align: left; margin-top: 6px;">
+            Sin observaciones adicionales.
+           </div>`;
+
+    // Modal con SweetAlert2 para máxima compatibilidad, elegancia y foco
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: `<div style="font-size: 17px; font-weight: 900; color: #111827; text-align: left;">Detalle de Incidencia</div>`,
+            html: `
+                <div style="text-align: left; font-family: inherit;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 6px;">
+                        <span style="background-color: ${st.bg}; color: ${st.color}; border: 1px solid ${st.border}; padding: 6px 12px; border-radius: 10px; font-weight: 800; font-size: 12px; display: inline-block;">
+                            ${escapeHtml(inc.motivo)}
+                        </span>
+                        <span style="font-size: 11px; font-weight: 700; color: #6b7280;">
+                            🕒 ${inc.fecha_formato || inc.fecha_registro}
+                        </span>
+                    </div>
+
+                    ${inc.chofer ? `<p style="font-size: 12px; color: #6b7280; margin-bottom: 8px;"><b>Reportado por:</b> <span style="color: #111827; font-weight: 700;">${escapeHtml(inc.chofer)}</span></p>` : ''}
+
+                    <p style="font-size: 11px; font-weight: 800; color: #4b5563; text-transform: uppercase; margin-top: 12px; margin-bottom: 4px;">Observaciones</p>
+                    ${comentariosHtml}
+
+                    ${evidenciaHtml}
+                </div>
+            `,
+            showCloseButton: true,
+            confirmButtonText: 'Cerrar',
+            confirmButtonColor: '#0f4c81',
+            customClass: {
+                popup: 'rounded-3xl shadow-2xl p-4'
+            }
+        });
+    } else {
+        // Fallback a modal HTML si Swal no estuviera disponible
+        abrirModalDetalleIncidenciaHtml(index);
+    }
+}
+
+function abrirModalDetalleIncidenciaHtml(index) {
+    const inc = incidenciasCache[index];
+    if (!inc) return;
+
+    const modal = document.getElementById('modalDetalleIncidencia');
+    if (!modal) return;
+
+    const sub = document.getElementById('modalDetalleIncidenciaSubtitulo');
+    if (sub) sub.textContent = `Registrada el ${inc.fecha_formato || inc.fecha_registro}`;
+
+    const badge = document.getElementById('modalDetalleIncidenciaBadge');
+    if (badge) {
+        const st = getMotivoEstilo(inc.motivo);
+        badge.textContent = inc.motivo;
+        badge.style.backgroundColor = st.bg;
+        badge.style.color = st.color;
+        badge.style.borderColor = st.border;
+        badge.style.borderWidth = '1px';
+        badge.style.borderStyle = 'solid';
+    }
+
+    const fechaEl = document.getElementById('modalDetalleIncidenciaFecha');
+    if (fechaEl) fechaEl.textContent = inc.fecha_formato || inc.fecha_registro;
+
+    const choferCont = document.getElementById('modalDetalleIncidenciaChoferCont');
+    const choferEl = document.getElementById('modalDetalleIncidenciaChofer');
+    if (inc.chofer) {
+        if (choferEl) choferEl.textContent = inc.chofer;
+        if (choferCont) choferCont.classList.remove('hidden');
+    } else {
+        if (choferCont) choferCont.classList.add('hidden');
+    }
+
+    const obsEl = document.getElementById('modalDetalleIncidenciaComentarios');
+    if (obsEl) {
+        obsEl.textContent = inc.comentarios && inc.comentarios.trim() !== '' 
+            ? inc.comentarios 
+            : 'Sin observaciones adicionales registradas.';
+    }
+
+    modal.style.display = 'flex';
+    lucide.createIcons();
+}
+
+function cerrarModalDetalleIncidencia() {
+    const modal = document.getElementById('modalDetalleIncidencia');
+    if (modal) modal.style.display = 'none';
+}
+
+// ---- Cargar Lista Compacta de Incidencias ----
+async function cargarIncidencias(pedidoId) {
+    const listaCont = document.getElementById(`listaIncidencias_${pedidoId}`);
+    const badge = document.getElementById(`badgeIncidencias_${pedidoId}`);
+    if (!listaCont) return;
+
+    try {
+        const res = await fetch(`${CONFIG.API_URL}obtener_incidencias.php?pedido_id=${pedidoId}`);
+        const data = await res.json();
+        
+        if (data.ok && Array.isArray(data.incidencias)) {
+            incidenciasCache = data.incidencias;
+            
+            // Contador badge
+            if (badge) {
+                if (incidenciasCache.length > 0) {
+                    badge.textContent = incidenciasCache.length;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            }
+
+            if (incidenciasCache.length === 0) {
+                listaCont.innerHTML = `
+                    <div class="p-3.5 bg-gray-50 border border-dashed border-gray-200 rounded-2xl text-center">
+                        <p class="text-xs text-gray-400 font-medium">No se han registrado incidencias en este pedido.</p>
+                    </div>
+                `;
+            } else {
+                let html = '';
+                incidenciasCache.forEach((inc, idx) => {
+                    const st = getMotivoEstilo(inc.motivo);
+                                        // Mostrar fecha completa junto con la hora
+                    const fechaHora = inc.fecha_formato || inc.fecha_registro || '';
+
+                    html += `
+                        <div class="bg-white rounded-2xl p-3 border border-gray-100 shadow-xs flex items-center justify-between gap-2.5 hover:border-gray-200 transition-colors">
+                            <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 truncate">
+                                <span class="px-2.5 py-1 rounded-xl text-xs font-black truncate max-w-[170px] self-start" style="background-color: ${st.bg} !important; color: ${st.color} !important; border: 1px solid ${st.border} !important;">
+                                    ${escapeHtml(inc.motivo)}
+                                </span>
+                                <span class="text-[11px] text-gray-500 font-semibold whitespace-nowrap flex items-center">
+                                    <i data-lucide="clock" class="w-3 h-3 mr-1 text-gray-400"></i>
+                                    ${fechaHora}
+                                </span>
+                            </div>
+
+                            <button type="button" onclick="abrirModalDetalleIncidencia(${idx})" style="background-color: #0f4c81 !important; color: #ffffff !important;" class="inline-flex items-center px-3 py-2 rounded-xl text-xs font-bold shadow-sm hover:opacity-90 active:scale-95 flex-shrink-0 transition-all cursor-pointer">
+                                <i data-lucide="eye" class="w-3.5 h-3.5 mr-1 text-white"></i>
+                                <span class="text-white font-bold" style="color: #ffffff !important;">Ver más</span>
+                            </button>
+                        </div>
+                    `;
+                });
+                listaCont.innerHTML = html;
+            }
+        } else {
+            listaCont.innerHTML = `
+                <div class="p-3 bg-red-50 border border-red-100 rounded-xl text-center text-xs text-red-600">
+                    No se pudieron cargar las incidencias.
+                </div>
+            `;
+        }
+    } catch (e) {
+        console.error("Error al cargar incidencias:", e);
+        listaCont.innerHTML = `
+            <div class="p-3 bg-gray-50 border border-gray-100 rounded-xl text-center text-xs text-gray-400">
+                Sin incidencias cargadas.
+            </div>
+        `;
+    }
+    lucide.createIcons();
 }
