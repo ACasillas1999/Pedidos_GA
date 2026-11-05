@@ -54,8 +54,12 @@ while ($pedido = $resultPedidos->fetch_assoc()) {
 // Obtener coordenadas de la sucursal (bodega/origen)
 // Usar la sucursal del primer pedido (todos deben ser de la misma sucursal)
 $sucursalOrigen = '';
+$montoTotalRuta = 0;
 if (!empty($pedidos)) {
     $sucursalOrigen = $pedidos[0]['SUCURSAL'];
+    foreach ($pedidos as $p) {
+        $montoTotalRuta += floatval($p['precio_factura_real'] ?? 0);
+    }
 }
 
 // Si la sucursal es ILUMINACION o TAPATIA, usar TAPATIA como origen
@@ -84,6 +88,31 @@ $colores = [
 ];
 $colorIndex = $grupoId % count($colores);
 $color = $colores[$colorIndex];
+
+// Función para iconos SVG unicolor
+function drSvg($name, $size = 14) {
+    $paths = [
+        'arrow-left' => '<line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>',
+        'truck' => '<rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>',
+        'trash' => '<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>',
+        'user' => '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+        'phone' => '<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>',
+        'building' => '<rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="6" x2="9.01" y2="6"/><line x1="15" y1="6" x2="15.01" y2="6"/><line x1="9" y1="10" x2="9.01" y2="10"/><line x1="15" y1="10" x2="15.01" y2="10"/><line x1="9" y1="14" x2="9.01" y2="14"/><line x1="15" y1="14" x2="15.01" y2="14"/><path d="M9 22v-4h6v4"/>',
+        'package' => '<line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>',
+        'pin' => '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>',
+        'zap' => '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
+        'traffic' => '<rect x="6" y="2" width="12" height="20" rx="6"/><circle cx="12" cy="7" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="17" r="2"/>',
+        'info' => '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>',
+        'grip' => '<circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/>',
+        'external' => '<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>',
+        'dollar' => '<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
+        'check' => '<polyline points="20 6 9 17 4 12"/>',
+        'layers' => '<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>',
+        'clock' => '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>'
+    ];
+    $inner = $paths[$name] ?? $paths['info'];
+    return "<svg width='$size' height='$size' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' style='vertical-align:-0.15em;flex-shrink:0;display:inline-block;'>$inner</svg>";
+}
 ?>
 
 <!DOCTYPE html>
@@ -95,7 +124,7 @@ $color = $colores[$colorIndex];
   <link rel="icon" href="/Img/Logo 2.png" type="image/png">
   <link rel="stylesheet" type="text/css" href="styles.css">
 
-  <!-- Mapbox -->
+  <!-- Mapbox GL JS v2.15.0 (Requerido para soporte nativo de estilo streets-v12) -->
   <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
   <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
 
@@ -106,378 +135,828 @@ $color = $colores[$colorIndex];
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 
   <style>
+    :root {
+      --bg-page: #f8fafc;
+      --card-bg: #ffffff;
+      --border-color: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --primary-navy: #0f4c81;
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f5f5f5;
-      margin: 0;
-      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      margin: 0 !important;
+      padding: 0 !important;
+      line-height: 1.45;
+      min-height: 100vh;
+      height: auto !important;
     }
 
-    .container {
-      max-width: 1400px;
-      margin: 0 auto;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      overflow: hidden;
-    }
-
-    .header {
-      background: linear-gradient(135deg, <?php echo $color['bg']; ?> 0%, <?php echo $color['border']; ?> 100%);
-      color: white;
-      padding: 30px;
-    }
-
-    .header h1 {
-      margin: 0 0 10px 0;
-      font-size: 28px;
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-
-    .header-info {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 15px;
-      margin-top: 20px;
-    }
-
-    .info-card {
-      background: rgba(255, 255, 255, 0.2);
-      padding: 15px;
-      border-radius: 8px;
-    }
-
-    .info-label {
-      font-size: 12px;
-      opacity: 0.9;
-      margin-bottom: 5px;
-    }
-
-    .info-value {
-      font-size: 18px;
-      font-weight: bold;
-    }
-
-    .content {
-      display: grid;
-      grid-template-columns: 400px 1fr;
-      gap: 20px;
-      padding: 20px;
-    }
-
-    .pedidos-list {
-      background: #f8f9fa;
-      border-radius: 8px;
-      padding: 15px;
-      max-height: calc(100vh - 300px);
-      overflow-y: auto;
-    }
-
-    .pedidos-list h2 {
-      margin: 0 0 15px 0;
-      font-size: 18px;
-      color: #333;
-    }
-
-    .pedido-item {
-      background: white;
-      border-radius: 8px;
-      padding: 15px;
-      margin-bottom: 10px;
-      cursor: move;
-      border-left: 4px solid <?php echo $color['bg']; ?>;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      transition: all 0.2s ease;
-    }
-
-    .pedido-item:hover {
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-      transform: translateY(-2px);
-    }
-
-    .pedido-item.sortable-drag {
-      opacity: 0.5;
-    }
-
-    .sortable-ghost {
-      opacity: 0.4;
-      background: #f0f0f0;
-    }
-
-    .pedido-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-
-    .pedido-orden {
-      background: <?php echo $color['bg']; ?>;
-      color: white;
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      font-size: 14px;
-    }
-
-    .pedido-factura {
-      font-weight: bold;
-      color: #333;
-      font-size: 16px;
-    }
-
-    .pedido-details {
-      font-size: 13px;
-      color: #666;
-      line-height: 1.6;
-    }
-
-    .pedido-details strong {
-      color: #333;
-    }
-
-    .map-container {
-      background: white;
-      border-radius: 8px;
-      padding: 15px;
-      height: calc(100vh - 300px);
-    }
-
-    #map {
+    /* Topbar moderna, pegada arriba sin margen ni bordes exteriores (Full-Bleed) */
+    .ruta-topbar {
+      background: linear-gradient(135deg, #0f4c81 0%, #005aa3 100%);
+      color: #ffffff;
+      padding: 12px 24px;
       width: 100%;
-      height: 100%;
-      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(15, 76, 129, 0.18);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-radius: 0 !important;
+      margin: 0 !important;
+    }
+    .ruta-topbar-inner {
+      width: 100%;
+      max-width: 1800px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
     }
 
-    .btn-back {
+    /* Contenedor principal de la página debajo del topbar */
+    .ruta-main-wrap {
+      width: 100%;
+      max-width: 1800px;
+      margin: 0 auto;
+      padding: 18px 24px 30px 24px;
+    }
+    .ruta-topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .btn-topbar-back {
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+      padding: 8px 15px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: rgba(255, 255, 255, 0.2);
-      color: white;
-      padding: 10px 20px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-weight: bold;
       transition: all 0.2s ease;
-      margin-bottom: 15px;
+      white-space: nowrap;
     }
-
-    .btn-back:hover {
-      background: rgba(255, 255, 255, 0.3);
+    .btn-topbar-back:hover {
+      background: rgba(255, 255, 255, 0.25);
+      border-color: rgba(255, 255, 255, 0.45);
+      color: #ffffff;
+      transform: translateY(-1px);
     }
-
-    .map-legend {
-      position: absolute;
-      bottom: 30px;
-      left: 10px;
-      background: white;
-      padding: 10px;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      font-size: 12px;
-      z-index: 1;
+    .topbar-divider {
+      width: 1px;
+      height: 38px;
+      background: rgba(255, 255, 255, 0.22);
+      flex-shrink: 0;
     }
-
-    .legend-item {
+    .ruta-topbar-title-wrap {
       display: flex;
       align-items: center;
-      gap: 8px;
-      margin-bottom: 5px;
+      gap: 12px;
     }
-
-    .legend-marker {
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
+    .ruta-topbar-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 10px;
-      font-weight: bold;
-      color: white;
+      color: #ffffff;
+      flex-shrink: 0;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+    .ruta-topbar-headings {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .ruta-topbar-title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .ruta-topbar-title-row h1 {
+      margin: 0;
+      font-size: 21px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+    .ruta-badge-id {
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #e0f2fe;
+      background: rgba(2, 132, 199, 0.4);
+      border: 1px solid rgba(186, 230, 253, 0.4);
+      padding: 2px 8px;
+      border-radius: 6px;
+      letter-spacing: 0.02em;
+    }
+    .ruta-badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 700;
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(74, 222, 128, 0.45);
+      color: #dcfce7;
+    }
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #4ade80;
+      box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7);
+      animation: pulseGreen 2s infinite;
+      display: inline-block;
+    }
+    @keyframes pulseGreen {
+      0% {
+        box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7);
+      }
+      70% {
+        box-shadow: 0 0 0 6px rgba(74, 222, 128, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(74, 222, 128, 0);
+      }
+    }
+    .ruta-topbar-subtitle {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.82);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .ruta-topbar-subtitle strong {
+      color: #ffffff;
+      font-weight: 700;
+    }
+    .sub-sep {
+      opacity: 0.45;
+    }
+    .ruta-topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-desactivar {
+      background: #dc2626;
+      border: 1px solid #b91c1c;
+      color: #ffffff;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      box-shadow: 0 2px 6px rgba(220, 38, 38, 0.35);
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .btn-desactivar:hover {
+      background: #b91c1c;
+      border-color: #991b1b;
+      box-shadow: 0 4px 10px rgba(220, 38, 38, 0.45);
+      transform: translateY(-1px);
+    }
+
+    /* KPIs bar */
+    .kpis-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      padding: 0 0 16px 0;
+      background: transparent;
+      border-bottom: none;
+    }
+    .kpi-chip {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    }
+    .kpi-chip-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      background: #f1f5f9;
+      color: #0f4c81;
+    }
+    .kpi-chip-content {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .kpi-chip-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .kpi-chip-val {
+      font-size: 14.5px;
+      font-weight: 800;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .kpi-chip-sub {
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+    .kpi-chip-sub a {
+      color: #0284c7;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .kpi-chip-sub a:hover {
+      text-decoration: underline;
+    }
+
+    /* Banner de Notas si existe */
+    .ruta-notas-banner {
+      margin: 0 0 16px 0;
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-left: 4px solid #0284c7;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 12.5px;
+      color: #0369a1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Layout principal de 2 columnas */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 440px 1fr;
+      gap: 20px;
+      padding: 0;
+      align-items: stretch;
+    }
+    @media (max-width: 860px) {
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Panel izquierdo de pedidos */
+    .pedidos-panel {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.05);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .pedidos-panel-header {
+      padding: 14px 16px;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .pedidos-panel-title {
+      font-size: 14.5px;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .btn-optimizar-ruta {
+      background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+      color: #ffffff;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 2px 6px rgba(22, 163, 74, 0.25);
+      transition: all 0.2s;
+    }
+    .btn-optimizar-ruta:hover {
+      box-shadow: 0 4px 10px rgba(22, 163, 74, 0.35);
+      transform: translateY(-1px);
+    }
+
+    /* Stats container */
+    .stats-card {
+      margin: 12px 16px;
+      padding: 12px 14px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+    }
+    .stats-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      text-align: center;
+    }
+    .stat-box-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-bottom: 3px;
+    }
+    .stat-box-val {
+      font-size: 19px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .stat-traffic-pill {
+      margin-top: 8px;
+      padding: 6px 10px;
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      border-radius: 6px;
+      font-size: 11.5px;
+      color: #065f46;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .pedidos-tip-help {
+      padding: 0 16px;
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.4;
+      margin-top: 4px;
+      margin-bottom: 8px;
+    }
+
+    .pedidos-scroll-wrap {
+      padding: 4px 16px 16px 16px;
+      max-height: calc(100vh - 360px);
+      min-height: 400px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* Tarjetas de pedido */
+    .pedido-item {
+      background: #ffffff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 12px 14px;
+      cursor: grab;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    .pedido-item:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+      transform: translateY(-1px);
+    }
+    .pedido-item.sortable-drag {
+      opacity: 0.85;
+      background: #f0f9ff;
+      border-color: #0284c7;
+      box-shadow: 0 10px 25px -5px rgba(2, 132, 199, 0.25);
+    }
+    .sortable-ghost {
+      opacity: 0.35;
+      background: #f1f5f9;
+      border-style: dashed;
+    }
+
+    .pedido-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .pedido-top-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .drag-handle {
+      color: #94a3b8;
+      cursor: grab;
+      display: flex;
+      align-items: center;
+    }
+    .pedido-orden-circle {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: <?php echo $color['bg']; ?>;
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .pedido-fact-tag {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .pedido-id-tag {
+      font-size: 11px;
+      font-weight: 700;
+      color: #0f4c81;
+      background: #e0f2fe;
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+    .pedido-monto-tag {
+      font-size: 12.5px;
+      font-weight: 800;
+      color: #15803d;
+      font-variant-numeric: tabular-nums;
+    }
+    .pedido-body-info {
+      font-size: 12px;
+      color: #334155;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .pedido-info-line {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      line-height: 1.35;
+    }
+    .pedido-info-line svg {
+      color: #64748b;
+      margin-top: 2px;
+    }
+    .pedido-link-btn {
+      font-size: 11px;
+      color: #0284c7;
+      text-decoration: none;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      margin-top: 2px;
+    }
+    .pedido-link-btn:hover {
+      text-decoration: underline;
+    }
+
+    /* Panel derecho del mapa */
+    .map-panel {
+      background: #f1f5f9;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.05);
+      position: relative;
+      overflow: hidden;
+      min-height: 580px;
+      height: calc(100vh - 220px);
+    }
+    #map {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 12px;
+    }
+
+    /* Control flotante de tráfico */
+    .map-float-control {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      z-index: 10;
+    }
+    .btn-trafico-toggle {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #0f172a;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+      transition: all 0.2s;
+    }
+    .btn-trafico-toggle:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+    }
+    .btn-trafico-toggle.active {
+      background: #f0fdf4;
+      border-color: #86efac;
+      color: #15803d;
+    }
+
+    /* Leyenda flotante */
+    .map-legend-pro {
+      position: absolute;
+      bottom: 20px;
+      left: 16px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(203, 213, 225, 0.8);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 11.5px;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .legend-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      color: #334155;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <div style="display: flex; gap: 10px; align-items: center;">
-        <a href="Pedidos_GA.php" class="btn-back">
-          ← Volver a Pedidos
+  <!-- Topbar full-width pegado arriba sin espacio -->
+  <header class="ruta-topbar">
+    <div class="ruta-topbar-inner">
+      <div class="ruta-topbar-left">
+        <a href="Pedidos_GA.php" class="btn-topbar-back">
+          <?= drSvg('arrow-left', 15) ?>
+          <span>Volver a Pedidos</span>
         </a>
-        <button onclick="desactivarGrupo()" class="btn-danger" style="padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: 500;">
-          🗑️ Desactivar Grupo
+
+        <div class="topbar-divider"></div>
+
+        <div class="ruta-topbar-title-wrap">
+          <div class="ruta-topbar-icon">
+            <?= drSvg('truck', 22) ?>
+          </div>
+          <div class="ruta-topbar-headings">
+            <div class="ruta-topbar-title-row">
+              <h1><?= htmlspecialchars($grupo['nombre_grupo']); ?></h1>
+              <span class="ruta-badge-id">Ruta #<?= $grupoId ?></span>
+              <span class="ruta-badge-status">
+                <span class="pulse-dot"></span>
+                <span>Activa</span>
+              </span>
+            </div>
+            <div class="ruta-topbar-subtitle">
+              <span>Sucursal: <strong><?= htmlspecialchars($grupo['sucursal']); ?></strong></span>
+              <span class="sub-sep">•</span>
+              <span>Chofer: <strong><?= htmlspecialchars($grupo['chofer_asignado'] ?: 'Sin asignar'); ?></strong></span>
+              <span class="sub-sep">•</span>
+              <span><?= count($pedidos) ?> <?= count($pedidos) === 1 ? 'pedido' : 'pedidos' ?> programados</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ruta-topbar-actions">
+        <button type="button" onclick="desactivarGrupo()" class="btn-desactivar" title="Desactivar esta ruta">
+          <?= drSvg('trash', 14) ?>
+          <span>Desactivar Grupo</span>
         </button>
       </div>
+    </div>
+  </header>
 
-      <h1>
-        <span>🚚</span>
-        <?php echo htmlspecialchars($grupo['nombre_grupo']); ?>
-      </h1>
-
-      <div class="header-info">
-        <div class="info-card">
-          <div class="info-label">Chofer Asignado</div>
-          <div class="info-value"><?php echo htmlspecialchars($grupo['chofer_asignado']); ?></div>
+  <!-- Contenedor de contenidos debajo de la barra superior -->
+  <main class="ruta-main-wrap">
+    <!-- KPIs Bar -->
+    <div class="kpis-bar">
+      <div class="kpi-chip">
+        <div class="kpi-chip-icon">
+          <?= drSvg('user', 18) ?>
         </div>
-        <div class="info-card">
-          <div class="info-label">Sucursal</div>
-          <div class="info-value"><?php echo htmlspecialchars($grupo['sucursal']); ?></div>
-        </div>
-        <div class="info-card">
-          <div class="info-label">Total de Pedidos</div>
-          <div class="info-value"><?php echo count($pedidos); ?></div>
-        </div>
-        <div class="info-card">
-          <div class="info-label">Creado por</div>
-          <div class="info-value"><?php echo htmlspecialchars($grupo['usuario_creo']); ?></div>
+        <div class="kpi-chip-content">
+          <div class="kpi-chip-label">Chofer Asignado</div>
+          <div class="kpi-chip-val"><?= htmlspecialchars($grupo['chofer_asignado']); ?></div>
+          <?php if (!empty($grupo['chofer_telefono'])): ?>
+            <div class="kpi-chip-sub">
+              <a href="tel:<?= htmlspecialchars($grupo['chofer_telefono']) ?>">
+                <?= drSvg('phone', 11) ?> <?= htmlspecialchars($grupo['chofer_telefono']) ?>
+              </a>
+            </div>
+          <?php endif; ?>
         </div>
       </div>
 
-      <?php if ($grupo['notas']): ?>
-      <div class="info-card" style="margin-top: 15px;">
-        <div class="info-label">Notas</div>
-        <div class="info-value" style="font-size: 14px; font-weight: normal;">
-          <?php echo nl2br(htmlspecialchars($grupo['notas'])); ?>
+      <div class="kpi-chip">
+        <div class="kpi-chip-icon">
+          <?= drSvg('building', 18) ?>
+        </div>
+        <div class="kpi-chip-content">
+          <div class="kpi-chip-label">Sucursal Operativa</div>
+          <div class="kpi-chip-val"><?= htmlspecialchars($grupo['sucursal']); ?></div>
+          <div class="kpi-chip-sub">Almacén de despacho</div>
         </div>
       </div>
-      <?php endif; ?>
+
+      <div class="kpi-chip">
+        <div class="kpi-chip-icon">
+          <?= drSvg('package', 18) ?>
+        </div>
+        <div class="kpi-chip-content">
+          <div class="kpi-chip-label">Pedidos y Carga</div>
+          <div class="kpi-chip-val"><?= count($pedidos); ?> <?= (count($pedidos) === 1 ? 'pedido' : 'pedidos') ?></div>
+          <div class="kpi-chip-sub">Monto: <strong>$<?= number_format($montoTotalRuta, 2) ?></strong></div>
+        </div>
+      </div>
+
+      <div class="kpi-chip">
+        <div class="kpi-chip-icon">
+          <?= drSvg('check', 18) ?>
+        </div>
+        <div class="kpi-chip-content">
+          <div class="kpi-chip-label">Operador de Creación</div>
+          <div class="kpi-chip-val"><?= htmlspecialchars($grupo['usuario_creo']); ?></div>
+          <div class="kpi-chip-sub">Fecha: <?= date('d/m/Y', strtotime($grupo['fecha_creacion'] ?? 'now')) ?></div>
+        </div>
+      </div>
     </div>
 
-    <div class="content">
-      <div class="pedidos-list">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-          <h2 style="margin: 0;">📋 Orden de Entrega</h2>
-          <button onclick="optimizarRuta()" class="btn-optimizar" style="
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 14px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-          " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.2)'">
-            <span style="font-size: 18px;">🚀</span>
-            Optimizar Ruta
+    <?php if (!empty($grupo['notas'])): ?>
+      <div class="ruta-notas-banner">
+        <span style="display:flex;"><?= drSvg('info', 16) ?></span>
+        <div><strong>Instrucciones de Ruta:</strong> <?= nl2br(htmlspecialchars($grupo['notas'])); ?></div>
+      </div>
+    <?php endif; ?>
+
+    <!-- Contenido Grid (Pedidos + Mapa) -->
+    <div class="content-grid">
+      <!-- Panel de Pedidos -->
+      <div class="pedidos-panel">
+        <div class="pedidos-panel-header">
+          <div class="pedidos-panel-title">
+            <?= drSvg('layers', 16) ?> Secuencia de Paradas (<?= count($pedidos) ?>)
+          </div>
+          <button type="button" onclick="optimizarRuta()" class="btn-optimizar-ruta">
+            <?= drSvg('zap', 14) ?> Optimizar Ruta
           </button>
         </div>
 
-        <div id="stats-container" style="
-          background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-          border-radius: 8px;
-          padding: 15px;
-          margin-bottom: 15px;
-          display: none;
-        ">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
-            <div style="text-align: center;">
-              <div style="font-size: 12px; color: #666; margin-bottom: 5px;">📏 Distancia Total</div>
-              <div id="distancia-total" style="font-size: 20px; font-weight: bold; color: #333;">--</div>
+        <div id="stats-container" class="stats-card" style="display: none;">
+          <div class="stats-row">
+            <div>
+              <div class="stat-box-label">Distancia Total</div>
+              <div id="distancia-total" class="stat-box-val">--</div>
             </div>
-            <div style="text-align: center;">
-              <div style="font-size: 12px; color: #666; margin-bottom: 5px;">🚦 Con Tráfico</div>
-              <div id="tiempo-total" style="font-size: 20px; font-weight: bold; color: #333;">--</div>
+            <div>
+              <div class="stat-box-label">Tiempo Estimado</div>
+              <div id="tiempo-total" class="stat-box-val">--</div>
             </div>
           </div>
-          <div id="tiempo-ideal-container" style="
-            background: rgba(40, 167, 69, 0.1);
-            padding: 8px;
-            border-radius: 5px;
-            text-align: center;
-            display: none;
-          ">
-            <span style="font-size: 12px; color: #666;">⏱️ Sin tráfico: </span>
-            <span id="tiempo-ideal" style="font-size: 14px; font-weight: bold; color: #28a745;">--</span>
-            <span id="retraso-trafico" style="font-size: 12px; color: #dc3545; margin-left: 10px;">--</span>
+          <div id="tiempo-ideal-container" class="stat-traffic-pill" style="display: none;">
+            <span>Sin tráfico: <strong id="tiempo-ideal">--</strong></span>
+            <span id="retraso-trafico" style="color: #dc2626; margin-left: 6px;">--</span>
           </div>
         </div>
 
-        <p style="font-size: 13px; color: #666; margin-bottom: 15px;">
-          Arrastra los pedidos para cambiar el orden manualmente o usa el botón "Optimizar Ruta" para calcular la mejor ruta automáticamente.
-        </p>
+        <div class="pedidos-tip-help">
+          Arrastra las paradas para ajustar la secuencia de entrega manualmente o usa <strong>Optimizar Ruta</strong> para trazar el trayecto óptimo.
+        </div>
 
-        <div id="pedidos-sortable">
+        <div id="pedidos-sortable" class="pedidos-scroll-wrap">
           <?php foreach ($pedidos as $pedido): ?>
           <div class="pedido-item" data-pedido-id="<?php echo $pedido['ID']; ?>" data-orden="<?php echo $pedido['orden_entrega']; ?>">
-            <div class="pedido-header">
-              <span class="pedido-orden"><?php echo $pedido['orden_entrega']; ?></span>
-              <span class="pedido-factura"><?php echo htmlspecialchars($pedido['FACTURA']); ?></span>
-            </div>
-            <div class="pedido-details">
-              <div><strong>Cliente:</strong> <?php echo htmlspecialchars($pedido['NOMBRE_CLIENTE']); ?></div>
-              <div><strong>Dirección:</strong> <?php echo htmlspecialchars($pedido['DIRECCION']); ?></div>
-              <div><strong>Teléfono:</strong> <?php echo htmlspecialchars($pedido['TELEFONO']); ?></div>
-              <?php if ($pedido['precio_factura_real']): ?>
-              <div><strong>Monto:</strong> $<?php echo number_format($pedido['precio_factura_real'], 2); ?></div>
+            <div class="pedido-top-row">
+              <div class="pedido-top-left">
+                <span class="drag-handle" title="Arrastrar para ordenar"><?= drSvg('grip', 15) ?></span>
+                <span class="pedido-orden-circle"><?php echo $pedido['orden_entrega']; ?></span>
+                <span class="pedido-fact-tag"><?php echo htmlspecialchars($pedido['FACTURA'] ?: 'S/F'); ?></span>
+                <span class="pedido-id-tag">#<?php echo $pedido['ID']; ?></span>
+              </div>
+              <?php if (!empty($pedido['precio_factura_real'])): ?>
+                <span class="pedido-monto-tag">$<?php echo number_format($pedido['precio_factura_real'], 2); ?></span>
               <?php endif; ?>
+            </div>
+
+            <div class="pedido-body-info">
+              <div class="pedido-info-line">
+                <?= drSvg('user', 13) ?>
+                <strong><?php echo htmlspecialchars($pedido['NOMBRE_CLIENTE']); ?></strong>
+              </div>
+              <div class="pedido-info-line">
+                <?= drSvg('pin', 13) ?>
+                <span><?php echo htmlspecialchars($pedido['DIRECCION']); ?></span>
+              </div>
+              <?php if (!empty($pedido['TELEFONO'])): ?>
+                <div class="pedido-info-line">
+                  <?= drSvg('phone', 13) ?>
+                  <a href="tel:<?php echo htmlspecialchars($pedido['TELEFONO']); ?>" style="color:#0284c7; text-decoration:none;">
+                    <?php echo htmlspecialchars($pedido['TELEFONO']); ?>
+                  </a>
+                </div>
+              <?php endif; ?>
+              <div>
+                <a href="Inicio.php?id=<?php echo $pedido['ID']; ?>" target="_blank" class="pedido-link-btn">
+                  <?= drSvg('external', 12) ?> Ver detalle del pedido
+                </a>
+              </div>
             </div>
           </div>
           <?php endforeach; ?>
         </div>
       </div>
 
-      <div class="map-container">
+      <!-- Panel del Mapa -->
+      <div class="map-panel">
         <div id="map"></div>
 
-        <!-- Control de tráfico -->
-        <div style="position: absolute; top: 10px; right: 10px; z-index: 1;">
-          <button id="toggle-trafico" onclick="toggleTrafico()" style="
-            background: white;
-            border: 2px solid #ddd;
-            padding: 10px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 13px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s ease;
-          " onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='white'">
-            <span style="font-size: 16px;">🚦</span>
+        <!-- Botón de tráfico flotante -->
+        <div class="map-float-control">
+          <button type="button" id="toggle-trafico" onclick="toggleTrafico()" class="btn-trafico-toggle">
+            <?= drSvg('traffic', 15) ?>
             <span id="trafico-text">Ver Tráfico</span>
           </button>
         </div>
 
-        <div class="map-legend">
-          <div class="legend-item">
-            <div class="legend-marker" style="background: #28a745;">1</div>
-            <span>Orden de entrega</span>
+        <!-- Leyenda profesional -->
+        <div class="map-legend-pro">
+          <div class="legend-row">
+            <span style="width: 14px; height: 14px; border-radius: 50%; background: #0f4c81; border: 2px solid #fff; display: inline-block;"></span>
+            <span>Almacén / Origen</span>
           </div>
-          <div class="legend-item">
-            <div style="width: 3px; height: 20px; background: <?php echo $color['bg']; ?>;"></div>
-            <span>Ruta de entregas</span>
+          <div class="legend-row">
+            <span style="width: 14px; height: 14px; border-radius: 50%; background: <?php echo $color['bg']; ?>; border: 2px solid #fff; display: inline-block;"></span>
+            <span>Paradas de entrega</span>
           </div>
-          <div class="legend-item">
-            <div style="width: 30px; height: 3px; background: #9e9e9e; margin-top: 8px; background-image: repeating-linear-gradient(to right, #9e9e9e 0px, #9e9e9e 8px, transparent 8px, transparent 16px);"></div>
-            <span>Ruta de regreso</span>
+          <div class="legend-row">
+            <span style="width: 22px; height: 4px; background: <?php echo $color['bg']; ?>; border-radius: 2px; display: inline-block;"></span>
+            <span>Ruta de ida</span>
           </div>
-          <div class="legend-item" id="legend-trafico" style="display: none;">
-            <div style="display: flex; gap: 5px;">
-              <div style="width: 15px; height: 3px; background: #4CAF50; margin-top: 8px;"></div>
-              <div style="width: 15px; height: 3px; background: #FFC107; margin-top: 8px;"></div>
-              <div style="width: 15px; height: 3px; background: #F44336; margin-top: 8px;"></div>
+          <div class="legend-row">
+            <span style="width: 22px; height: 3px; background: repeating-linear-gradient(90deg, #94a3b8 0px, #94a3b8 4px, transparent 4px, transparent 8px); display: inline-block;"></span>
+            <span>Retorno a bodega</span>
+          </div>
+          <div class="legend-row" id="legend-trafico" style="display: none; margin-top: 2px;">
+            <div style="display: flex; gap: 3px;">
+              <span style="width: 8px; height: 4px; background: #22c55e;"></span>
+              <span style="width: 8px; height: 4px; background: #eab308;"></span>
+              <span style="width: 8px; height: 4px; background: #ef4444;"></span>
             </div>
-            <span>Nivel de tráfico</span>
+            <span>Nivel de congestión</span>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  </main>
 
   <script>
     // Datos de los pedidos para JavaScript
@@ -505,6 +984,7 @@ $color = $colores[$colorIndex];
     // Toggle de capa de tráfico
     function toggleTrafico() {
       trafficVisible = !trafficVisible;
+      const btnTrafico = document.getElementById('toggle-trafico');
 
       if (trafficVisible) {
         // Mostrar tráfico
@@ -540,6 +1020,7 @@ $color = $colores[$colorIndex];
           map.setLayoutProperty('traffic', 'visibility', 'visible');
         }
         document.getElementById('trafico-text').textContent = 'Ocultar Tráfico';
+        if (btnTrafico) btnTrafico.classList.add('active');
         document.getElementById('legend-trafico').style.display = 'flex';
       } else {
         // Ocultar tráfico (no remover, solo ocultar)
@@ -547,8 +1028,16 @@ $color = $colores[$colorIndex];
           map.setLayoutProperty('traffic', 'visibility', 'none');
         }
         document.getElementById('trafico-text').textContent = 'Ver Tráfico';
+        if (btnTrafico) btnTrafico.classList.remove('active');
         document.getElementById('legend-trafico').style.display = 'none';
       }
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
     }
 
     // Función para actualizar el mapa
@@ -592,29 +1081,39 @@ $color = $colores[$colorIndex];
             const elOrigen = document.createElement('div');
             elOrigen.innerHTML = `
               <div style="
-                background: #ff6b6b;
-                color: white;
-                width: 40px;
-                height: 40px;
+                background: #0f4c81;
+                color: #ffffff;
+                width: 36px;
+                height: 36px;
                 border-radius: 50%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 24px;
-                border: 3px solid white;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+                border: 3px solid #ffffff;
+                box-shadow: 0 4px 10px rgba(15,76,129,0.35);
                 cursor: pointer;
               ">
-                🏢
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/>
+                  <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/>
+                  <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/>
+                  <path d="M10 6h4"/>
+                  <path d="M10 10h4"/>
+                </svg>
               </div>
             `;
 
             const markerOrigen = new mapboxgl.Marker(elOrigen)
               .setLngLat([lng, lat])
-              .setPopup(new mapboxgl.Popup().setHTML(`
-                <strong>🏢 Bodega/Origen</strong><br>
-                ${ubicacionOrigen.NombreCompleto || ''}<br>
-                ${ubicacionOrigen.Direccion || ''}
+              .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(`
+                <div style="font-family: inherit; padding: 4px 2px;">
+                  <div style="display:inline-flex; align-items:center; gap:5px; font-weight:700; color:#0f4c81; font-size:11.5px; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.3px;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/></svg>
+                    Bodega / Origen
+                  </div>
+                  <div style="font-weight:600; color:#1e293b; font-size:13px; line-height:1.3;">${escapeHtml(ubicacionOrigen.NombreCompleto || '')}</div>
+                  <div style="color:#64748b; font-size:11px; margin-top:3px; line-height:1.35;">${escapeHtml(ubicacionOrigen.Direccion || '')}</div>
+                </div>
               `))
               .addTo(map);
 
@@ -631,12 +1130,13 @@ $color = $colores[$colorIndex];
 
       // Obtener el orden actual de los pedidos
       const pedidosOrdenados = Array.from(document.querySelectorAll('.pedido-item')).map((item, index) => {
-        const pedidoId = parseInt(item.dataset.pedidoId);
-        return pedidos.find(p => p.ID === pedidoId);
-      });
+        const pedidoId = item.dataset.pedidoId;
+        return pedidos.find(p => p && (p.ID == pedidoId || parseInt(p.ID) === parseInt(pedidoId)));
+      }).filter(Boolean);
 
       // Agregar marcadores
       pedidosOrdenados.forEach((pedido, index) => {
+        if (!pedido) return;
         console.log(`Procesando pedido ${pedido.ID}:`, pedido.Coord_Destino);
 
         if (pedido.Coord_Destino && pedido.Coord_Destino.trim() !== '') {
@@ -696,9 +1196,9 @@ $color = $colores[$colorIndex];
                   align-items: center;
                   justify-content: center;
                   font-weight: bold;
-                  font-size: 14px;
+                  font-size: 13px;
                   border: 3px solid white;
-                  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
                   cursor: pointer;
                 ">
                   ${index + 1}
@@ -707,10 +1207,15 @@ $color = $colores[$colorIndex];
 
               const marker = new mapboxgl.Marker(el)
                 .setLngLat([lng, lat])
-                .setPopup(new mapboxgl.Popup().setHTML(`
-                  <strong>${pedido.FACTURA}</strong><br>
-                  ${pedido.NOMBRE_CLIENTE}<br>
-                  ${pedido.DIRECCION}
+                .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(`
+                  <div style="font-family: inherit; padding: 4px 2px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:4px;">
+                      <span style="font-weight:700; color:#0f4c81; font-size:13px;">Parada #${index + 1}</span>
+                      <span style="font-size:11px; font-weight:600; color:#475569; background:#f1f5f9; padding:1px 6px; border-radius:4px;">Fac: ${escapeHtml(pedido.FACTURA || '')}</span>
+                    </div>
+                    <div style="font-weight:600; color:#1e293b; font-size:12px; line-height:1.3;">${escapeHtml(pedido.NOMBRE_CLIENTE || '')}</div>
+                    <div style="color:#64748b; font-size:11px; margin-top:3px; line-height:1.35;">${escapeHtml(pedido.DIRECCION || '')}</div>
+                  </div>
                 `))
                 .addTo(map);
 
@@ -930,9 +1435,9 @@ $color = $colores[$colorIndex];
 
       // Validar que tenemos coordenadas válidas
       const pedidosOrdenados = Array.from(document.querySelectorAll('.pedido-item')).map((item) => {
-        const pedidoId = parseInt(item.dataset.pedidoId);
-        return pedidos.find(p => p.ID === pedidoId);
-      });
+        const pedidoId = item.dataset.pedidoId;
+        return pedidos.find(p => p && (p.ID == pedidoId || parseInt(p.ID) === parseInt(pedidoId)));
+      }).filter(Boolean);
 
       // Filtrar pedidos con coordenadas válidas
       const pedidosConCoords = pedidosOrdenados.filter(p => {
@@ -1240,31 +1745,34 @@ $color = $colores[$colorIndex];
 
     // Desactivar grupo
     async function desactivarGrupo() {
+      const nombreGrupoSafe = <?php echo json_encode($grupo['nombre_grupo'] ?? ''); ?>;
+      const choferGrupoSafe = <?php echo json_encode($grupo['chofer_asignado'] ?? 'este chofer'); ?>;
+
       const result = await Swal.fire({
         icon: 'warning',
         title: '¿Desactivar este grupo?',
         html: `
-          <p style="margin-bottom: 15px;">Esta acción desactivará el grupo <strong>"<?php echo htmlspecialchars($grupo['nombre_grupo']); ?>"</strong></p>
-          <p style="color: #666; font-size: 14px; margin-bottom: 20px;">
-            Los pedidos seguirán asignados al chofer pero ya no aparecerán como parte de este grupo.
-          </p>
-          <div style="background: #fff3cd; padding: 15px; border-radius: 5px; border-left: 4px solid #ffc107; margin-bottom: 15px; text-align: left;">
-            <strong>⚠️ Opciones:</strong><br>
-            <label style="display: block; margin: 10px 0; cursor: pointer;">
-              <input type="radio" name="desactivar-opcion" value="mantener" checked style="margin-right: 8px;">
-              Mantener la asignación del chofer en los pedidos
-            </label>
-            <label style="display: block; margin: 10px 0; cursor: pointer;">
-              <input type="radio" name="desactivar-opcion" value="quitar" style="margin-right: 8px;">
-              Quitar la asignación del chofer de los pedidos
-            </label>
+          <div style="text-align: left; font-size: 13.5px; color: #475569; padding: 4px 6px;">
+            <p style="margin: 0 0 12px; color: #1e293b;">Esta acción desactivará la agrupación <strong>"${escapeHtml(nombreGrupoSafe)}"</strong>.</p>
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px; margin-bottom: 12px;">
+              <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 8px;">Opciones de Asignación</div>
+              <label style="display: flex; align-items: flex-start; gap: 8px; margin: 8px 0; cursor: pointer; font-size: 13px; color: #1e293b;">
+                <input type="radio" name="desactivar-opcion" value="mantener" checked style="margin-top: 3px; accent-color: #0f4c81;">
+                <span><strong>Mantener chofer:</strong> Los pedidos continúan asignados a ${escapeHtml(choferGrupoSafe)}.</span>
+              </label>
+              <label style="display: flex; align-items: flex-start; gap: 8px; margin: 8px 0; cursor: pointer; font-size: 13px; color: #1e293b;">
+                <input type="radio" name="desactivar-opcion" value="quitar" style="margin-top: 3px; accent-color: #0f4c81;">
+                <span><strong>Liberar pedidos:</strong> Quitar la asignación del chofer para reasignarlos más tarde.</span>
+              </label>
+            </div>
+            <p style="font-size: 12px; color: #94a3b8; margin: 0;">Los pedidos volverán a mostrarse individualmente en la tabla general.</p>
           </div>
         `,
         showCancelButton: true,
         confirmButtonText: 'Sí, desactivar',
         cancelButtonText: 'Cancelar',
-        confirmButtonColor: '#dc3545',
-        cancelButtonColor: '#6c757d',
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#64748b',
         preConfirm: () => {
           const opcion = document.querySelector('input[name="desactivar-opcion"]:checked');
           return opcion ? opcion.value : 'mantener';
@@ -1329,9 +1837,34 @@ $color = $colores[$colorIndex];
       }
     }
 
-    // Inicializar mapa cuando esté listo
-    map.on('load', function() {
-      actualizarMapa();
+    // Captura de errores en Mapbox
+    map.on('error', function(e) {
+      console.error('Error reportado por Mapbox:', e);
+    });
+
+    // Función unificada para asegurar carga de mapa y trazado
+    function iniciarCargaMapa() {
+      if (typeof map !== 'undefined' && map.resize) {
+        map.resize();
+        actualizarMapa();
+      }
+    }
+
+    // Inicializar mapa cuando esté listo o si ya cargó
+    if (map.loaded()) {
+      iniciarCargaMapa();
+    } else {
+      map.on('load', iniciarCargaMapa);
+    }
+
+    // Disparos de seguridad para reajuste de layout
+    setTimeout(iniciarCargaMapa, 400);
+    setTimeout(iniciarCargaMapa, 1000);
+
+    window.addEventListener('resize', () => {
+      if (typeof map !== 'undefined' && map.resize) {
+        map.resize();
+      }
     });
   </script>
 </body>

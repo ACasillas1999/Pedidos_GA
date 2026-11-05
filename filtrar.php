@@ -15,6 +15,22 @@ require_once __DIR__ . "/helpers/filtro_pedidos_rol.php";
 $sucursalSesion = strtoupper($_SESSION["Sucursal"] ?? "");
 $rolSesion      = $_SESSION["Rol"] ?? "";
 
+function gaTblSvg($name, $size = 13) {
+    $paths = [
+        'search'   => '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+        'alert'    => '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+        'plus'     => '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+        'check'    => '<polyline points="20 6 9 17 4 12"/>',
+        'clock'    => '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+        'edit'     => '<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+        'truck'    => '<rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>',
+        'home'     => '<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+        'globe'    => '<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>'
+    ];
+    $p = $paths[$name] ?? $paths['alert'];
+    return "<svg width='{$size}' height='{$size}' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' style='vertical-align:-0.15em;flex-shrink:0;display:inline-block;'>{$p}</svg>";
+}
+
 // ---------- Filtro por vendedor (Rol VR ve solo lo suyo) ----------
 $vendedorCondition = '';
 $vendedorFiltro = nombreVendedorFiltro($rolSesion);
@@ -232,7 +248,7 @@ if ($sucursalSesion === "TODAS") {
                         $badgeGrupo = "<a href='detalle_ruta.php?grupo_id=$grupoId' class='badge-grupo-link' style='text-decoration: none; display: block; margin-top: 4px;'>
                                         <div class='badge-grupo' data-grupo-id='$grupoId' title='Click para ver detalles de la ruta: $nombreGrupo ($totalEnGrupo pedidos)'
                                              style='background: linear-gradient(135deg, {$color['bg']} 0%, {$color['border']} 100%);'>
-                                          <span class='grupo-icono'>🚚</span>
+                                          <span class='grupo-icono'>" . gaTblSvg('truck', 12) . "</span>
                                           <span class='grupo-nombre'>$nombreGrupo</span>
                                           <span class='grupo-orden'>#$ordenEntrega/$totalEnGrupo</span>
                                         </div>
@@ -259,13 +275,13 @@ if ($sucursalSesion === "TODAS") {
                         case 2:
                             $badge = "<span class='badge badge-naranja'>Pendiente de Surtido</span>";
                             if (in_array($_SESSION["Rol"], ["Admin","JC"])) {
-                                $accionHtml = "<button type='button' class='btn btn-sm btn-info accion-factura' data-id='{$row["ID"]}' data-accion='surtido'>&#10004; Surtido</button>";
+                                $accionHtml = "<button type='button' class='btn btn-sm btn-info accion-factura' data-id='{$row["ID"]}' data-accion='surtido'>" . gaTblSvg('check', 11) . " Surtido</button>";
                             }
                             break;
                         case 3:
                             $badge = "<span class='badge badge-cyan'>Surtido</span>";
                             if (in_array($_SESSION["Rol"], ["Admin","JC"])) {
-                                $accionHtml = "<button type='button' class='btn btn-sm btn-success accion-factura' data-id='{$row["ID"]}' data-accion='cargado_camioneta'>&#128666; Cargado en Camioneta</button>";
+                                $accionHtml = "<button type='button' class='btn btn-sm btn-success accion-factura' data-id='{$row["ID"]}' data-accion='cargado_camioneta'>" . gaTblSvg('truck', 11) . " Cargado en Camioneta</button>";
                             }
                             break;
                         case 4:
@@ -315,25 +331,27 @@ if ($sucursalSesion === "TODAS") {
                         data-grupo-id='".htmlspecialchars($grupoId ?? '')."' 
                         $checkboxDisabled></td>" : "";
 
+                    $choferDisplay = (empty($choferAsignado) || trim($choferAsignado) === '[object Object]')
+                        ? "<span class='tbl-sin-chofer'>Sin asignar</span>"
+                        : "<span class='tbl-chofer-nombre'>" . htmlspecialchars($choferAsignado) . "</span>";
+
                     echo "<tr>";
                     echo $checkboxCell;
-                    echo "<td>" . $row["ID"] . "</td>";
+                    echo "<td><span class='tbl-id-badge'>" . $row["ID"] . "</span></td>";
                     echo "<td>{$badge}<div style='margin-top:6px'>{$accionHtml}</div></td>";
-                    echo "<td style='background-color: $colorEstado;'>" . $estado . "</td>";
-                   // echo "<td style='background-color: $colorEnvio;'>" . strtoupper(htmlspecialchars($tipo_envio)) . "</td>";
-                   echo "<td style='background-color: $colorEnvio; text-align:center;'>
-        " . strtoupper(htmlspecialchars($tipo_envio)) . "
-        {$btnPaqueteria}
-      </td>";
+                    echo "<td style='background-color: $colorEstado;'><span class='tbl-status-pill'>" . htmlspecialchars($estado) . "</span></td>";
+                    echo "<td style='background-color: $colorEnvio; text-align:center;'>
+                            <span class='tbl-envio-pill'>" . strtoupper(htmlspecialchars($tipo_envio)) . "</span>
+                            {$btnPaqueteria}
+                          </td>";
 
-                    echo "<td>" . $row["SUCURSAL"] . "</td>";
-                    echo "<td>" . $row["FECHA_RECEPCION_FACTURA"] . "</td>";
-                    echo "<td style='background-color: $colorChofer;'>" . $choferAsignado . $badgeGrupo . "</td>";
-                    echo "<td>" . $row["VENDEDOR"] . "</td>";
-                    echo "<td>" . $row["FACTURA"] . "</td>";
+                    echo "<td><span class='tbl-sucursal-tag'>" . htmlspecialchars($row["SUCURSAL"]) . "</span></td>";
+                    echo "<td class='tbl-fecha-cell'>" . htmlspecialchars($row["FECHA_RECEPCION_FACTURA"]) . "</td>";
+                    echo "<td style='background-color: $colorChofer;'>" . $choferDisplay . $badgeGrupo . "</td>";
+                    echo "<td class='tbl-vendedor-cell'>" . htmlspecialchars($row["VENDEDOR"]) . "</td>";
+                    echo "<td class='tbl-factura-cell'>" . htmlspecialchars($row["FACTURA"]) . "</td>";
 
                     // Continuar con el formateo del precio
-
                     $colorPrecio = "#FFFFFF";
                     $iconoPrecio = "";
                     $clasePrecio = "";
@@ -341,43 +359,43 @@ if ($sucursalSesion === "TODAS") {
                     if ($precio_real > 0) {
                         // Precio menor a $1000 = no conveniente
                         if ($precio_real < 1000) {
-                            $colorPrecio = "#fff3cd";
-                            $iconoPrecio = "<span style='color: #856404; font-weight: bold;'>⚠️</span> ";
+                            $colorPrecio = "#fffbeb";
+                            $iconoPrecio = "<span style='color: #b45309;' title='Precio menor a $1000'>" . gaTblSvg('alert', 13) . "</span> ";
                             $clasePrecio = "precio-bajo";
                         }
 
                         // Mostrar icono de validación
                         if ($precio_validado == 1) {
-                            $iconoPrecio .= "<span style='color: #28a745;' title='Validado por JC'>✓</span> ";
+                            $iconoPrecio .= "<span style='color: #16a34a;' title='Validado por JC'>" . gaTblSvg('check', 13) . "</span> ";
                         } else {
-                            $iconoPrecio .= "<span style='color: #ffc107;' title='Pendiente validación JC'>⏳</span> ";
+                            $iconoPrecio .= "<span style='color: #d97706;' title='Pendiente validación JC'>" . gaTblSvg('clock', 13) . "</span> ";
                         }
 
                         // Si JC corrigió el precio, mostrar icono de edición
                         if ($precio_vendedor != $precio_real && $precio_vendedor > 0) {
-                            $iconoPrecio .= "<span style='color: #dc3545;' title='Precio corregido por JC'>✏️</span> ";
+                            $iconoPrecio .= "<span style='color: #dc2626;' title='Precio corregido por JC'>" . gaTblSvg('edit', 12) . "</span> ";
                         }
 
-                        $textoPrecio = "$" . number_format($precio_real, 2);
+                        $textoPrecio = "<span class='tbl-precio-monto'>$" . number_format($precio_real, 2) . "</span>";
                     } else {
                         $textoPrecio = "-";
-                        $iconoPrecio = "<span style='color: #999;'>N/A</span>";
+                        $iconoPrecio = "<span style='color: #94a3b8;'>N/A</span> ";
                     }
 
                     echo "<td style='background-color: $colorPrecio; text-align: right;' class='$clasePrecio'>" . $iconoPrecio . $textoPrecio . "</td>";
-                    echo "<td>" . $row["DIRECCION"] . "</td>";
+                    echo "<td class='tbl-direccion-cell'>" . htmlspecialchars($row["DIRECCION"]) . "</td>";
                     
                     // Badge de zona (LOCAL/FORÁNEO)
                     $tipoZona = $row["tipo_zona"] ?? null;
                     $badgeZona = '';
                     if ($tipoZona === 'LOCAL') {
-                        $badgeZona = "<span class='badge-zona-local' title='Pedido dentro de la Zona Metropolitana de Guadalajara'>🏠 LOCAL</span>";
+                        $badgeZona = "<span class='badge-zona-local' title='Pedido dentro de la Zona Metropolitana de Guadalajara'>" . gaTblSvg('home', 10) . " LOCAL</span>";
                     } elseif ($tipoZona === 'FORANEO') {
-                        $badgeZona = "<span class='badge-zona-foraneo' title='Pedido fuera de la Zona Metropolitana de Guadalajara'>🌍 FORÁNEO</span>";
+                        $badgeZona = "<span class='badge-zona-foraneo' title='Pedido fuera de la Zona Metropolitana de Guadalajara'>" . gaTblSvg('globe', 10) . " FORÁNEO</span>";
                     }
                     
-                    echo "<td>" . $row["NOMBRE_CLIENTE"] . " " . $badgeZona . "</td>";
-                    echo "<td>" . $row["CONTACTO"] . "</td>";
+                    echo "<td class='tbl-cliente-cell'><div class='tbl-cliente-nombre'>" . htmlspecialchars($row["NOMBRE_CLIENTE"]) . "</div>" . $badgeZona . "</td>";
+                    echo "<td class='tbl-contacto-cell'>" . htmlspecialchars($row["CONTACTO"]) . "</td>";
                     $totalIncidencias = intval($row["total_incidencias"] ?? 0);
                     $facturaEsc = htmlspecialchars($row["FACTURA"] ?? '', ENT_QUOTES);
                     $svgSearch = "<svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' style='flex-shrink:0;'><circle cx='11' cy='11' r='8'/><line x1='21' y1='21' x2='16.65' y2='16.65'/></svg>";
@@ -555,7 +573,7 @@ if ($sucursalSesion === "TODAS") {
                         $badgeGrupo = "<a href='detalle_ruta.php?grupo_id=$grupoId' class='badge-grupo-link' style='text-decoration: none; display: block; margin-top: 4px;'>
                                         <div class='badge-grupo' data-grupo-id='$grupoId' title='Click para ver detalles de la ruta: $nombreGrupo ($totalEnGrupo pedidos)'
                                              style='background: linear-gradient(135deg, {$color['bg']} 0%, {$color['border']} 100%);'>
-                                          <span class='grupo-icono'>🚚</span>
+                                          <span class='grupo-icono'>" . gaTblSvg('truck', 12) . "</span>
                                           <span class='grupo-nombre'>$nombreGrupo</span>
                                           <span class='grupo-orden'>#$ordenEntrega/$totalEnGrupo</span>
                                         </div>
@@ -582,13 +600,13 @@ if ($sucursalSesion === "TODAS") {
                         case 2:
                             $badge = "<span class='badge badge-naranja'>Pendiente de Surtido</span>";
                             if (in_array($_SESSION["Rol"], ["Admin","JC"])) {
-                                $accionHtml = "<button type='button' class='btn btn-sm btn-info accion-factura' data-id='{$row["ID"]}' data-accion='surtido'>&#10004; Surtido</button>";
+                                $accionHtml = "<button type='button' class='btn btn-sm btn-info accion-factura' data-id='{$row["ID"]}' data-accion='surtido'>" . gaTblSvg('check', 11) . " Surtido</button>";
                             }
                             break;
                         case 3:
                             $badge = "<span class='badge badge-cyan'>Surtido</span>";
                             if (in_array($_SESSION["Rol"], ["Admin","JC"])) {
-                                $accionHtml = "<button type='button' class='btn btn-sm btn-success accion-factura' data-id='{$row["ID"]}' data-accion='cargado_camioneta'>&#128666; Cargado en Camioneta</button>";
+                                $accionHtml = "<button type='button' class='btn btn-sm btn-success accion-factura' data-id='{$row["ID"]}' data-accion='cargado_camioneta'>" . gaTblSvg('truck', 11) . " Cargado en Camioneta</button>";
                             }
                             break;
                         case 4:
@@ -638,23 +656,26 @@ if ($sucursalSesion === "TODAS") {
                         data-grupo-id='".htmlspecialchars($grupoId ?? '')."' 
                         $checkboxDisabled></td>" : "";
 
+                    $choferDisplay2 = (empty($choferAsignado) || trim($choferAsignado) === '[object Object]')
+                        ? "<span class='tbl-sin-chofer'>Sin asignar</span>"
+                        : "<span class='tbl-chofer-nombre'>" . htmlspecialchars($choferAsignado) . "</span>";
+
                     echo "<tr>";
                     echo $checkboxCell;
-                    echo "<td>" . $row["ID"] . "</td>";
+                    echo "<td><span class='tbl-id-badge'>" . $row["ID"] . "</span></td>";
                     echo "<td>{$badge}<div style='margin-top:6px'>{$accionHtml}</div></td>";
-                    echo "<td style='background-color: $colorEstado;'>" . $estado . "</td>";
+                    echo "<td style='background-color: $colorEstado;'><span class='tbl-status-pill'>" . htmlspecialchars($estado) . "</span></td>";
                     echo "<td style='background-color: $colorEnvio; text-align:center;'>
-                            " . strtoupper(htmlspecialchars($tipo_envio)) . "
+                            <span class='tbl-envio-pill'>" . strtoupper(htmlspecialchars($tipo_envio)) . "</span>
                             {$btnPaqueteria2}
                           </td>";
-                    echo "<td>" . $row["SUCURSAL"] . "</td>";
-                    echo "<td>" . $row["FECHA_RECEPCION_FACTURA"] . "</td>";
-                    echo "<td style='background-color: $colorChofer;'>" . $choferAsignado . $badgeGrupo . "</td>";
-                    echo "<td>" . $row["VENDEDOR"] . "</td>";
-                    echo "<td>" . $row["FACTURA"] . "</td>";
+                    echo "<td><span class='tbl-sucursal-tag'>" . htmlspecialchars($row["SUCURSAL"]) . "</span></td>";
+                    echo "<td class='tbl-fecha-cell'>" . htmlspecialchars($row["FECHA_RECEPCION_FACTURA"]) . "</td>";
+                    echo "<td style='background-color: $colorChofer;'>" . $choferDisplay2 . $badgeGrupo . "</td>";
+                    echo "<td class='tbl-vendedor-cell'>" . htmlspecialchars($row["VENDEDOR"]) . "</td>";
+                    echo "<td class='tbl-factura-cell'>" . htmlspecialchars($row["FACTURA"]) . "</td>";
 
                     // Continuar con el formateo del precio
-
                     $colorPrecio = "#FFFFFF";
                     $iconoPrecio = "";
                     $clasePrecio = "";
@@ -662,43 +683,43 @@ if ($sucursalSesion === "TODAS") {
                     if ($precio_real > 0) {
                         // Precio menor a $1000 = no conveniente
                         if ($precio_real < 1000) {
-                            $colorPrecio = "#fff3cd";
-                            $iconoPrecio = "<span style='color: #856404; font-weight: bold;'>⚠️</span> ";
+                            $colorPrecio = "#fffbeb";
+                            $iconoPrecio = "<span style='color: #b45309;' title='Precio menor a $1000'>" . gaTblSvg('alert', 13) . "</span> ";
                             $clasePrecio = "precio-bajo";
                         }
 
                         // Mostrar icono de validación
                         if ($precio_validado == 1) {
-                            $iconoPrecio .= "<span style='color: #28a745;' title='Validado por JC'>✓</span> ";
+                            $iconoPrecio .= "<span style='color: #16a34a;' title='Validado por JC'>" . gaTblSvg('check', 13) . "</span> ";
                         } else {
-                            $iconoPrecio .= "<span style='color: #ffc107;' title='Pendiente validación JC'>⏳</span> ";
+                            $iconoPrecio .= "<span style='color: #d97706;' title='Pendiente validación JC'>" . gaTblSvg('clock', 13) . "</span> ";
                         }
 
                         // Si JC corrigió el precio, mostrar icono de edición
                         if ($precio_vendedor != $precio_real && $precio_vendedor > 0) {
-                            $iconoPrecio .= "<span style='color: #dc3545;' title='Precio corregido por JC'>✏️</span> ";
+                            $iconoPrecio .= "<span style='color: #dc2626;' title='Precio corregido por JC'>" . gaTblSvg('edit', 12) . "</span> ";
                         }
 
-                        $textoPrecio = "$" . number_format($precio_real, 2);
+                        $textoPrecio = "<span class='tbl-precio-monto'>$" . number_format($precio_real, 2) . "</span>";
                     } else {
                         $textoPrecio = "-";
-                        $iconoPrecio = "<span style='color: #999;'>N/A</span>";
+                        $iconoPrecio = "<span style='color: #94a3b8;'>N/A</span> ";
                     }
 
                     echo "<td style='background-color: $colorPrecio; text-align: right;' class='$clasePrecio'>" . $iconoPrecio . $textoPrecio . "</td>";
-                    echo "<td>" . $row["DIRECCION"] . "</td>";
+                    echo "<td class='tbl-direccion-cell'>" . htmlspecialchars($row["DIRECCION"]) . "</td>";
                     
                     // Badge de zona (LOCAL/FORÁNEO)
                     $tipoZona = $row["tipo_zona"] ?? null;
                     $badgeZona = '';
                     if ($tipoZona === 'LOCAL') {
-                        $badgeZona = "<span class='badge-zona-local' title='Pedido dentro de la Zona Metropolitana de Guadalajara'>🏠 LOCAL</span>";
+                        $badgeZona = "<span class='badge-zona-local' title='Pedido dentro de la Zona Metropolitana de Guadalajara'>" . gaTblSvg('home', 10) . " LOCAL</span>";
                     } elseif ($tipoZona === 'FORANEO') {
-                        $badgeZona = "<span class='badge-zona-foraneo' title='Pedido fuera de la Zona Metropolitana de Guadalajara'>🌍 FORÁNEO</span>";
+                        $badgeZona = "<span class='badge-zona-foraneo' title='Pedido fuera de la Zona Metropolitana de Guadalajara'>" . gaTblSvg('globe', 10) . " FORÁNEO</span>";
                     }
                     
-                    echo "<td>" . $row["NOMBRE_CLIENTE"] . " " . $badgeZona . "</td>";
-                    echo "<td>" . $row["CONTACTO"] . "</td>";
+                    echo "<td class='tbl-cliente-cell'><div class='tbl-cliente-nombre'>" . htmlspecialchars($row["NOMBRE_CLIENTE"]) . "</div>" . $badgeZona . "</td>";
+                    echo "<td class='tbl-contacto-cell'>" . htmlspecialchars($row["CONTACTO"]) . "</td>";
                     $totalIncidencias = intval($row["total_incidencias"] ?? 0);
                     $facturaEsc = htmlspecialchars($row["FACTURA"] ?? '', ENT_QUOTES);
                     $svgSearch = "<svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' style='flex-shrink:0;'><circle cx='11' cy='11' r='8'/><line x1='21' y1='21' x2='16.65' y2='16.65'/></svg>";
@@ -880,29 +901,178 @@ $conn->close();
 
 /* Estilos para badges de zona LOCAL/FORÁNEO */
 .badge-zona-local {
-  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-  color: white;
-  padding: 3px 10px;
-  border-radius: 12px;
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #86efac;
+  padding: 2px 8px;
+  border-radius: 999px;
   font-size: 10px;
   font-weight: 700;
-  display: inline-block;
-  margin-left: 5px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 4px;
   white-space: nowrap;
 }
 
 .badge-zona-foraneo {
-  background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
-  color: white;
-  padding: 3px 10px;
-  border-radius: 12px;
+  background: #ffedd5;
+  color: #9a3412;
+  border: 1px solid #fdba74;
+  padding: 2px 8px;
+  border-radius: 999px;
   font-size: 10px;
   font-weight: 700;
-  display: inline-block;
-  margin-left: 5px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 4px;
   white-space: nowrap;
+}
+
+/* Diseño moderno para la tabla principal (.mi-tabla) */
+.mi-tabla {
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  box-shadow: 0 6px 20px -4px rgba(15, 23, 42, 0.08) !important;
+  background: #ffffff !important;
+}
+
+.mi-tabla th {
+  background: linear-gradient(180deg, #0f4c81 0%, #0b3c66 100%) !important;
+  color: #ffffff !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em !important;
+  padding: 12px 8px !important;
+  border: none !important;
+  border-bottom: 2px solid #082f52 !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+  vertical-align: middle !important;
+}
+
+.mi-tabla th:last-child {
+  border-right: none !important;
+}
+
+.mi-tabla td {
+  padding: 10px 8px !important;
+  font-size: 12.5px !important;
+  color: #1e293b !important;
+  border: none !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  border-right: 1px solid #f1f5f9 !important;
+  vertical-align: middle !important;
+  transition: filter 0.15s ease;
+}
+
+.mi-tabla td:last-child {
+  border-right: none !important;
+}
+
+.mi-tabla tr:last-child td {
+  border-bottom: none !important;
+}
+
+.mi-tabla tr:hover td {
+  filter: brightness(0.97);
+}
+
+.tbl-id-badge {
+  font-weight: 700;
+  color: #0f4c81;
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+
+.tbl-status-pill {
+  font-weight: 700;
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #0f172a;
+}
+
+.tbl-envio-pill {
+  font-weight: 700;
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+  color: #14532d;
+}
+
+.tbl-sucursal-tag {
+  font-weight: 700;
+  font-size: 12px;
+  color: #334155;
+}
+
+.tbl-fecha-cell {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: #475569 !important;
+  white-space: nowrap;
+}
+
+.tbl-sin-chofer {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #991b1b;
+}
+
+.tbl-chofer-nombre {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.tbl-vendedor-cell {
+  color: #475569 !important;
+  font-weight: 500;
+}
+
+.tbl-factura-cell {
+  font-weight: 800;
+  color: #0f4c81 !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.tbl-precio-monto {
+  font-weight: 700;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+}
+
+.tbl-direccion-cell {
+  font-size: 11.5px !important;
+  line-height: 1.35;
+  color: #334155 !important;
+  text-align: left;
+}
+
+.tbl-cliente-cell {
+  text-align: center;
+}
+
+.tbl-cliente-nombre {
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.tbl-contacto-cell {
+  font-size: 11.5px !important;
+  color: #475569 !important;
+}
+
+.pedido-checkbox, #selectAll {
+  width: 16px;
+  height: 16px;
+  accent-color: #0f4c81;
+  cursor: pointer;
 }
 
 /* Evitar desbordamiento de textos largos (correos, direcciones) y botones entre columnas */

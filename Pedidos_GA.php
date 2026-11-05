@@ -327,6 +327,16 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
               <span style="font-size: 11px; font-weight: bold; margin-top: 4px;">Tiempos</span>
             </a>
           </li>
+          <li>
+            <a href="reporte_incidencias.php" title="Reporte de Incidencias" style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-decoration:none; color:#ed6b1f; transition: color 0.2s;" onmouseover="this.style.color='#ffffff'; this.querySelector('svg').style.transform='scale(1.15)'" onmouseout="this.style.color='#ed6b1f'; this.querySelector('svg').style.transform='scale(1)'">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="icono-incidencias" style="max-width: 60%; height: auto; transition: transform 0.2s;">
+                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              <span style="font-size: 11px; font-weight: bold; margin-top: 4px;">Incidencias</span>
+            </a>
+          </li>
           <?php endif; ?>
           <?php if ($_SESSION["Rol"] === "Admin" || $_SESSION["Rol"] === "JC" || $_SESSION["Rol"] === "MEC"): ?>
           <li>
@@ -1491,85 +1501,115 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 
+// Función de iconos SVG compartida
+const svgIcon = (name, size = 15) => {
+  const paths = {
+    'layers': '<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>',
+    'info': '<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>',
+    'check': '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',
+    'clock': '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+    'alert': '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+    'user': '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+    'pin': '<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>',
+    'building': '<rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="6" x2="9.01" y2="6"/><line x1="15" y1="6" x2="15.01" y2="6"/><line x1="9" y1="10" x2="9.01" y2="10"/><line x1="15" y1="10" x2="15.01" y2="10"/><line x1="9" y1="14" x2="9.01" y2="14"/><line x1="15" y1="14" x2="15.01" y2="14"/><path d="M9 22v-4h6v4"/>',
+    'truck': '<rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>',
+    'dollar': '<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
+    'map': '<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/>'
+  };
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.15em;flex-shrink:0;display:inline-block;">${paths[name] || paths['info']}</svg>`;
+};
+
 // Abrir modal de gestión masiva con SweetAlert2
 async function abrirModalGestionMasiva(pedidos) {
+
   // Generar HTML para cada pedido
   let pedidosHTML = '';
 
   pedidos.forEach((pedido, index) => {
     const alertaPrecio = pedido.precioReal > 0 && pedido.precioReal < 1000
-      ? '<span style="color: #856404; font-weight: bold;">⚠️ Precio menor a $1000</span>'
+      ? `<span class="alerta-precio-bajo" style="color: #b45309; background: #fef3c7; border: 1px solid #fde68a; padding: 4px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; margin-top: 6px;">${svgIcon('alert', 13)} Precio menor a $1000 - Flete no conveniente</span>`
       : '';
 
     const estadoValidacion = pedido.validado === 1
-      ? '<span style="color: #28a745;">✓ Validado</span>'
-      : '<span style="color: #ffc107;">⏳ Pendiente</span>';
+      ? `<span class="gm-badge gm-badge-ok">${svgIcon('check', 13)} Validado</span>`
+      : `<span class="gm-badge gm-badge-pending">${svgIcon('clock', 13)} Pendiente</span>`;
 
     pedidosHTML += `
-      <div class="pedido-item" data-index="${index}" style="border: 2px solid #006996; border-radius: 10px; padding: 15px; margin-bottom: 15px; background: #f8f9fa;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-          <h4 style="margin: 0; color: #006996;">Pedido #${pedido.id} - Factura: ${pedido.factura}</h4>
+      <div class="pedido-item gm-card" data-index="${index}">
+        <div class="gm-card-header">
+          <div class="gm-card-title-group">
+            <span class="gm-id-pill">#${pedido.id}</span>
+            <span class="gm-factura-title">Factura: <strong>${pedido.factura || 'S/N'}</strong></span>
+            <span class="gm-meta-chip">${svgIcon('building', 12)} ${pedido.sucursal || 'N/A'}</span>
+            <span class="gm-meta-chip gm-meta-chip-envio">${svgIcon('truck', 12)} ${pedido.tipoEnvio || 'Domicilio'}</span>
+          </div>
           ${estadoValidacion}
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
-          <div><strong>Cliente:</strong> ${pedido.cliente}</div>
-          <div><strong>Dirección:</strong> ${pedido.direccion}</div>
-          <div><strong>Sucursal:</strong> ${pedido.sucursal}</div>
-          <div><strong>Tipo Envío:</strong> ${pedido.tipoEnvio}</div>
+        <div class="gm-info-strip">
+          <div class="gm-info-cell">
+            <span class="gm-info-label">${svgIcon('user', 13)} Cliente</span>
+            <span class="gm-info-val">${pedido.cliente || 'Sin especificar'}</span>
+          </div>
+          <div class="gm-info-cell">
+            <span class="gm-info-label">${svgIcon('pin', 13)} Dirección de Entrega</span>
+            <span class="gm-info-val">${pedido.direccion || 'Sin dirección'}</span>
+          </div>
         </div>
 
-        <div style="background: white; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <div>
-              <label style="font-weight: bold; display: block; margin-bottom: 5px;">Precio Vendedor:</label>
-              <input type="number" class="precio-vendedor-input" value="${pedido.precioVendedor}" readonly
-                style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: #e9ecef;">
+        <div class="gm-panels-grid">
+          <!-- Panel 1: Precios y Validación -->
+          <div class="gm-subpanel">
+            <div class="gm-subpanel-title">${svgIcon('dollar', 14)} Facturación y Validación</div>
+            <div class="gm-fields-row">
+              <div>
+                <label class="gm-label">Precio Vendedor</label>
+                <input type="number" class="precio-vendedor-input gm-input gm-input-readonly" value="${pedido.precioVendedor}" readonly>
+              </div>
+              <div>
+                <label class="gm-label">Precio Real Factura *</label>
+                <input type="number" class="precio-real-input gm-input" data-index="${index}" value="${pedido.precioReal}" step="0.01" min="0.01"
+                  style="${pedido.precioReal > 0 && pedido.precioReal < 1000 ? 'background-color: #fffbeb; border-color: #f59e0b;' : ''}">
+                ${alertaPrecio}
+              </div>
             </div>
-            <div>
-              <label style="font-weight: bold; display: block; margin-bottom: 5px;">Precio Real de Factura:</label>
-              <input type="number" class="precio-real-input" data-index="${index}" value="${pedido.precioReal}" step="0.01" min="0.01"
-                style="width: 100%; padding: 8px; border: 1px solid #006996; border-radius: 4px;">
-              ${alertaPrecio}
-            </div>
-          </div>
-
-          <div style="margin-top: 10px;">
-            <label style="display: flex; align-items: center; cursor: pointer;">
-              <input type="checkbox" class="validar-precio-checkbox" data-index="${index}" ${pedido.validado === 1 ? 'checked' : ''}
-                style="margin-right: 8px; width: 18px; height: 18px;">
-              <span style="font-weight: bold;">Validar Precio</span>
+            <label class="gm-check-box">
+              <input type="checkbox" class="validar-precio-checkbox" data-index="${index}" ${pedido.validado === 1 ? 'checked' : ''}>
+              <span>Confirmar y validar importe de factura</span>
             </label>
           </div>
-        </div>
 
-        <div style="background: white; padding: 10px; border-radius: 5px;">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <div>
-              <label style="font-weight: bold; display: block; margin-bottom: 5px;">Sucursal para Chofer:</label>
-              <select class="sucursal-chofer-select" data-index="${index}"
-                style="width: 100%; padding: 8px; border: 1px solid #006996; border-radius: 4px;">
-                <option value="">Seleccionar sucursal...</option>
-                <option value="GABSA">GABSA</option>
-                <option value="ILUMINACION">ILUMINACION</option>
-                <option value="DIMEGSA">DIMEGSA</option>
-                <option value="DEASA">DEASA</option>
-                <option value="AIESA">AIESA</option>
-                <option value="SEGSA">SEGSA</option>
-                <option value="FESA">FESA</option>
-                <option value="TAPATIA">TAPATIA</option>
-                <option value="VALLARTA">VALLARTA</option>
-                <option value="CODI">CODI</option>
-                <option value="QUERETARO">QUERETARO</option>
-                <option value="CONSTITUYENTES">CONSTITUYENTES</option>
-              </select>
+          <!-- Panel 2: Asignación de Chofer -->
+          <div class="gm-subpanel">
+            <div class="gm-subpanel-title">${svgIcon('truck', 14)} Asignación de Chofer</div>
+            <div class="gm-fields-row">
+              <div>
+                <label class="gm-label">Sucursal para Chofer</label>
+                <select class="sucursal-chofer-select gm-input" data-index="${index}">
+                  <option value="">Seleccionar sucursal...</option>
+                  <option value="GABSA">GABSA</option>
+                  <option value="ILUMINACION">ILUMINACION</option>
+                  <option value="DIMEGSA">DIMEGSA</option>
+                  <option value="DEASA">DEASA</option>
+                  <option value="AIESA">AIESA</option>
+                  <option value="SEGSA">SEGSA</option>
+                  <option value="FESA">FESA</option>
+                  <option value="TAPATIA">TAPATIA</option>
+                  <option value="VALLARTA">VALLARTA</option>
+                  <option value="CODI">CODI</option>
+                  <option value="QUERETARO">QUERETARO</option>
+                  <option value="CONSTITUYENTES">CONSTITUYENTES</option>
+                </select>
+              </div>
+              <div>
+                <label class="gm-label">Chofer Asignado</label>
+                <select class="chofer-select gm-input" data-index="${index}" disabled>
+                  <option value="">Primero seleccione sucursal</option>
+                </select>
+              </div>
             </div>
-            <div>
-              <label style="font-weight: bold; display: block; margin-bottom: 5px;">Chofer:</label>
-              <select class="chofer-select" data-index="${index}" disabled
-                style="width: 100%; padding: 8px; border: 1px solid #006996; border-radius: 4px;">
-                <option value="">Primero seleccione sucursal</option>
-              </select>
+            <div class="gm-helper-note">
+              Selecciona la sucursal operativa para listar los choferes con unidad activa.
             </div>
           </div>
         </div>
@@ -1578,24 +1618,347 @@ async function abrirModalGestionMasiva(pedidos) {
   });
 
   const resultado = await Swal.fire({
-    title: 'Gestión Masiva de Pedidos',
+    title: '',
+    padding: '0',
+    customClass: {
+      popup: 'gm-swal-popup',
+      htmlContainer: 'gm-swal-html',
+      actions: 'gm-swal-actions'
+    },
     html: `
-      <div style="max-height: 60vh; overflow-y: auto; text-align: left;">
-        <div style="margin-bottom: 15px; padding: 10px; background: #e7f3ff; border-radius: 8px; border-left: 4px solid #006996;">
-          <strong>💡 Tip:</strong> Si deseas agrupar estos pedidos en una misma ruta, usa el botón "Crear Grupo/Ruta" para asignarles el mismo chofer a todos.
+      <style>
+        .gm-swal-popup {
+          border-radius: 16px !important;
+          overflow: hidden !important;
+          padding: 0 !important;
+          box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.35) !important;
+        }
+        .gm-swal-html {
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+        .gm-swal-actions {
+          margin: 0 !important;
+          padding: 14px 24px !important;
+          width: 100% !important;
+          box-sizing: border-box !important;
+          background: #f8fafc !important;
+          border-top: 1px solid #e2e8f0 !important;
+          justify-content: flex-end !important;
+          gap: 8px !important;
+        }
+        .gm-swal-actions .swal2-styled {
+          margin: 0 !important;
+          border-radius: 9px !important;
+          font-size: 13.5px !important;
+          font-weight: 700 !important;
+          padding: 9px 18px !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          gap: 6px !important;
+        }
+        .gm-modal-wrap {
+          font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+          text-align: left;
+          color: #1e293b;
+        }
+        .gm-modal-header {
+          background: linear-gradient(135deg, #0f4c81 0%, #005aa3 100%);
+          color: #ffffff;
+          padding: 18px 24px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .gm-modal-header-left {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .gm-modal-icon {
+          width: 38px;
+          height: 38px;
+          border-radius: 10px;
+          background: rgba(255, 255, 255, 0.14);
+          border: 1px solid rgba(255, 255, 255, 0.24);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #ffffff;
+        }
+        .gm-modal-header h3 {
+          margin: 0;
+          font-size: 18px;
+          font-weight: 800;
+          color: #ffffff;
+          letter-spacing: -0.01em;
+        }
+        .gm-modal-header p {
+          margin: 2px 0 0 0;
+          font-size: 12.5px;
+          color: rgba(255, 255, 255, 0.82);
+        }
+        .gm-count-badge {
+          background: rgba(255, 255, 255, 0.18);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          color: #ffffff;
+          padding: 5px 12px;
+          border-radius: 999px;
+          font-size: 12px;
+          font-weight: 700;
+          white-space: nowrap;
+        }
+        .gm-modal-body {
+          max-height: 66vh;
+          overflow-y: auto;
+          padding: 20px 24px;
+          background: #ffffff;
+        }
+        .gm-tip-banner {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-bottom: 16px;
+          padding: 10px 14px;
+          background: #f0f9ff;
+          border: 1px solid #bae6fd;
+          border-radius: 10px;
+          font-size: 12.5px;
+          color: #0c4a6e;
+        }
+        .gm-card {
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 12px;
+          margin-bottom: 14px;
+          overflow: hidden;
+        }
+        .gm-card:last-child {
+          margin-bottom: 0;
+        }
+        .gm-card-header {
+          background: #f8fafc;
+          border-bottom: 1px solid #e2e8f0;
+          padding: 11px 18px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+        .gm-card-title-group {
+          display: flex;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+        .gm-id-pill {
+          background: #0f4c81;
+          color: #ffffff;
+          font-weight: 800;
+          font-size: 12.5px;
+          padding: 3px 9px;
+          border-radius: 6px;
+        }
+        .gm-factura-title {
+          font-size: 14px;
+          color: #0f172a;
+          margin-right: 2px;
+        }
+        .gm-meta-chip {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          background: #e0f2fe;
+          color: #0369a1;
+          border: 1px solid #bae6fd;
+          padding: 2px 8px;
+          border-radius: 999px;
+          font-size: 11px;
+          font-weight: 700;
+        }
+        .gm-meta-chip-envio {
+          background: #dcfce7;
+          color: #166534;
+          border-color: #bbf7d0;
+        }
+        .gm-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          padding: 3px 10px;
+          border-radius: 999px;
+          font-size: 11.5px;
+          font-weight: 700;
+        }
+        .gm-badge-ok {
+          background: #dcfce7;
+          color: #166534;
+          border: 1px solid #86efac;
+        }
+        .gm-badge-pending {
+          background: #fef3c7;
+          color: #92400e;
+          border: 1px solid #fde68a;
+        }
+        .gm-info-strip {
+          display: grid;
+          grid-template-columns: 1fr 1.3fr;
+          gap: 16px;
+          padding: 12px 18px;
+          background: #ffffff;
+          border-bottom: 1px solid #f1f5f9;
+        }
+        .gm-info-cell {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+        .gm-info-label {
+          font-size: 11px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+          color: #64748b;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+        }
+        .gm-info-val {
+          font-size: 13.5px;
+          font-weight: 600;
+          color: #1e293b;
+        }
+        .gm-panels-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 0;
+          background: #ffffff;
+        }
+        @media (max-width: 820px) {
+          .gm-info-strip, .gm-panels-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+        .gm-subpanel {
+          padding: 14px 18px 16px 18px;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+        }
+        .gm-subpanel:first-child {
+          border-right: 1px solid #f1f5f9;
+        }
+        @media (max-width: 820px) {
+          .gm-subpanel:first-child {
+            border-right: none;
+            border-bottom: 1px solid #f1f5f9;
+          }
+        }
+        .gm-subpanel-title {
+          font-size: 12px;
+          font-weight: 800;
+          color: #0f4c81;
+          text-transform: uppercase;
+          letter-spacing: 0.03em;
+          margin-bottom: 10px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .gm-fields-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 10px;
+        }
+        .gm-label {
+          display: block;
+          font-size: 11.5px;
+          font-weight: 700;
+          color: #475569;
+          margin-bottom: 5px;
+        }
+        .gm-input {
+          width: 100%;
+          padding: 8px 10px;
+          border: 1.5px solid #cbd5e1;
+          border-radius: 8px;
+          font-size: 13.5px;
+          font-weight: 600;
+          color: #0f172a;
+          background: #ffffff;
+          box-sizing: border-box;
+          transition: all 0.15s ease;
+        }
+        .gm-input:focus {
+          outline: none;
+          border-color: #005aa3;
+          box-shadow: 0 0 0 3px rgba(0, 90, 163, 0.14);
+        }
+        .gm-input-readonly, .gm-input:disabled {
+          background: #f8fafc;
+          color: #64748b;
+          border-color: #e2e8f0;
+          cursor: not-allowed;
+        }
+        .gm-check-box {
+          margin-top: 12px;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 7px 11px;
+          background: #f8fafc;
+          border: 1px solid #cbd5e1;
+          border-radius: 8px;
+          cursor: pointer;
+          font-size: 12.5px;
+          font-weight: 700;
+          color: #0f4c81;
+          user-select: none;
+        }
+        .gm-check-box input[type="checkbox"] {
+          width: 16px;
+          height: 16px;
+          accent-color: #0f4c81;
+          cursor: pointer;
+          margin: 0;
+        }
+        .gm-helper-note {
+          margin-top: 12px;
+          font-size: 11.5px;
+          color: #64748b;
+          padding: 4px 0 0 0;
+        }
+      </style>
+      <div class="gm-modal-wrap">
+        <div class="gm-modal-header">
+          <div class="gm-modal-header-left">
+            <div class="gm-modal-icon">${svgIcon('layers', 20)}</div>
+            <div>
+              <h3>Gestión Masiva de Pedidos</h3>
+              <p>Validación de importes y asignación operativa de choferes</p>
+            </div>
+          </div>
+          <span class="gm-count-badge">${pedidos.length} ${pedidos.length === 1 ? 'pedido seleccionado' : 'pedidos seleccionados'}</span>
         </div>
-        ${pedidosHTML}
+        <div class="gm-modal-body">
+          <div class="gm-tip-banner">
+            <span style="color:#0284c7;display:flex;">${svgIcon('info', 18)}</span>
+            <div><strong>Tip operativo:</strong> Si deseas agrupar estos pedidos en una misma ruta, usa el botón <strong>"Crear Grupo/Ruta"</strong> para asignarles el mismo chofer a todos.</div>
+          </div>
+          ${pedidosHTML}
+        </div>
       </div>
     `,
-    width: '90%',
+    width: '980px',
     showCancelButton: true,
     showDenyButton: true,
-    confirmButtonText: 'Asignar Individualmente',
-    denyButtonText: '🚚 Crear Grupo/Ruta',
+    confirmButtonText: `${svgIcon('check', 15)} Asignar Individualmente`,
+    denyButtonText: `${svgIcon('truck', 15)} Crear Grupo/Ruta`,
     cancelButtonText: 'Cancelar',
-    confirmButtonColor: '#006996',
-    denyButtonColor: '#28a745',
-    cancelButtonColor: '#6c757d',
+    confirmButtonColor: '#0f4c81',
+    denyButtonColor: '#16a34a',
+    cancelButtonColor: '#64748b',
     didOpen: () => {
       // Event listener para cambio de sucursal
       document.querySelectorAll('.sucursal-chofer-select').forEach(select => {
@@ -1667,19 +2030,22 @@ async function abrirModalGestionMasiva(pedidos) {
         input.addEventListener('input', function() {
           const precio = parseFloat(this.value);
           const parent = this.parentElement;
-          const alerta = parent.querySelector('span');
+          const alerta = parent.querySelector('.alerta-precio-bajo');
 
           if (!isNaN(precio) && precio > 0 && precio < 1000) {
             if (!alerta) {
               const span = document.createElement('span');
-              span.style.cssText = 'color: #856404; font-weight: bold; display: block; margin-top: 5px;';
-              span.textContent = '⚠️ Precio menor a $1000 - Flete no conveniente';
+              span.className = 'alerta-precio-bajo';
+              span.style.cssText = 'color: #b45309; background: #fef3c7; border: 1px solid #fde68a; padding: 4px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; margin-top: 6px;';
+              span.innerHTML = `${svgIcon('alert', 13)} Precio menor a $1000 - Flete no conveniente`;
               parent.appendChild(span);
             }
-            this.style.backgroundColor = '#fff3cd';
+            this.style.backgroundColor = '#fffbeb';
+            this.style.borderColor = '#f59e0b';
           } else {
             if (alerta) alerta.remove();
             this.style.backgroundColor = '';
+            this.style.borderColor = '';
           }
         });
       });
@@ -1849,18 +2215,21 @@ async function verificarYCrearGrupo(pedidos) {
     }
 
     // Si hay conflictos, mostrar advertencia
-    let mensajeConflictos = '<div style="text-align: left; margin: 15px 0;">';
-    mensajeConflictos += '<p style="color: #856404; margin-bottom: 10px;">⚠️ <strong>Los siguientes pedidos ya están asignados a otros grupos:</strong></p>';
-    mensajeConflictos += '<div style="background: #fff3cd; padding: 15px; border-radius: 5px; border-left: 4px solid #ffc107; max-height: 200px; overflow-y: auto;">';
+    let mensajeConflictos = '<div style="text-align: left; margin: 10px 0;">';
+    mensajeConflictos += '<div style="display: flex; align-items: center; gap: 8px; color: #b45309; font-weight: 700; font-size: 13px; margin-bottom: 10px;">' + svgIcon('alert', 16) + ' Los siguientes pedidos ya están asignados a otros grupos:</div>';
+    mensajeConflictos += '<div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; max-height: 220px; overflow-y: auto; padding: 4px 10px;">';
 
     data.pedidos_en_grupos.forEach(pedido => {
       mensajeConflictos += `
-        <div style="padding: 8px 0; border-bottom: 1px solid #ffe69c;">
-          <strong>Pedido #${pedido.pedido_id}</strong> - ${pedido.FACTURA}<br>
-          <small style="color: #666;">
-            Cliente: ${pedido.NOMBRE_CLIENTE}<br>
-            Grupo actual: "${pedido.nombre_grupo}" (Chofer: ${pedido.chofer_asignado})
-          </small>
+        <div style="padding: 9px 4px; border-bottom: 1px solid #fef3c7;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <strong style="color: #0f4c81; font-size: 13px;">Pedido #${pedido.pedido_id}</strong>
+            <span style="font-weight: 700; color: #0f172a; font-size: 12px;">Fact: ${pedido.FACTURA || 'S/F'}</span>
+          </div>
+          <div style="color: #475569; font-size: 12px; margin-top: 2px;">
+            Cliente: <strong>${pedido.NOMBRE_CLIENTE}</strong><br>
+            <span style="color: #64748b;">Grupo actual: "<strong>${pedido.nombre_grupo}</strong>" (Chofer: ${pedido.chofer_asignado || 'Sin chofer'})</span>
+          </div>
         </div>
       `;
     });
@@ -1872,19 +2241,19 @@ async function verificarYCrearGrupo(pedidos) {
       title: 'Pedidos ya asignados a grupos',
       html: `
         ${mensajeConflictos}
-        <p style="margin-top: 15px; color: #333;">
-          <strong>¿Qué deseas hacer?</strong>
+        <p style="margin-top: 14px; color: #1e293b; font-size: 13px;">
+          <strong>¿Qué acción deseas realizar con estos pedidos?</strong>
         </p>
       `,
       width: '650px',
       showDenyButton: true,
       showCancelButton: true,
-      confirmButtonText: 'Mover al nuevo grupo',
-      denyButtonText: 'Continuar sin cambios',
+      confirmButtonText: `${svgIcon('check', 14)} Mover al nuevo grupo`,
+      denyButtonText: 'Continuar sin moverlos',
       cancelButtonText: 'Cancelar',
-      confirmButtonColor: '#28a745',
-      denyButtonColor: '#6c757d',
-      cancelButtonColor: '#dc3545'
+      confirmButtonColor: '#16a34a',
+      denyButtonColor: '#0f4c81',
+      cancelButtonColor: '#64748b'
     });
 
     if (resultado.isConfirmed) {
@@ -1920,42 +2289,43 @@ async function verificarYCrearGrupo(pedidos) {
 }
 
 async function abrirModalCrearGrupo(pedidos, moverDesdeOtrosGrupos = false) {
-  // Generar lista de pedidos para mostrar
-  let listaPedidos = '<div style="margin: 15px 0; padding: 10px; background: #f8f9fa; border-radius: 5px; max-height: 200px; overflow-y: auto;">';
-  listaPedidos += '<strong>Pedidos seleccionados:</strong><ul style="margin: 10px 0; text-align: left;">';
-
-  pedidos.forEach(pedido => {
-    listaPedidos += `<li>Pedido #${pedido.id} - ${pedido.factura} (${pedido.cliente})</li>`;
+  // Chips de pedidos seleccionados
+  let chipsPedidosHTML = '';
+  pedidos.forEach(p => {
+    chipsPedidosHTML += `
+      <div class="cg-pedido-chip">
+        <span class="cg-chip-id">#${p.id}</span>
+        <span class="cg-chip-fact">Fact: <strong>${p.factura || 'S/F'}</strong></span>
+        <span class="cg-chip-cli" title="${p.cliente || ''}">${p.cliente || 'Sin cliente'}</span>
+      </div>
+    `;
   });
 
-  listaPedidos += '</ul></div>';
-
-  // Generar HTML para validación de precios
-  let preciosHTML = '<div style="margin: 15px 0;">';
-  preciosHTML += '<div style="background: white; padding: 15px; border-radius: 8px; border: 2px solid #006996;">';
-  preciosHTML += '<h4 style="margin-top: 0; color: #006996;">Validación de Precios</h4>';
-
+  // Generar filas para validación de precios
+  let preciosHTML = '';
   pedidos.forEach((pedido, index) => {
     const alertaPrecio = pedido.precioReal > 0 && pedido.precioReal < 1000
-      ? '<span style="color: #856404; font-size: 12px;">⚠️ Precio menor a $1000</span>'
+      ? `<span class="alerta-precio-bajo" style="color: #b45309; background: #fef3c7; border: 1px solid #fde68a; padding: 4px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; margin-top: 4px;">${svgIcon('alert', 13)} Precio menor a $1000 - Flete no conveniente</span>`
       : '';
 
     preciosHTML += `
-      <div style="padding: 10px; margin-bottom: 10px; background: #f8f9fa; border-radius: 5px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <strong style="color: #006996;">Pedido #${pedido.id}</strong>
-          <span style="color: #666; font-size: 13px;">Precio vendedor: $${pedido.precioVendedor}</span>
+      <div class="cg-precio-row" data-index="${index}">
+        <div class="cg-precio-top">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="cg-chip-id">#${pedido.id}</span>
+            <strong style="color: #0f172a; font-size: 13px;">${pedido.factura ? 'Factura: ' + pedido.factura : 'Sin factura'}</strong>
+            <span style="color: #64748b; font-size: 12px;">(${pedido.cliente || 'Sin cliente'})</span>
+          </div>
+          <span style="color: #64748b; font-size: 12px; font-weight: 600;">Precio Vendedor: <strong style="color: #0f172a;">$${pedido.precioVendedor}</strong></span>
         </div>
-        <div style="display: flex; gap: 10px; align-items: center;">
-          <input type="number" class="grupo-precio-real" data-index="${index}"
+        <div class="cg-precio-fields">
+          <input type="number" class="grupo-precio-real cg-input-real" data-index="${index}"
                  value="${pedido.precioReal}" step="0.01" min="0.01"
-                 placeholder="Precio real"
-                 style="flex: 1; padding: 8px; border: 1px solid #006996; border-radius: 4px;">
-          <label style="display: flex; align-items: center; gap: 5px; white-space: nowrap;">
+                 placeholder="Precio real de factura">
+          <label class="cg-check-validar">
             <input type="checkbox" class="grupo-validar-precio" data-index="${index}"
-                   ${pedido.validado === 1 ? 'checked' : ''}
-                   style="width: 18px; height: 18px;">
-            <span>Validar</span>
+                   ${pedido.validado === 1 ? 'checked' : ''}>
+            <span>${svgIcon('check', 13)} Validar</span>
           </label>
         </div>
         ${alertaPrecio}
@@ -1963,77 +2333,435 @@ async function abrirModalCrearGrupo(pedidos, moverDesdeOtrosGrupos = false) {
     `;
   });
 
-  preciosHTML += '</div></div>';
-
   const result = await Swal.fire({
-    title: '🚚 Crear Grupo/Ruta',
     html: `
-      <div style="text-align: left;">
-        <p style="color: #666; margin-bottom: 15px;">
-          Agrupa estos pedidos y asígnalos todos al mismo chofer para optimizar la ruta de entrega.
-        </p>
+      <style>
+        .cg-swal-popup {
+          padding: 0 !important;
+          overflow: hidden !important;
+          border-radius: 18px !important;
+          box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25) !important;
+          border: 1px solid #cbd5e1 !important;
+          font-family: inherit !important;
+        }
+        .cg-swal-html {
+          padding: 0 !important;
+          margin: 0 !important;
+          max-height: 84vh;
+          overflow-y: auto;
+          overflow-x: hidden;
+        }
+        .cg-swal-actions {
+          margin: 0 !important;
+          padding: 16px 24px !important;
+          background: #f8fafc !important;
+          border-top: 1px solid #e2e8f0 !important;
+          gap: 12px !important;
+        }
+        .cg-modal-wrap {
+          text-align: left;
+          color: #1e293b;
+          background: #ffffff;
+        }
+        .cg-modal-header {
+          background: linear-gradient(135deg, #0f4c81 0%, #006996 100%);
+          color: #ffffff;
+          padding: 20px 24px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+        }
+        .cg-modal-header-left {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+        }
+        .cg-modal-icon {
+          width: 44px;
+          height: 44px;
+          background: rgba(255, 255, 255, 0.15);
+          border: 1px solid rgba(255, 255, 255, 0.25);
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #ffffff;
+          flex-shrink: 0;
+        }
+        .cg-modal-header h3 {
+          margin: 0;
+          font-size: 19px;
+          font-weight: 800;
+          letter-spacing: -0.01em;
+          color: #ffffff;
+        }
+        .cg-modal-header p {
+          margin: 3px 0 0 0;
+          font-size: 13px;
+          color: #e0f2fe;
+          opacity: 0.95;
+        }
+        .cg-count-badge {
+          background: rgba(255, 255, 255, 0.2);
+          border: 1px solid rgba(255, 255, 255, 0.35);
+          color: #ffffff;
+          font-size: 12px;
+          font-weight: 700;
+          padding: 5px 12px;
+          border-radius: 999px;
+          white-space: nowrap;
+        }
+        .cg-modal-body {
+          padding: 20px 24px;
+          display: flex;
+          flex-direction: column;
+          gap: 18px;
+        }
+        .cg-tip-banner {
+          background: #f0f9ff;
+          border: 1px solid #bae6fd;
+          border-left: 4px solid #0284c7;
+          border-radius: 10px;
+          padding: 12px 14px;
+          font-size: 13px;
+          color: #0369a1;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          line-height: 1.4;
+        }
+        .cg-pedidos-strip {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+          max-height: 110px;
+          overflow-y: auto;
+          padding: 4px 2px;
+        }
+        .cg-pedido-chip {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: #f8fafc;
+          border: 1px solid #cbd5e1;
+          padding: 5px 10px;
+          border-radius: 8px;
+          font-size: 12px;
+        }
+        .cg-chip-id {
+          font-weight: 800;
+          color: #0f4c81;
+          background: #e0f2fe;
+          padding: 2px 6px;
+          border-radius: 5px;
+          font-size: 11px;
+        }
+        .cg-chip-fact {
+          font-size: 11.5px;
+          color: #475569;
+        }
+        .cg-chip-cli {
+          font-weight: 600;
+          color: #0f172a;
+          max-width: 140px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .cg-section-card {
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 12px;
+          box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+          overflow: hidden;
+        }
+        .cg-section-header {
+          background: #f8fafc;
+          padding: 12px 16px;
+          border-bottom: 1px solid #e2e8f0;
+          font-size: 12px;
+          font-weight: 800;
+          color: #0f4c81;
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .cg-section-body {
+          padding: 16px;
+        }
+        .cg-precios-list {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          max-height: 250px;
+          overflow-y: auto;
+          padding-right: 4px;
+        }
+        .cg-precio-row {
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          border-radius: 10px;
+          padding: 10px 14px;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          transition: border-color 0.15s;
+        }
+        .cg-precio-row:hover {
+          border-color: #cbd5e1;
+        }
+        .cg-precio-top {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-size: 12.5px;
+          flex-wrap: wrap;
+          gap: 6px;
+        }
+        .cg-precio-fields {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .cg-input-real {
+          flex: 1;
+          padding: 8px 12px;
+          border: 1.5px solid #cbd5e1;
+          border-radius: 8px;
+          font-size: 13.5px;
+          font-weight: 700;
+          color: #0f172a;
+          background: #ffffff;
+          box-sizing: border-box;
+          transition: all 0.15s;
+        }
+        .cg-input-real:focus {
+          outline: none;
+          border-color: #005aa3;
+          box-shadow: 0 0 0 3px rgba(0, 90, 163, 0.12);
+        }
+        .cg-check-validar {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 7px 12px;
+          background: #ffffff;
+          border: 1px solid #cbd5e1;
+          border-radius: 8px;
+          cursor: pointer;
+          font-size: 12px;
+          font-weight: 700;
+          color: #0f4c81;
+          user-select: none;
+          white-space: nowrap;
+          transition: all 0.15s;
+        }
+        .cg-check-validar:hover {
+          background: #f0f9ff;
+          border-color: #bae6fd;
+        }
+        .cg-check-validar input[type="checkbox"] {
+          width: 16px;
+          height: 16px;
+          accent-color: #0f4c81;
+          cursor: pointer;
+          margin: 0;
+        }
+        .cg-params-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr 1.2fr;
+          gap: 14px;
+          align-items: start;
+        }
+        @media (max-width: 768px) {
+          .cg-params-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+        .cg-form-group {
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+        }
+        .cg-label {
+          font-size: 11.5px;
+          font-weight: 700;
+          color: #475569;
+          text-transform: uppercase;
+          letter-spacing: 0.03em;
+        }
+        .cg-input, .cg-select, .cg-textarea {
+          width: 100%;
+          padding: 8px 10px;
+          border: 1.5px solid #cbd5e1;
+          border-radius: 8px;
+          font-size: 13px;
+          font-weight: 600;
+          color: #0f172a;
+          background: #ffffff;
+          box-sizing: border-box;
+          transition: all 0.15s;
+        }
+        .cg-input:focus, .cg-select:focus, .cg-textarea:focus {
+          outline: none;
+          border-color: #005aa3;
+          box-shadow: 0 0 0 3px rgba(0, 90, 163, 0.12);
+        }
+        .cg-select:disabled {
+          background: #f8fafc;
+          color: #94a3b8;
+          border-color: #e2e8f0;
+          cursor: not-allowed;
+        }
+        .cg-helper-text {
+          font-size: 11px;
+          color: #64748b;
+        }
+        #preview-map {
+          width: 100%;
+          height: 330px;
+          border-radius: 10px;
+          border: 1px solid #cbd5e1;
+          overflow: hidden;
+        }
+        .cg-ruta-info-badge {
+          margin-top: 10px;
+          padding: 10px 14px;
+          background: #ecfdf5;
+          border: 1px solid #a7f3d0;
+          border-radius: 8px;
+          color: #065f46;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 16px;
+          font-size: 13px;
+          font-weight: 700;
+        }
+      </style>
 
-        ${listaPedidos}
-
-        ${preciosHTML}
-
-        <div style="margin: 15px 0;">
-          <label style="display: block; font-weight: bold; margin-bottom: 5px;">Nombre del Grupo (opcional):</label>
-          <input type="text" id="grupo-nombre" placeholder="Ej: Ruta Norte Mañana"
-                 style="width: 100%; padding: 10px; border: 1px solid #006996; border-radius: 4px;">
-          <small style="color: #666;">Si lo dejas vacío, se generará automáticamente</small>
+      <div class="cg-modal-wrap">
+        <!-- Header -->
+        <div class="cg-modal-header">
+          <div class="cg-modal-header-left">
+            <div class="cg-modal-icon">${svgIcon('truck', 22)}</div>
+            <div>
+              <h3>Crear Grupo / Hoja de Ruta</h3>
+              <p>Agrupación y optimización logística de pedidos para chofer</p>
+            </div>
+          </div>
+          <span class="cg-count-badge">${pedidos.length} ${pedidos.length === 1 ? 'pedido seleccionado' : 'pedidos seleccionados'}</span>
         </div>
 
-        <div style="margin: 15px 0;">
-          <label style="display: block; font-weight: bold; margin-bottom: 5px;">Sucursal:</label>
-          <select id="grupo-sucursal" style="width: 100%; padding: 10px; border: 1px solid #006996; border-radius: 4px;">
-            <option value="">Seleccionar sucursal...</option>
-            <option value="GABSA">GABSA</option>
-            <option value="ILUMINACION">ILUMINACION</option>
-            <option value="DIMEGSA">DIMEGSA</option>
-            <option value="DEASA">DEASA</option>
-            <option value="AIESA">AIESA</option>
-            <option value="SEGSA">SEGSA</option>
-            <option value="FESA">FESA</option>
-            <option value="TAPATIA">TAPATIA</option>
-            <option value="VALLARTA">VALLARTA</option>
-            <option value="CODI">CODI</option>
-            <option value="QUERETARO">QUERETARO</option>
-            <option value="CONSTITUYENTES">CONSTITUYENTES</option>
-          </select>
-        </div>
+        <div class="cg-modal-body">
+          <!-- Tip Banner -->
+          <div class="cg-tip-banner">
+            <span style="color:#0284c7;display:flex;">${svgIcon('info', 18)}</span>
+            <div><strong>Organización de ruta:</strong> Todos los pedidos quedarán vinculados a este grupo con una secuencia sugerida y el chofer seleccionado.</div>
+          </div>
 
-        <div style="margin: 15px 0;">
-          <label style="display: block; font-weight: bold; margin-bottom: 5px;">Chofer:</label>
-          <select id="grupo-chofer" disabled style="width: 100%; padding: 10px; border: 1px solid #006996; border-radius: 4px;">
-            <option value="">Primero seleccione sucursal</option>
-          </select>
-        </div>
+          <!-- Tira de pedidos seleccionados -->
+          <div class="cg-section-card">
+            <div class="cg-section-header">
+              ${svgIcon('layers', 14)} Pedidos Incluidos en este Grupo (${pedidos.length})
+            </div>
+            <div class="cg-section-body" style="padding: 10px 14px;">
+              <div class="cg-pedidos-strip">
+                ${chipsPedidosHTML}
+              </div>
+            </div>
+          </div>
 
-        <div style="margin: 15px 0;">
-          <label style="display: block; font-weight: bold; margin-bottom: 5px;">Notas (opcional):</label>
-          <textarea id="grupo-notas" rows="3" placeholder="Notas o comentarios sobre esta ruta..."
-                    style="width: 100%; padding: 10px; border: 1px solid #006996; border-radius: 4px; resize: vertical;"></textarea>
-        </div>
+          <!-- Validación de precios -->
+          <div class="cg-section-card">
+            <div class="cg-section-header">
+              ${svgIcon('dollar', 14)} Validación de Precios de Factura
+            </div>
+            <div class="cg-section-body">
+              <div class="cg-precios-list">
+                ${preciosHTML}
+              </div>
+            </div>
+          </div>
 
-        <!-- Mapa de vista previa -->
-        <div style="margin: 15px 0;">
-          <label style="display: block; font-weight: bold; margin-bottom: 5px;">
-            🗺️ Vista Previa de la Ruta:
-          </label>
-          <div id="preview-map" style="width: 100%; height: 350px; border-radius: 8px; border: 2px solid #006996;"></div>
-          <small style="color: #666; display: block; margin-top: 5px;">
-            Esta es la ruta sugerida basada en las direcciones de los pedidos seleccionados
-          </small>
+          <!-- Parámetros del Grupo y Chofer -->
+          <div class="cg-section-card">
+            <div class="cg-section-header">
+              ${svgIcon('user', 14)} Configuración del Grupo y Asignación
+            </div>
+            <div class="cg-section-body" style="display: flex; flex-direction: column; gap: 14px;">
+              <div class="cg-params-grid">
+                <div class="cg-form-group">
+                  <label class="cg-label">Nombre del Grupo (Opcional):</label>
+                  <input type="text" id="grupo-nombre" class="cg-input" placeholder="Ej: Ruta Norte Mañana">
+                  <small class="cg-helper-text">Por defecto se generará automático</small>
+                </div>
+
+                <div class="cg-form-group">
+                  <label class="cg-label">Sucursal para Chofer:</label>
+                  <select id="grupo-sucursal" class="cg-select">
+                    <option value="">Seleccionar sucursal...</option>
+                    <option value="GABSA">GABSA</option>
+                    <option value="ILUMINACION">ILUMINACION</option>
+                    <option value="DIMEGSA">DIMEGSA</option>
+                    <option value="DEASA">DEASA</option>
+                    <option value="AIESA">AIESA</option>
+                    <option value="SEGSA">SEGSA</option>
+                    <option value="FESA">FESA</option>
+                    <option value="TAPATIA">TAPATIA</option>
+                    <option value="VALLARTA">VALLARTA</option>
+                    <option value="CODI">CODI</option>
+                    <option value="QUERETARO">QUERETARO</option>
+                    <option value="CONSTITUYENTES">CONSTITUYENTES</option>
+                  </select>
+                  <small class="cg-helper-text">Filtra los choferes de la sucursal</small>
+                </div>
+
+                <div class="cg-form-group">
+                  <label class="cg-label">Chofer Asignado:</label>
+                  <select id="grupo-chofer" class="cg-select" disabled>
+                    <option value="">Primero seleccione sucursal</option>
+                  </select>
+                  <small class="cg-helper-text">Chofer con unidad activa</small>
+                </div>
+              </div>
+
+              <div class="cg-form-group">
+                <label class="cg-label">Notas o Instrucciones (Opcional):</label>
+                <textarea id="grupo-notas" class="cg-textarea" rows="2" placeholder="Notas operativas para el chofer o logística de entrega..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vista Previa de la Ruta (Mapa) -->
+          <div class="cg-section-card">
+            <div class="cg-section-header">
+              ${svgIcon('map', 14)} Vista Previa y Trazado de Ruta
+            </div>
+            <div class="cg-section-body">
+              <div id="preview-map"></div>
+              <small class="cg-helper-text" style="display: block; margin-top: 6px; text-align: center;">
+                Ruta sugerida basada en las coordenadas de destino de los pedidos
+              </small>
+            </div>
+          </div>
         </div>
       </div>
     `,
-    width: '900px',
+    width: '980px',
     showCancelButton: true,
-    confirmButtonText: 'Crear Grupo y Asignar',
+    confirmButtonText: `${svgIcon('truck', 15)} Crear Grupo y Asignar`,
     cancelButtonText: 'Cancelar',
-    confirmButtonColor: '#28a745',
-    cancelButtonColor: '#6c757d',
+    confirmButtonColor: '#16a34a',
+    cancelButtonColor: '#64748b',
+    customClass: {
+      popup: 'cg-swal-popup',
+      htmlContainer: 'cg-swal-html',
+      actions: 'cg-swal-actions'
+    },
     didOpen: () => {
       // Cargar choferes cuando se selecciona sucursal
       const sucursalSelect = document.getElementById('grupo-sucursal');
@@ -2094,20 +2822,23 @@ async function abrirModalCrearGrupo(pedidos, moverDesdeOtrosGrupos = false) {
       document.querySelectorAll('.grupo-precio-real').forEach(input => {
         input.addEventListener('input', function() {
           const precio = parseFloat(this.value);
-          const parent = this.parentElement.parentElement;
-          let alerta = parent.querySelector('span[style*="color: #856404"]');
+          const parent = this.closest('.cg-precio-row') || this.parentElement.parentElement;
+          let alerta = parent.querySelector('.alerta-precio-bajo');
 
           if (!isNaN(precio) && precio > 0 && precio < 1000) {
             if (!alerta) {
               alerta = document.createElement('span');
-              alerta.style.cssText = 'color: #856404; font-size: 12px; display: block; margin-top: 5px;';
-              alerta.textContent = '⚠️ Precio menor a $1000';
+              alerta.className = 'alerta-precio-bajo';
+              alerta.style.cssText = 'color: #b45309; background: #fef3c7; border: 1px solid #fde68a; padding: 4px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; margin-top: 4px;';
+              alerta.innerHTML = `${svgIcon('alert', 13)} Precio menor a $1000 - Flete no conveniente`;
               parent.appendChild(alerta);
             }
-            this.style.backgroundColor = '#fff3cd';
+            this.style.backgroundColor = '#fffbeb';
+            this.style.borderColor = '#f59e0b';
           } else {
             if (alerta) alerta.remove();
             this.style.backgroundColor = '';
+            this.style.borderColor = '';
           }
         });
       });
@@ -2137,7 +2868,7 @@ async function abrirModalCrearGrupo(pedidos, moverDesdeOtrosGrupos = false) {
         }
 
         // Remover información de ruta si existe
-        const infoDiv = document.getElementById('preview-map').parentElement.querySelector('div[style*="background: #d4edda"]');
+        const infoDiv = document.getElementById('preview-map').parentElement.querySelector('.cg-ruta-info-badge, div[style*="background: #d4edda"]');
         if (infoDiv) infoDiv.remove();
 
         const coordenadasValidas = [];
@@ -2180,20 +2911,19 @@ async function abrirModalCrearGrupo(pedidos, moverDesdeOtrosGrupos = false) {
                 // Crear marcador de bodega
                 const elOrigen = document.createElement('div');
                 elOrigen.style.cssText = `
-                  background: #ff6b6b;
+                  background: #0f4c81;
                   color: white;
-                  width: 40px;
-                  height: 40px;
+                  width: 36px;
+                  height: 36px;
                   border-radius: 50%;
                   display: flex;
                   align-items: center;
                   justify-content: center;
-                  font-size: 24px;
-                  border: 3px solid white;
-                  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+                  border: 2.5px solid white;
+                  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
                   cursor: pointer;
                 `;
-                elOrigen.textContent = '🏢';
+                elOrigen.innerHTML = svgIcon('building', 18);
 
                 warehouseMarker = new mapboxgl.Marker(elOrigen)
                   .setLngLat([lng, lat])
@@ -2340,9 +3070,8 @@ async function abrirModalCrearGrupo(pedidos, moverDesdeOtrosGrupos = false) {
 
             // Mostrar información de la ruta
             const infoDiv = document.createElement('div');
-            infoDiv.style.cssText = 'margin-top: 10px; padding: 10px; background: #d4edda; border-radius: 5px; color: #155724; text-align: center;';
-            infoDiv.innerHTML = '<strong>📊 Información de la Ruta:</strong><br>' +
-              'Distancia: ' + distanciaKm + ' km | Tiempo estimado: ' + tiempoMin + ' minutos';
+            infoDiv.className = 'cg-ruta-info-badge';
+            infoDiv.innerHTML = `${svgIcon('truck', 16)} <span>Distancia: <strong>${distanciaKm} km</strong></span> <span style="opacity:0.4;">|</span> ${svgIcon('clock', 16)} <span>Tiempo estimado: <strong>${tiempoMin} minutos</strong></span>`;
             document.getElementById('preview-map').parentElement.appendChild(infoDiv);
           }
         } catch (error) {

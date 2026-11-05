@@ -967,6 +967,10 @@ body {
 }
 
 /* Modal Desktop CRM */
+.swal2-container {
+    z-index: 100010 !important;
+}
+
 .inc-modal-overlay {
     display: none;
     position: fixed;
@@ -975,7 +979,7 @@ body {
     width: 100vw;
     height: 100vh;
     background: rgba(15, 23, 42, 0.65);
-    z-index: 99999;
+    z-index: 9999;
     justify-content: center;
     align-items: center;
     backdrop-filter: blur(4px);
@@ -2032,18 +2036,22 @@ async function guardarIncidenciaDesktop(event) {
 
         const res = await response.json();
         if (res.ok) {
+            btnGuardar.disabled = false;
+            btnGuardar.innerHTML = '<?= addslashes(gaIcon("save", 15)) ?> <span>Guardar Incidencia</span>';
+            cerrarModalNuevaIncidencia();
+
             if (typeof Swal !== 'undefined') {
                 Swal.fire({
                     icon: 'success',
                     title: '¡Incidencia registrada!',
-                    text: 'La incidencia se guardó correctamente y queda registrada en el pedido.',
+                    text: 'La incidencia se guardó correctamente y se notificó al Jefe de Choferes.',
                     confirmButtonColor: '#0f4c81'
                 }).then(() => {
-                    window.location.reload();
+                    window.location.href = window.location.pathname + window.location.search;
                 });
             } else {
                 alert('Incidencia registrada con éxito.');
-                window.location.reload();
+                window.location.href = window.location.pathname + window.location.search;
             }
         } else {
             if (typeof Swal !== 'undefined') {

@@ -194,20 +194,24 @@ if ($result && $result->num_rows > 0) {
             data-chofer='".htmlspecialchars($row["CHOFER_ASIGNADO"] ?? '')."'
             data-grupo-id='".htmlspecialchars($row["grupo_id"] ?? '')."'></td>" : "";
 
+        $choferDisplay = ($choferAsignado === '' || trim($choferAsignado) === '[object Object]')
+            ? "<span class='tbl-sin-chofer'>Sin asignar</span>"
+            : "<span class='tbl-chofer-nombre'>" . htmlspecialchars($choferAsignado) . "</span>";
+
         echo "<tr>";
         echo $checkboxCell;
-        echo "<td>" . htmlspecialchars($row["ID"]) . "</td>";
+        echo "<td><span class='tbl-id-badge'>" . htmlspecialchars($row["ID"]) . "</span></td>";
         echo "<td>{$badge}<div style='margin-top:6px'>{$accionHtml}</div></td>";
-        echo "<td style='background-color: $colorEstado;'>" . htmlspecialchars($estado) . "</td>";
-        echo "<td style='background-color: $colorTipo;'>" . htmlspecialchars($tipoEnvio) . "</td>";
-        echo "<td>" . htmlspecialchars($row["SUCURSAL"] ?? '') . "</td>";
-        echo "<td>" . htmlspecialchars($row["FECHA_RECEPCION_FACTURA"] ?? '') . "</td>";
-        echo "<td style='background-color: $colorChofer;'>" . htmlspecialchars($choferAsignado) . "</td>";
-        echo "<td>" . htmlspecialchars($row["VENDEDOR"] ?? '') . "</td>";
-        echo "<td>" . htmlspecialchars($row["FACTURA"] ?? '') . "</td>";
-        echo "<td>" . htmlspecialchars($row["DIRECCION"] ?? '') . "</td>";
-        echo "<td>" . htmlspecialchars($row["NOMBRE_CLIENTE"] ?? '') . "</td>";
-        echo "<td>" . htmlspecialchars($row["CONTACTO"] ?? '') . "</td>";
+        echo "<td style='background-color: $colorEstado;'><span class='tbl-status-pill'>" . htmlspecialchars($estado) . "</span></td>";
+        echo "<td style='background-color: $colorTipo;'><span class='tbl-envio-pill'>" . strtoupper(htmlspecialchars($tipoEnvio)) . "</span></td>";
+        echo "<td><span class='tbl-sucursal-tag'>" . htmlspecialchars($row["SUCURSAL"] ?? '') . "</span></td>";
+        echo "<td class='tbl-fecha-cell'>" . htmlspecialchars($row["FECHA_RECEPCION_FACTURA"] ?? '') . "</td>";
+        echo "<td style='background-color: $colorChofer;'>" . $choferDisplay . "</td>";
+        echo "<td class='tbl-vendedor-cell'>" . htmlspecialchars($row["VENDEDOR"] ?? '') . "</td>";
+        echo "<td class='tbl-factura-cell'>" . htmlspecialchars($row["FACTURA"] ?? '') . "</td>";
+        echo "<td class='tbl-direccion-cell'>" . htmlspecialchars($row["DIRECCION"] ?? '') . "</td>";
+        echo "<td class='tbl-cliente-cell'><div class='tbl-cliente-nombre'>" . htmlspecialchars($row["NOMBRE_CLIENTE"] ?? '') . "</div></td>";
+        echo "<td class='tbl-contacto-cell'>" . htmlspecialchars($row["CONTACTO"] ?? '') . "</td>";
         $totalIncidencias = intval($row["total_incidencias"] ?? 0);
         $facturaEsc = htmlspecialchars($row["FACTURA"] ?? '', ENT_QUOTES);
         $svgSearch = "<svg width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' style='flex-shrink:0;'><circle cx='11' cy='11' r='8'/><line x1='21' y1='21' x2='16.65' y2='16.65'/></svg>";
@@ -275,6 +279,97 @@ $conn->close();
   word-break: break-word;
   overflow-wrap: anywhere;
 }
+
+.mi-tabla {
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  box-shadow: 0 6px 20px -4px rgba(15, 23, 42, 0.08) !important;
+  background: #ffffff !important;
+}
+
+.mi-tabla th {
+  background: linear-gradient(180deg, #0f4c81 0%, #0b3c66 100%) !important;
+  color: #ffffff !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em !important;
+  padding: 12px 8px !important;
+  border: none !important;
+  border-bottom: 2px solid #082f52 !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+  vertical-align: middle !important;
+}
+
+.mi-tabla th:last-child { border-right: none !important; }
+
+.mi-tabla td {
+  padding: 10px 8px !important;
+  font-size: 12.5px !important;
+  color: #1e293b !important;
+  border: none !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  border-right: 1px solid #f1f5f9 !important;
+  vertical-align: middle !important;
+  transition: filter 0.15s ease;
+}
+
+.mi-tabla td:last-child { border-right: none !important; }
+.mi-tabla tr:last-child td { border-bottom: none !important; }
+.mi-tabla tr:hover td { filter: brightness(0.97); }
+
+.tbl-id-badge {
+  font-weight: 700;
+  color: #0f4c81;
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+
+.tbl-status-pill {
+  font-weight: 700;
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #0f172a;
+}
+
+.tbl-envio-pill {
+  font-weight: 700;
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+  color: #14532d;
+}
+
+.tbl-sucursal-tag {
+  font-weight: 700;
+  font-size: 12px;
+  color: #334155;
+}
+
+.tbl-fecha-cell {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: #475569 !important;
+  white-space: nowrap;
+}
+
+.tbl-sin-chofer {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #991b1b;
+}
+
+.tbl-chofer-nombre { font-weight: 700; color: #0f172a; }
+.tbl-vendedor-cell { color: #475569 !important; font-weight: 500; }
+.tbl-factura-cell { font-weight: 800; color: #0f4c81 !important; font-variant-numeric: tabular-nums; }
+.tbl-direccion-cell { font-size: 11.5px !important; line-height: 1.35; color: #334155 !important; text-align: left; }
+.tbl-cliente-cell { text-align: center; }
+.tbl-cliente-nombre { font-weight: 700; color: #0f172a; font-size: 12px; line-height: 1.3; }
+.tbl-contacto-cell { font-size: 11.5px !important; color: #475569 !important; }
+.pedido-checkbox, #selectAll { width: 16px; height: 16px; accent-color: #0f4c81; cursor: pointer; }
 
 /* Línea gráfica moderna para columna Acción (Ver Detalles + Incidencias) */
 .acciones-pedido-wrap {
